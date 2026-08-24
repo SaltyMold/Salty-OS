@@ -54,6 +54,8 @@ typedef void sqlite3_mutex;
 
 /* SQLite exports its memory methods in a struct. We don't need it since we've
  * renamed them to standard names anyway. So let's just make it build. */
-typedef void ** sqlite3_mem_methods;
+// typedef void ** sqlite3_mem_methods;
+
+typedef void * sqlite3_mem_methods;
 
 #endif

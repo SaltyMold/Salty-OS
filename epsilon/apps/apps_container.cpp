@@ -297,6 +297,8 @@ void AppsContainer::run() {
   Ion::Events::setSpinner(true);
   Ion::Display::setScreenshotCallback(ShowCursor);
 
+  Ion::CircuitBreaker::unsetCheckpoint(Ion::CircuitBreaker::CheckpointType::Home);
+
   /* Setup the home checkpoint so that the exception chekpoint will be
    * reactivated on a home interrupt. This way, the main exception checkpoint
    * will keep the home checkpoint as parent. */

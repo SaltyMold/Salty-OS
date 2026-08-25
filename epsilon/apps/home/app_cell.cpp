@@ -2,6 +2,9 @@
 
 #include <assert.h>
 
+#include <escher/include/escher/wallpaper.h>
+
+
 using namespace Escher;
 
 namespace Home {
@@ -13,11 +16,39 @@ AppCell::AppCell()
       m_pointerNameView(nullptr, k_glyphsFormat) {}
 
 void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
+  // KDSize nameSize = textView()->minimalSizeForOptimalDisplay();
+  // ctx->fillRect(
+  //     KDRect(0, bounds().height() - nameSize.height() - 2 * k_nameHeightMargin,
+  //            bounds().width(), nameSize.height() + 2 * k_nameHeightMargin),
+  //     KDColorWhite);
+    
   KDSize nameSize = textView()->minimalSizeForOptimalDisplay();
-  ctx->fillRect(
-      KDRect(0, bounds().height() - nameSize.height() - 2 * k_nameHeightMargin,
-             bounds().width(), nameSize.height() + 2 * k_nameHeightMargin),
-      KDColorWhite);
+
+  KDRect nameRect = KDRect(0, bounds().height() - nameSize.height() - 2 * k_nameHeightMargin,
+                           bounds().width(), nameSize.height() + 2 * k_nameHeightMargin);
+  
+  // Get the width and height of the rectangle
+  int rectWidth = nameRect.width();
+  int rectHeight = nameRect.height();
+  int screenWidth = 320;
+  
+  // Max size (controller.h)
+  KDColor buffer[104 * 20];
+  
+  // Get position 
+  KDPoint globalOrigin = ctx->origin();
+  int globalX = globalOrigin.x();
+  int globalY = globalOrigin.y();
+  
+  // Copy line by line
+  for (int y = 0; y < rectHeight; y++) {
+    int srcOffset = (globalY + nameRect.origin().y() + y - nameSize.height() - 4) * screenWidth + (globalX + nameRect.origin().x());
+    memcpy(&buffer[y * rectWidth], 
+           &reinterpret_cast<const KDColor*>(wallpaper_pixels)[srcOffset],
+           rectWidth * sizeof(KDColor));
+  }
+  
+  ctx->fillRectWithPixels(nameRect, buffer, nullptr);
 }
 
 int AppCell::numberOfSubviews() const { return isVisible() ? 2 : 0; }

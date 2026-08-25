@@ -17,5 +17,4 @@ epsilon/screenshots_each_step/
 .devcontainer/
 ion/src/simulator/ios/GoogleAnalyticsServices/
 ion/src/device/epsilon-core
-Notes.txt
-
+Notes.md

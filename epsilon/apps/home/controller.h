@@ -8,7 +8,8 @@
 
 #include "app_cell.h"
 
-#include <escher/include/escher/wallpaper.h>
+#include <omg/memory.h>
+
 
 namespace Home {
 
@@ -75,10 +76,11 @@ class Controller : public Escher::ViewController,
     ContentView(Controller* controller,
                 Escher::SelectableTableViewDataSource* selectionDataSource);
     Escher::SelectableTableView* selectableTableView();
-    void drawRect(KDContext* ctx, KDRect rect) const override {
-      //ctx->fillRect(bounds(), KDColorBlack);
-      ctx->fillRectWithPixels(bounds(), reinterpret_cast<const KDColor*>(wallpaper_pixels), nullptr);
-    }
+    // void drawRect(KDContext* ctx, KDRect rect) const override {
+    //   //ctx->fillRect(bounds(), KDColorBlack);
+    //   ctx->fillRectWithPixels(bounds(), reinterpret_cast<const KDColor*>(wallpaper_pixels), nullptr);
+    // }
+    void drawRect(KDContext* ctx, KDRect rect) const override;
     void reload() { markWholeFrameAsDirty(); }
     void reloadBottomRow(SimpleTableViewDataSource* dataSource,
                          int lastIconColumn);

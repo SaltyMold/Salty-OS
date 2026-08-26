@@ -8,6 +8,9 @@
 
 #include "app.h"
 
+#include "home_wallpaper.h"
+#include <omg/memory.h>
+
 extern "C" {
 #include <assert.h>
 }
@@ -56,6 +59,21 @@ void Controller::ContentView::layoutSubviews(bool force) {
   KDRect frame =
       KDRect(KDPointZero, bounds().width(), bounds().height() - k_bottomMargin);
   setChildFrame(&m_selectableTableView, frame, force);
+}
+
+void Controller::ContentView::drawRect(KDContext* ctx, KDRect rect) const {
+  // Decompress wallpaper on first use into a static buffer
+  static KDColor wallpaperPixels[320 * 240];
+  static bool wallpaperInitialized = false;
+  if (!wallpaperInitialized) {
+    OMG::Memory::Decompress(
+        Ion::HomeWallpaper::compressedPixelData,
+        reinterpret_cast<uint8_t*>(wallpaperPixels),
+        Ion::HomeWallpaper::k_compressedPixelSize,
+        Ion::HomeWallpaper::k_width * Ion::HomeWallpaper::k_height * sizeof(KDColor));
+    wallpaperInitialized = true;
+  }
+  ctx->fillRectWithPixels(bounds(), wallpaperPixels, nullptr);
 }
 
 Controller::Controller(Responder* parentResponder,

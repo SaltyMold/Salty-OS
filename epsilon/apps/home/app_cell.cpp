@@ -2,7 +2,8 @@
 
 #include <assert.h>
 
-#include <escher/include/escher/wallpaper.h>
+#include "home_wallpaper.h"
+#include <omg/memory.h>
 
 
 using namespace Escher;
@@ -32,8 +33,20 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   int rectHeight = nameRect.height();
   int screenWidth = 320;
   
-  // Max size (controller.h)
+  // Max temp buffer for copying
   KDColor buffer[104 * 20];
+
+  // Decompress wallpaper on first use into a static buffer
+  static KDColor wallpaperPixels[320 * 240];
+  static bool wallpaperInitialized = false;
+  if (!wallpaperInitialized) {
+    OMG::Memory::Decompress(
+        Ion::HomeWallpaper::compressedPixelData,
+        reinterpret_cast<uint8_t*>(wallpaperPixels),
+        Ion::HomeWallpaper::k_compressedPixelSize,
+        Ion::HomeWallpaper::k_width * Ion::HomeWallpaper::k_height * sizeof(KDColor));
+    wallpaperInitialized = true;
+  }
   
   // Get position 
   KDPoint globalOrigin = ctx->origin();
@@ -43,9 +56,8 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   // Copy line by line
   for (int y = 0; y < rectHeight; y++) {
     int srcOffset = (globalY + nameRect.origin().y() + y - nameSize.height() - 4) * screenWidth + (globalX + nameRect.origin().x());
-    memcpy(&buffer[y * rectWidth], 
-           &reinterpret_cast<const KDColor*>(wallpaper_pixels)[srcOffset],
-           rectWidth * sizeof(KDColor));
+        memcpy(&buffer[y * rectWidth], &wallpaperPixels[srcOffset],
+          rectWidth * sizeof(KDColor));
   }
   
   ctx->fillRectWithPixels(nameRect, buffer, nullptr);

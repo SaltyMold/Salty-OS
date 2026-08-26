@@ -10,6 +10,7 @@ class TextView : public GlyphsView {
       : GlyphsView(format), m_lineSpacing(lineSpacing) {}
   // View
   void drawRect(KDContext* ctx, KDRect rect) const override;
+  void drawTextTransparent(KDContext* ctx, KDRect rect) const;
   KDSize minimalSizeForOptimalDisplay() const override;
 
   const char* text() const override = 0;  // Must implement

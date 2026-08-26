@@ -49,6 +49,9 @@ class Palette {
   constexpr static KDColor VioletLight = KDColor::RGB24(0xe8d5fa);
   constexpr static KDColor Mint = KDColor::RGB24(0x71cdb5);
   constexpr static KDColor MintLight = KDColor::RGB24(0xd4f3e8);
+  constexpr static KDColor TextColor = KDColor::RGB24(0xffa6c8);
+  constexpr static KDColor TextColorHover = KDColor::RGB24(0x4a2939);
+
 
   constexpr static KDColor DataColor[] = {Red,     Blue,      Green, YellowDark,
                                           Magenta, Turquoise, Pink,  Orange,

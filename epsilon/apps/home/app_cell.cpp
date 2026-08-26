@@ -52,7 +52,14 @@ AppCell::AppCell()
     : HighlightCell(),
       m_messageNameView((I18n::Message)0, k_glyphsFormat),
       m_image(0, 0, nullptr, 0),
-      m_pointerNameView(nullptr, k_glyphsFormat) {}
+      m_pointerNameView(nullptr, k_glyphsFormat) {
+  // Initialize text color to the same default used in reloadCell so the
+  // names are correctly colored on first display.
+  KDColor initialColor = isHighlighted() ? Palette::TextColor : Palette::TextColorHover;
+  m_messageNameView.setTextColor(initialColor);
+  m_pointerNameView.setTextColor(initialColor);
+}
+
 
 void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   // KDSize nameSize = textView()->minimalSizeForOptimalDisplay();
@@ -83,9 +90,12 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
                          rectHeight, rectWidth);
 
   ctx->fillRectWithPixels(nameRect, buffer, nullptr);
+  // Draw the text transparently on top of the wallpaper so we don't fill an
+  // opaque background. Then avoid letting the TextView draw itself later.
+  const_cast<TextView*>(textView())->drawTextTransparent(ctx, nameRect);
 }
 
-int AppCell::numberOfSubviews() const { return isVisible() ? 2 : 0; }
+int AppCell::numberOfSubviews() const { return isVisible() ? 1 : 0; }
 
 View* AppCell::subviewAtIndex(int index) {
   View* views[] = {&m_iconView, const_cast<TextView*>(textView())};
@@ -131,8 +141,9 @@ void AppCell::setVisible(bool visible) {
 
 void AppCell::reloadCell() {
   TextView* t = const_cast<TextView*>(textView());
-  t->setTextColor(isHighlighted() ? KDColorWhite : KDColorBlack);
-  t->setBackgroundColor(isHighlighted() ? Palette::YellowDark : KDColorWhite);
+  t->setTextColor(isHighlighted() ? Palette::TextColor : Palette::TextColorHover);
+  // Do not set an opaque background so wallpaper remains visible.
+  markWholeFrameAsDirty();
 }
 
 const Escher::TextView* AppCell::textView() const {

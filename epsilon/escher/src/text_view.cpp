@@ -16,4 +16,13 @@ void TextView::drawRect(KDContext* ctx, KDRect rect) const {
                           -1, m_lineSpacing);
 }
 
+void TextView::drawTextTransparent(KDContext* ctx, KDRect rect) const {
+  if (text() == nullptr) {
+    return;
+  }
+  ctx->alignAndDrawStringTransparent(text(), KDPoint(rect.x(), rect.y()),
+                                     rect.size(), m_glyphFormat, -1,
+                                     m_lineSpacing);
+}
+
 }  // namespace Escher

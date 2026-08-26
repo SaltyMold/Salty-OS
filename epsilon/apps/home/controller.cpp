@@ -18,6 +18,42 @@ extern "C" {
 using namespace Escher;
 using namespace Poincare;
 
+namespace {
+
+void fillWallpaperBackground(KDContext* ctx, KDRect rect) {
+  static constexpr int k_chunkHeight = Ion::HomeWallpaper::k_chunkHeight;
+  static KDColor chunkBuffer[320 * 16];
+  static int cachedChunkIndex = -1;
+  static int cachedChunkTop = 0;
+
+  KDColor lineBuffer[320];
+  for (int y = 0; y < rect.height(); y++) {
+    int srcY = y;
+    int chunkIndex = srcY / k_chunkHeight;
+    if (cachedChunkIndex != chunkIndex) {
+      cachedChunkIndex = chunkIndex;
+      cachedChunkTop = chunkIndex * k_chunkHeight;
+      int chunkRows = Ion::HomeWallpaper::k_height - cachedChunkTop;
+      if (chunkRows > k_chunkHeight) {
+        chunkRows = k_chunkHeight;
+      }
+      int srcOffset = Ion::HomeWallpaper::compressedChunkOffsets[chunkIndex];
+      int srcSize = Ion::HomeWallpaper::compressedChunkSizes[chunkIndex];
+      int dstSize = chunkRows * Ion::HomeWallpaper::k_width * sizeof(KDColor);
+      OMG::Memory::Decompress(Ion::HomeWallpaper::compressedPixelData + srcOffset,
+                              reinterpret_cast<uint8_t*>(chunkBuffer), srcSize,
+                              dstSize);
+    }
+
+    int localY = srcY - cachedChunkTop;
+    const KDColor* sourceRow = chunkBuffer + localY * Ion::HomeWallpaper::k_width;
+    memcpy(lineBuffer, sourceRow, rect.width() * sizeof(KDColor));
+    ctx->fillRectWithPixels(KDRect(0, y, rect.width(), 1), lineBuffer, nullptr);
+  }
+}
+
+}  // namespace
+
 namespace Home {
 
 Controller::ContentView::ContentView(
@@ -62,18 +98,7 @@ void Controller::ContentView::layoutSubviews(bool force) {
 }
 
 void Controller::ContentView::drawRect(KDContext* ctx, KDRect rect) const {
-  // Decompress wallpaper on first use into a static buffer
-  static KDColor wallpaperPixels[320 * 240];
-  static bool wallpaperInitialized = false;
-  if (!wallpaperInitialized) {
-    OMG::Memory::Decompress(
-        Ion::HomeWallpaper::compressedPixelData,
-        reinterpret_cast<uint8_t*>(wallpaperPixels),
-        Ion::HomeWallpaper::k_compressedPixelSize,
-        Ion::HomeWallpaper::k_width * Ion::HomeWallpaper::k_height * sizeof(KDColor));
-    wallpaperInitialized = true;
-  }
-  ctx->fillRectWithPixels(bounds(), wallpaperPixels, nullptr);
+  fillWallpaperBackground(ctx, bounds());
 }
 
 Controller::Controller(Responder* parentResponder,

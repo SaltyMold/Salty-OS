@@ -22,7 +22,7 @@ def rgba8882rgb565(red, green, blue, alpha):
     return (r >> 3) << 11 | (g >> 2) << 5 | (b >> 3)
 
 
-def generate_c_files(png_file, header_file_name, cimplementation_file_name, verbose):
+def generate_c_files(png_file, header_file_name, cimplementation_file_name, verbose, chunk_height=None):
     png_reader = png.Reader(filename=png_file)
     width, height, data, info = png_reader.asRGBA8()
 
@@ -35,15 +35,33 @@ def generate_c_files(png_file, header_file_name, cimplementation_file_name, verb
     png_name_camel_case = stringcase.capitalcase(stringcase.camelcase(png_file))
 
     # Convert RGBA888 to RGB565
-    dataRGB565 = []
+    dataRGB565 = bytearray()
     for row in data:
         for i in range(0, len(row), 4):
             r, g, b, a = row[i], row[i + 1], row[i + 2], row[i + 3]
             dataRGB565.extend(rgba8882rgb565(r, g, b, a).to_bytes(2, "little"))
-    # Compress data
-    compressed_data = lz4.block.compress(
-        bytes(dataRGB565), compression=12, mode="high_compression", store_size=False
-    )
+
+    row_size = width * 2
+    chunk_rows = chunk_height if chunk_height is not None and chunk_height > 0 else height
+    chunk_count = (height + chunk_rows - 1) // chunk_rows
+
+    compressed_chunks = []
+    chunk_sizes = []
+    chunk_offsets = []
+    offset = 0
+    for chunk_index in range(chunk_count):
+        chunk_start = chunk_index * chunk_rows
+        chunk_end = min(height, chunk_start + chunk_rows)
+        chunk_data = bytes(dataRGB565[chunk_start * row_size : chunk_end * row_size])
+        compressed_chunk = lz4.block.compress(
+            chunk_data, compression=12, mode="high_compression", store_size=False
+        )
+        compressed_chunks.append(compressed_chunk)
+        chunk_sizes.append(len(compressed_chunk))
+        chunk_offsets.append(offset)
+        offset += len(compressed_chunk)
+
+    compressed_data = b"".join(compressed_chunks)
     compressed_data_len = len(compressed_data)
 
     # Generate header file
@@ -63,7 +81,11 @@ def generate_c_files(png_file, header_file_name, cimplementation_file_name, verb
     )
     header_file.write("constexpr uint32_t k_width = " + str(width) + ";\n\n")
     header_file.write("constexpr uint32_t k_height = " + str(height) + ";\n\n")
+    header_file.write("constexpr uint32_t k_chunkHeight = " + str(chunk_rows) + ";\n\n")
+    header_file.write("constexpr uint32_t k_chunkCount = " + str(chunk_count) + ";\n\n")
     header_file.write("extern const uint8_t compressedPixelData[];\n\n")
+    header_file.write("extern const uint32_t compressedChunkOffsets[" + str(chunk_count) + "];\n\n")
+    header_file.write("extern const uint32_t compressedChunkSizes[" + str(chunk_count) + "];\n\n")
     header_file.write("}\n")
     header_file.write("}\n")
     header_file.write("#endif\n")
@@ -92,6 +114,18 @@ def generate_c_files(png_file, header_file_name, cimplementation_file_name, verb
     for b in compressed_data:
         cimplementation_file.write(hex(b) + ", ")
     cimplementation_file.write("\n};\n\n")
+    cimplementation_file.write(
+        "const uint32_t compressedChunkOffsets[" + str(chunk_count) + "] = {"
+    )
+    for i, value in enumerate(chunk_offsets):
+        cimplementation_file.write(str(value) + (", " if i + 1 < len(chunk_offsets) else ""))
+    cimplementation_file.write("};\n\n")
+    cimplementation_file.write(
+        "const uint32_t compressedChunkSizes[" + str(chunk_count) + "] = {"
+    )
+    for i, value in enumerate(chunk_sizes):
+        cimplementation_file.write(str(value) + (", " if i + 1 < len(chunk_sizes) else ""))
+    cimplementation_file.write("};\n\n")
     cimplementation_file.write("}\n")
     cimplementation_file.write("}\n")
     cimplementation_file.close()
@@ -103,7 +137,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument("--png", metavar="PNG_FILE", help="Input PNG file")
 parser.add_argument("--header", metavar="HEADER_FILE", help="Output C header file")
 parser.add_argument("--cimplementation", metavar="C_FILE", help="Output C header file")
+parser.add_argument("--chunk-height", type=int, default=None, help="Optional row chunk size for chunked LZ4 compression")
 parser.add_argument("-v", "--verbose", action="store_true", help="Show verbose output")
 
 args = parser.parse_args()
-generate_c_files(args.png, args.header, args.cimplementation, args.verbose)
+generate_c_files(args.png, args.header, args.cimplementation, args.verbose, args.chunk_height)

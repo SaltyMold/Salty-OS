@@ -8,6 +8,44 @@
 
 using namespace Escher;
 
+namespace {
+
+static constexpr int k_wallpaperChunkHeight = Ion::HomeWallpaper::k_chunkHeight;
+
+void fillWallpaperLineRange(KDRect nameRect, int globalX, int globalY,
+                            int nameHeight, KDColor* buffer, int rectHeight,
+                            int rectWidth) {
+  static KDColor chunkBuffer[320 * 16];
+  static int cachedChunkIndex = -1;
+  static int cachedChunkTop = 0;
+
+  for (int y = 0; y < rectHeight; y++) {
+    int srcY = globalY + nameRect.origin().y() + y - nameHeight - 4;
+    int chunkIndex = srcY / k_wallpaperChunkHeight;
+    if (cachedChunkIndex != chunkIndex) {
+      cachedChunkIndex = chunkIndex;
+      cachedChunkTop = chunkIndex * k_wallpaperChunkHeight;
+      int chunkRows = Ion::HomeWallpaper::k_height - cachedChunkTop;
+      if (chunkRows > k_wallpaperChunkHeight) {
+        chunkRows = k_wallpaperChunkHeight;
+      }
+      int srcOffset = Ion::HomeWallpaper::compressedChunkOffsets[chunkIndex];
+      int srcSize = Ion::HomeWallpaper::compressedChunkSizes[chunkIndex];
+      int dstSize = chunkRows * Ion::HomeWallpaper::k_width * sizeof(KDColor);
+      OMG::Memory::Decompress(Ion::HomeWallpaper::compressedPixelData + srcOffset,
+                              reinterpret_cast<uint8_t*>(chunkBuffer), srcSize,
+                              dstSize);
+    }
+
+    int srcX = globalX + nameRect.origin().x();
+    int localY = srcY - cachedChunkTop;
+    const KDColor* sourceRow = chunkBuffer + localY * Ion::HomeWallpaper::k_width + srcX;
+    memcpy(&buffer[y * rectWidth], sourceRow, rectWidth * sizeof(KDColor));
+  }
+}
+
+}  // namespace
+
 namespace Home {
 
 AppCell::AppCell()
@@ -36,30 +74,14 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   // Max temp buffer for copying
   KDColor buffer[104 * 20];
 
-  // Decompress wallpaper on first use into a static buffer
-  static KDColor wallpaperPixels[320 * 240];
-  static bool wallpaperInitialized = false;
-  if (!wallpaperInitialized) {
-    OMG::Memory::Decompress(
-        Ion::HomeWallpaper::compressedPixelData,
-        reinterpret_cast<uint8_t*>(wallpaperPixels),
-        Ion::HomeWallpaper::k_compressedPixelSize,
-        Ion::HomeWallpaper::k_width * Ion::HomeWallpaper::k_height * sizeof(KDColor));
-    wallpaperInitialized = true;
-  }
-  
-  // Get position 
+  // Get position
   KDPoint globalOrigin = ctx->origin();
   int globalX = globalOrigin.x();
   int globalY = globalOrigin.y();
-  
-  // Copy line by line
-  for (int y = 0; y < rectHeight; y++) {
-    int srcOffset = (globalY + nameRect.origin().y() + y - nameSize.height() - 4) * screenWidth + (globalX + nameRect.origin().x());
-        memcpy(&buffer[y * rectWidth], &wallpaperPixels[srcOffset],
-          rectWidth * sizeof(KDColor));
-  }
-  
+
+  fillWallpaperLineRange(nameRect, globalX, globalY, nameSize.height(), buffer,
+                         rectHeight, rectWidth);
+
   ctx->fillRectWithPixels(nameRect, buffer, nullptr);
 }
 

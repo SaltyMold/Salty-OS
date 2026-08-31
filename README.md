@@ -1,6 +1,6 @@
 # Salty-OS
 
-Salty-OS is a custom userland for the numworks calculator based on the latest published version of [epsilon](https://github.com/Numworks/epsilon).
+Salty-OS is a custom userland for the numworks calculator based on the latest published version of [epsilon](https://github.com/Numworks/epsilon) (25.2.2).
 
 <img src="github_assets/numworks.png" width=320 alt="Salty-OS">
 
@@ -12,7 +12,7 @@ NumWorks calculators boot slot A by default, then you can access Slot B with a l
 
 If the userland crashes or if you reset it, the calculator falls back to booting slot A, but slot B isn't wiped in the process, so the custom userland is still there and can be re-launched afterward (at least on latest versions of epsilon).
 
-This has only been tested on the `n0120`  so far. If you try it on another model, please open an issue to report whether it worked or not.
+This has only been tested on the `n0120` with epsilon `26.3.0` so far. If you try it on another model, please open an issue to report whether it worked or not.
 
 <img src="github_assets/slots.png" width=320 alt="Salty-OS">
 
@@ -40,6 +40,13 @@ All three currently require rebuilding the userland to change. A simpler customi
 - Customizable icon form.
 
 # How to install
+
+### Update the calculator
+
+- Go to the [Numworks updater](https://my.numworks.com/devices/upgrade).
+- Connect your calculator.
+- Click update.
+
 
 ### Userland
 

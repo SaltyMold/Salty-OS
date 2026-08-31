@@ -12,7 +12,7 @@ NumWorks calculators boot slot A by default, then you can access Slot B with a l
 
 If the userland crashes or if you reset it, the calculator falls back to booting slot A, but slot B isn't wiped in the process, so the custom userland is still there and can be re-launched afterward (at least on latest versions of epsilon).
 
-This has only been tested on the `n0120` with epsilon `26.3.0` so far. If you try it on another model, please open an issue to report whether it worked or not.
+This has been tested on the `n0120` and `n0115` with epsilon `26.3.0` so far. If you try it on another model, please open an issue to report whether it worked or not.
 
 <img src="github_assets/slots.png" width=320 alt="Salty-OS">
 
@@ -41,11 +41,12 @@ All three currently require rebuilding the userland to change. A simpler customi
 
 # How to install
 
-### Update the calculator
+### Update the calculator twice
 
 - Go to the [Numworks updater](https://my.numworks.com/devices/upgrade).
 - Connect your calculator.
 - Click update.
+- Do it a second time to make sure slot A is used.
 
 
 ### Userland
@@ -65,3 +66,30 @@ All three currently require rebuilding the userland to change. A simpler customi
 - Click install.
 
 Open the app and press exe, you should now be in Salty-OS. If it crashes, retry.
+
+# How to build
+
+- Clone the repo.
+```sh
+git clone https://github.com/SaltyMold/Salty-OS
+cd Salty-OS
+```
+
+- Activate the virtual environment.
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+- Install the dependencies.
+```sh
+# Use tools/setup.sh are adapt it to your system.
+```
+
+- Build the userland for n0120 for exemple.
+```sh
+make -j$(nproc) PLATFORM=n0120 userland.allow3rdparty.B.dfu
+# Without onboarding
+# With 3rd party apps allowed
+# For slot B
+```

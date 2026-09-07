@@ -141,3 +141,82 @@ const KDColor* ThemeManager::wallpaperChunkContaining(int globalY, int* localY) 
   *localY = globalY - s_cachedChunkTop;
   return s_chunkBuffer;
 }
+
+/* Icons -------------------------------------------------------------------
+ * Icon blobs are a single flat LZ4 block (generate_theme.py's
+ * png_to_lz4_image_blob()) with NO header at all: just RGB565 pixels,
+ * compressed with the same lz4_compress() used for the wallpaper chunks.
+ * Width/height are not stored in the blob - the firmware and the theme
+ * generator both assume the fixed builtin icon size (passed in by the
+ * caller, e.g. AppCell's k_iconWidth / k_iconHeight). */
+
+int ThemeManager::iconIndexForApp(I18n::Message appName) {
+  // Order must match FIXED_ICON_FILES in generate_theme.py exactly.
+  // Names confirmed against apps/*/app.h / app.cpp (Descriptor::name()).
+  switch (appName) {
+    case I18n::Message::CalculApp:
+      return 0;
+    case I18n::Message::CodeApp:
+      return 1;
+    case I18n::Message::DistributionsApp:
+      return 2;
+    case I18n::Message::ElementsApp:
+      return 3;
+    case I18n::Message::FinanceApp:
+      return 4;
+    case I18n::Message::FunctionApp:
+      return 5;
+    case I18n::Message::InferenceApp:
+      return 6;
+    case I18n::Message::RegressionApp:
+      return 7;
+    case I18n::Message::SequenceApp:
+      return 8;
+    case I18n::Message::SettingsApp:
+      return 9;
+    case I18n::Message::SolverApp:
+      return 10;
+    case I18n::Message::StatsApp:
+      return 11;
+    default:
+      return -1;
+  }
+}
+
+bool ThemeManager::hasIcon(int iconIndex) {
+  const ThemeEntry* e = currentEntry();
+  return e != nullptr && e->isIcons && iconIndex >= 0 &&
+         iconIndex < (int)ThemeIconCount && e->iconOffsets[iconIndex] != 0;
+}
+
+const KDColor* ThemeManager::iconPixels(int iconIndex, int iconWidth,
+                                        int iconHeight) {
+  // Generous upper bound so a single static buffer can serve any reasonable
+  // fixed icon size. Bump if the builtin icon size ever grows past this.
+  constexpr int k_maxIconWidth = 64;
+  constexpr int k_maxIconHeight = 64;
+  static KDColor s_iconBuffer[k_maxIconWidth * k_maxIconHeight];
+  static int s_cachedThemeIndex = -1;
+  static int s_cachedIconIndex = -1;
+
+  if (!hasIcon(iconIndex) || iconWidth <= 0 || iconHeight <= 0 ||
+      iconWidth > k_maxIconWidth || iconHeight > k_maxIconHeight) {
+    return nullptr;
+  }
+
+  if (s_cachedThemeIndex != s_selectedTheme || s_cachedIconIndex != iconIndex) {
+    const ThemeEntry* e = currentEntry();
+    uint32_t offset = e->iconOffsets[iconIndex];
+    uint32_t size = e->iconSizes[iconIndex];
+    int dstSize = iconWidth * iconHeight * (int)sizeof(KDColor);
+
+    OMG::Memory::Decompress(
+        reinterpret_cast<const uint8_t*>(ThemeAreaStart + offset),
+        reinterpret_cast<uint8_t*>(s_iconBuffer), size, dstSize);
+
+    s_cachedThemeIndex = s_selectedTheme;
+    s_cachedIconIndex = iconIndex;
+  }
+
+  return s_iconBuffer;
+}

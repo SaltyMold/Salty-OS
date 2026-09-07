@@ -1,5 +1,6 @@
 #pragma once
 
+#include <apps/i18n.h>
 #include <kandinsky/color.h>
 #include <stdint.h>
 
@@ -37,6 +38,24 @@ class ThemeManager {
   // Controller, ...) and is only valid until the next call to this
   // function - copy out what you need (memcpy) before calling again.
   static const KDColor* wallpaperChunkContaining(int globalY, int* localY);
+
+  // --- Icons of the CURRENTLY SELECTED theme --------------------------
+  // Maps a builtin app's name to its theme icon slot (0..ThemeIconCount-1),
+  // matching the FIXED_ICON_FILES order in generate_theme.py. Returns -1 if
+  // this app has no themed-icon slot (e.g. unknown/new app).
+  static int iconIndexForApp(I18n::Message appName);
+
+  // True if the current theme actually provides an icon for that slot
+  // (the slot can exist in the mapping above but be missing from the
+  // flashed binary, like "stat_icon.png" in the sample report).
+  static bool hasIcon(int iconIndex);
+
+  // Decompresses (and caches) the icon at `iconIndex` into a shared static
+  // buffer sized iconWidth * iconHeight and returns a pointer to it, or
+  // nullptr if unavailable or too large. Same single-shared-buffer caching
+  // contract as wallpaperChunkContaining: copy out what you need before
+  // calling again for a different icon/theme.
+  static const KDColor* iconPixels(int iconIndex, int iconWidth, int iconHeight);
 
  private:
   static const Ion::Device::Board::Config::ThemeEntry* currentEntry();

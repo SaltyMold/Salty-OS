@@ -58,6 +58,10 @@ AppCell::AppCell()
 }
 
 
+bool AppCell::hasThemedIcon() const {
+  return m_themeIconIndex >= 0 && ThemeManager::hasIcon(m_themeIconIndex);
+}
+
 void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   // KDSize nameSize = textView()->minimalSizeForOptimalDisplay();
   // ctx->fillRect(
@@ -90,9 +94,31 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   // Draw the text transparently on top of the wallpaper so we don't fill an
   // opaque background. Then avoid letting the TextView draw itself later.
   const_cast<TextView*>(textView())->drawTextTransparent(ctx, nameRect);
+
+  // Themed icon: decompressed manually (see ThemeManager::iconPixels), since
+  // we don't know the codec Escher::Image/IconView expect for
+  // compressedPixelData() and can't safely hand our LZ4 blob to it. When
+  // present, this replaces the normal IconView draw (excluded from
+  // numberOfSubviews() below) so we don't draw both on top of each other.
+  if (hasThemedIcon()) {
+    KDRect iconRect((bounds().width() - k_iconWidth) / 2, k_iconMargin,
+                    k_iconWidth, k_iconHeight);
+    const KDColor* pixels =
+        ThemeManager::iconPixels(m_themeIconIndex, k_iconWidth, k_iconHeight);
+    if (pixels != nullptr) {
+      ctx->fillRectWithPixels(iconRect, pixels, nullptr);
+    }
+  }
 }
 
-int AppCell::numberOfSubviews() const { return isVisible() ? 1 : 0; }
+int AppCell::numberOfSubviews() const {
+  if (!isVisible()) {
+    return 0;
+  }
+  // When we're drawing the themed icon manually above, don't also let the
+  // normal IconView subview draw the builtin icon on top of it.
+  return hasThemedIcon() ? 0 : 1;
+}
 
 View* AppCell::subviewAtIndex(int index) {
   View* views[] = {&m_iconView, const_cast<TextView*>(textView())};
@@ -118,6 +144,10 @@ void AppCell::setBuiltinAppDescriptor(const ::App::Descriptor* descriptor) {
   m_iconView.setImage(descriptor->icon());
   m_messageNameView.setMessage(descriptor->name());
   m_pointerNameView.setText(nullptr);
+  // Only builtin apps can have a themed icon: the theme's fixed icon set
+  // (calculation_icon.png, code_icon.png, ...) has no slot for arbitrary
+  // external/third-party apps.
+  m_themeIconIndex = ThemeManager::iconIndexForApp(descriptor->name());
   layoutSubviews();
 }
 
@@ -126,6 +156,7 @@ void AppCell::setExternalApp(Ion::ExternalApps::App app) {
   m_messageNameView.setMessage((I18n::Message)0);
   m_image = Image(k_iconWidth, k_iconHeight, app.iconData(), app.iconSize());
   m_iconView.setImage(&m_image);
+  m_themeIconIndex = -1;
   layoutSubviews();
 }
 

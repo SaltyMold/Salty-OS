@@ -8,8 +8,8 @@
 
 #include "app.h"
 
-#include "home_wallpaper.h"
-#include <omg/memory.h>
+#include "../theme_manager.h"
+#include <string.h>
 
 extern "C" {
 #include <assert.h>
@@ -21,34 +21,26 @@ using namespace Poincare;
 namespace {
 
 void fillWallpaperBackground(KDContext* ctx, KDRect rect) {
-  static constexpr int k_chunkHeight = Ion::HomeWallpaper::k_chunkHeight;
-  static KDColor chunkBuffer[320 * 16];
-  static int cachedChunkIndex = -1;
-  static int cachedChunkTop = 0;
+  if (!ThemeManager::hasWallpaper()) {
+    // No Theme Area flashed, or the selected theme has no wallpaper.
+    ctx->fillRect(rect, KDColorRed);
+    return;
+  }
+
+  int wallpaperWidth = ThemeManager::wallpaperWidth();
+  int lineWidth = rect.width() < wallpaperWidth ? rect.width() : wallpaperWidth;
 
   KDColor lineBuffer[320];
   for (int y = 0; y < rect.height(); y++) {
-    int srcY = y;
-    int chunkIndex = srcY / k_chunkHeight;
-    if (cachedChunkIndex != chunkIndex) {
-      cachedChunkIndex = chunkIndex;
-      cachedChunkTop = chunkIndex * k_chunkHeight;
-      int chunkRows = Ion::HomeWallpaper::k_height - cachedChunkTop;
-      if (chunkRows > k_chunkHeight) {
-        chunkRows = k_chunkHeight;
-      }
-      int srcOffset = Ion::HomeWallpaper::compressedChunkOffsets[chunkIndex];
-      int srcSize = Ion::HomeWallpaper::compressedChunkSizes[chunkIndex];
-      int dstSize = chunkRows * Ion::HomeWallpaper::k_width * sizeof(KDColor);
-      OMG::Memory::Decompress(Ion::HomeWallpaper::compressedPixelData + srcOffset,
-                              reinterpret_cast<uint8_t*>(chunkBuffer), srcSize,
-                              dstSize);
+    int localY = 0;
+    const KDColor* chunk = ThemeManager::wallpaperChunkContaining(y, &localY);
+    if (chunk == nullptr) {
+      ctx->fillRect(KDRect(0, y, rect.width(), 1), KDColorWhite);
+      continue;
     }
-
-    int localY = srcY - cachedChunkTop;
-    const KDColor* sourceRow = chunkBuffer + localY * Ion::HomeWallpaper::k_width;
-    memcpy(lineBuffer, sourceRow, rect.width() * sizeof(KDColor));
-    ctx->fillRectWithPixels(KDRect(0, y, rect.width(), 1), lineBuffer, nullptr);
+    const KDColor* sourceRow = chunk + localY * wallpaperWidth;
+    memcpy(lineBuffer, sourceRow, lineWidth * sizeof(KDColor));
+    ctx->fillRectWithPixels(KDRect(0, y, lineWidth, 1), lineBuffer, nullptr);
   }
 }
 

@@ -1,45 +1,42 @@
 #include "app_cell.h"
 
 #include <assert.h>
+#include <string.h>
 
-#include "home_wallpaper.h"
-#include <omg/memory.h>
+#include "../theme_manager.h" 
 
 
 using namespace Escher;
 
 namespace {
 
-static constexpr int k_wallpaperChunkHeight = Ion::HomeWallpaper::k_chunkHeight;
-
 void fillWallpaperLineRange(KDRect nameRect, int globalX, int globalY,
                             int nameHeight, KDColor* buffer, int rectHeight,
                             int rectWidth) {
-  static KDColor chunkBuffer[320 * 16];
-  static int cachedChunkIndex = -1;
-  static int cachedChunkTop = 0;
+  if (!ThemeManager::hasWallpaper()) {
+    // No Theme Area flashed, or the selected theme has no wallpaper: fall
+    // back to a flat background instead of reading garbage.
+    for (int i = 0; i < rectHeight * rectWidth; i++) {
+      buffer[i] = KDColorWhite;
+    }
+    return;
+  }
+
+  int wallpaperWidth = ThemeManager::wallpaperWidth();
 
   for (int y = 0; y < rectHeight; y++) {
     int srcY = globalY + nameRect.origin().y() + y - nameHeight - 4;
-    int chunkIndex = srcY / k_wallpaperChunkHeight;
-    if (cachedChunkIndex != chunkIndex) {
-      cachedChunkIndex = chunkIndex;
-      cachedChunkTop = chunkIndex * k_wallpaperChunkHeight;
-      int chunkRows = Ion::HomeWallpaper::k_height - cachedChunkTop;
-      if (chunkRows > k_wallpaperChunkHeight) {
-        chunkRows = k_wallpaperChunkHeight;
+    int localY = 0;
+    const KDColor* chunk = ThemeManager::wallpaperChunkContaining(srcY, &localY);
+    if (chunk == nullptr) {
+      for (int x = 0; x < rectWidth; x++) {
+        buffer[y * rectWidth + x] = KDColorWhite;
       }
-      int srcOffset = Ion::HomeWallpaper::compressedChunkOffsets[chunkIndex];
-      int srcSize = Ion::HomeWallpaper::compressedChunkSizes[chunkIndex];
-      int dstSize = chunkRows * Ion::HomeWallpaper::k_width * sizeof(KDColor);
-      OMG::Memory::Decompress(Ion::HomeWallpaper::compressedPixelData + srcOffset,
-                              reinterpret_cast<uint8_t*>(chunkBuffer), srcSize,
-                              dstSize);
+      continue;
     }
 
     int srcX = globalX + nameRect.origin().x();
-    int localY = srcY - cachedChunkTop;
-    const KDColor* sourceRow = chunkBuffer + localY * Ion::HomeWallpaper::k_width + srcX;
+    const KDColor* sourceRow = chunk + localY * wallpaperWidth + srcX;
     memcpy(&buffer[y * rectWidth], sourceRow, rectWidth * sizeof(KDColor));
   }
 }

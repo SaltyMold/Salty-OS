@@ -24,6 +24,7 @@ $(call create_module,apps,1, \
   apps_container_helper_tests.cpp:+test \
   init_tests.cpp:+test \
   exam_icon.png:-test \
+  theme_manager.cpp:-test \
 )
 
 PRIVATE_SFLAGS_apps += -I$(PATH_apps)

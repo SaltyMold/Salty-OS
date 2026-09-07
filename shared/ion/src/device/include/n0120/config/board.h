@@ -168,8 +168,6 @@ constexpr uint32_t ThemeIconCount = 12;
 constexpr uint32_t ThemeColorCount = 64;
 constexpr uint32_t ThemeNameLength = 16;
 
-
-
 struct ThemeEntry {
   char name[ThemeNameLength];
   uint8_t isWallpaper;

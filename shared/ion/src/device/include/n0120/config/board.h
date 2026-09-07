@@ -152,6 +152,63 @@ constexpr int NumberOfMPUSectors = 8;
 
 // clang-format on
 
+
+/*--------------------------------------------*/
+
+constexpr uint32_t ThemeAreaSize = 0x40000; // 256KiB
+constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x800000 - 0x40000 - 0x10000 = 0x907B0000
+constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;
+
+constexpr uint32_t ThemeAreaHeaderMagic = 0x87654321;
+constexpr uint32_t ThemeAreaHeaderVersion = 1;
+// constexpr uint32_t ThemeAreaHeaderSize = 
+
+constexpr uint32_t ThemeCount = 4;
+constexpr uint32_t ThemeIconCount = 12;
+constexpr uint32_t ThemeColorCount = 64;
+constexpr uint32_t ThemeNameLength = 16;
+
+
+
+struct ThemeEntry {
+  char name[ThemeNameLength];
+  uint8_t isWallpaper;
+  uint8_t isPalette;
+  uint8_t isIcons;
+  uint8_t reserved;
+  uint32_t wallpaperOffset;
+  uint32_t wallpaperSize;
+  uint32_t paletteOffset;
+  uint32_t paletteSize;
+  uint32_t iconOffsets[ThemeIconCount];
+  uint32_t iconSizes[ThemeIconCount];
+};
+
+struct ThemeAreaHeader {
+  uint32_t magic;
+  uint32_t version;
+  uint32_t themeCount;
+};
+
+/*
+Theme area header layout:
+
+Magic (4 bytes)
+Version (4 bytes)
+Theme count (4 bytes)
+Reserved (4 bytes)
+Theme 1:
+    Name (16 bytes)
+    Wallpaper offset (4 bytes)
+    Wallpaper size (4 bytes)
+    Palette offset (4 bytes)
+    Palette size (4 bytes)
+    Icon offsets (12 * 4 bytes)
+    Icon sizes (12 * 4 bytes)
+Theme 2:
+....
+*/
+
 }  // namespace Config
 }  // namespace Board
 }  // namespace Device

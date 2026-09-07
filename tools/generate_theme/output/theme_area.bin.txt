@@ -1,0 +1,48 @@
+==============================================================================
+THEME AREA - GENERATION REPORT
+==============================================================================
+magic              0x87654321
+version            1
+theme_count        1 / 4
+header_size        12 bytes  (sizeof(ThemeAreaHeader))
+entry_size         132 bytes  (sizeof(ThemeEntry))
+table_size         132 bytes (1 x 132)
+asset_region_start 0x000090  (offset 144 from ThemeAreaStart)
+payload_size       99156 B (96.83 KiB)
+
+capacity           [###############-------------------------]  37.9%
+                   99300 / 262144 bytes used, 162844 bytes free
+
+------------------------------------------------------------------------------
+THEME 0: "Theme"  (source: input/1)
+  entry offset       0x00000C (+0 in table)
+  total asset size   99156 B (96.83 KiB)
+
+  Palette: 43/64 colors
+    offset 0x016339   size 172 B
+
+  Wallpaper:
+    wallpaper.png  (320x240)
+    offset 0x000090   compressed 90793 B (88.67 KiB)   raw 153600 B (150.00 KiB)   ratio 1.69x
+
+  Icons: 11/12 present
+    calculation_icon.png    offset 0x0163E5               625 B  raw 6160 B (6.02 KiB)  (55x56, 9.86x)
+    code_icon.png           offset 0x016656               608 B  raw 6160 B (6.02 KiB)  (55x56, 10.13x)
+    distributions_icon.png  offset 0x0168B6               650 B  raw 6160 B (6.02 KiB)  (55x56, 9.48x)
+    elements_icon.png       offset 0x016B40   1174 B (1.15 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.25x)
+    finance_icon.png        offset 0x016FD6   1195 B (1.17 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.15x)
+    graph_icon.png          offset 0x017481               495 B  raw 6160 B (6.02 KiB)  (55x56, 12.44x)
+    inference_icon.png      offset 0x017670   1166 B (1.14 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.28x)
+    regression_icon.png     offset 0x017AFE               607 B  raw 6160 B (6.02 KiB)  (55x56, 10.15x)
+    sequence_icon.png       offset 0x017D5D               335 B  raw 6160 B (6.02 KiB)  (55x56, 18.39x)
+    settings_icon.png       offset 0x017EAC               393 B  raw 6160 B (6.02 KiB)  (55x56, 15.67x)
+    solver_icon.png         offset 0x018035               943 B  raw 6160 B (6.02 KiB)  (55x56, 6.53x)
+    missing: stat_icon.png
+
+  Warnings:
+    ! Palette has only 43/64 colors defined.
+    ! 1/12 icons missing: stat_icon.png
+
+==============================================================================
+Flash with:  python3 ../device/dfu.py -D <output.bin> -s 0x907B0000
+==============================================================================

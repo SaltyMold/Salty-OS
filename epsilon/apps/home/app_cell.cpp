@@ -41,6 +41,47 @@ void fillWallpaperLineRange(KDRect nameRect, int globalX, int globalY,
   }
 }
 
+// Fills the whole given bounds with the plain wallpaper (no text, no icon).
+// Used for hidden cells: unlike subview drawing (numberOfSubviews()),
+// drawRect isn't gated by isVisible() automatically - a hidden cell's
+// drawRect still gets called whenever it's marked dirty (which
+// AppCell::setVisible(false) itself does), so it must actively repaint
+// itself as blank, or it keeps showing whatever it last displayed.
+void fillWholeCellWallpaper(KDContext* ctx, KDRect bounds, int globalX,
+                            int globalY, int nameHeight) {
+  if (!ThemeManager::hasWallpaper()) {
+    ctx->fillRect(bounds, KDColorWhite);
+    return;
+  }
+
+  int wallpaperWidth = ThemeManager::wallpaperWidth();
+  int lineWidth = bounds.width() < wallpaperWidth - globalX
+                      ? bounds.width()
+                      : wallpaperWidth - globalX;
+  if (lineWidth < 0) {
+    lineWidth = 0;
+  }
+
+  KDColor lineBuffer[320];
+  for (int y = 0; y < bounds.height(); y++) {
+    int localY = 0;
+    // Same vertical calibration offset as fillWallpaperLineRange, applied
+    // here to the whole cell instead of just the name band, so a cell that
+    // toggles between visible/hidden samples the wallpaper at the same
+    // position either way (no seam/tearing on redraw).
+    int srcY = globalY + y - nameHeight - 4;
+    const KDColor* chunk =
+        ThemeManager::wallpaperChunkContaining(srcY, &localY);
+    if (chunk == nullptr) {
+      ctx->fillRect(KDRect(0, y, bounds.width(), 1), KDColorWhite);
+      continue;
+    }
+    const KDColor* sourceRow = chunk + localY * wallpaperWidth + globalX;
+    memcpy(lineBuffer, sourceRow, lineWidth * sizeof(KDColor));
+    ctx->fillRectWithPixels(KDRect(0, y, lineWidth, 1), lineBuffer, nullptr);
+  }
+}
+
 }  // namespace
 
 namespace Home {
@@ -63,6 +104,17 @@ bool AppCell::hasThemedIcon() const {
 }
 
 void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
+  if (!isVisible()) {
+    // See fillWholeCellWallpaper's comment: drawRect has no automatic
+    // isVisible() gate, so a hidden cell must actively blank itself out
+    // instead of leaving whatever it last displayed on screen.
+    KDPoint globalOrigin = ctx->origin();
+    int nameHeight = textView()->minimalSizeForOptimalDisplay().height();
+    fillWholeCellWallpaper(ctx, bounds(), globalOrigin.x(), globalOrigin.y(),
+                           nameHeight);
+    return;
+  }
+
   // KDSize nameSize = textView()->minimalSizeForOptimalDisplay();
   // ctx->fillRect(
   //     KDRect(0, bounds().height() - nameSize.height() - 2 * k_nameHeightMargin,

@@ -23,7 +23,7 @@ namespace {
 void fillWallpaperBackground(KDContext* ctx, KDRect rect) {
   if (!ThemeManager::hasWallpaper()) {
     // No Theme Area flashed, or the selected theme has no wallpaper.
-    ctx->fillRect(rect, KDColorRed);
+    ctx->fillRect(rect, Palette::WallpaperColor);
     return;
   }
 
@@ -35,7 +35,7 @@ void fillWallpaperBackground(KDContext* ctx, KDRect rect) {
     int localY = 0;
     const KDColor* chunk = ThemeManager::wallpaperChunkContaining(y, &localY);
     if (chunk == nullptr) {
-      ctx->fillRect(KDRect(0, y, rect.width(), 1), KDColorWhite);
+      ctx->fillRect(KDRect(0, y, rect.width(), 1), Palette::WallpaperColor);
       continue;
     }
     const KDColor* sourceRow = chunk + localY * wallpaperWidth;
@@ -54,7 +54,7 @@ Controller::ContentView::ContentView(
                             controller) {
   m_selectableTableView.setVerticalCellOverlap(0);
   m_selectableTableView.setMargins(k_margins);
-  m_selectableTableView.setBackgroundColor(KDColorWhite);
+  m_selectableTableView.setBackgroundColor(Palette::WallpaperColor);
   m_selectableTableView.decorator()->setVerticalMargins(
       {k_indicatorMargin, k_indicatorMargin - k_bottomMargin});
 }

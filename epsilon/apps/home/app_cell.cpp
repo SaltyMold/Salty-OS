@@ -17,7 +17,7 @@ void fillWallpaperLineRange(KDRect nameRect, int globalX, int globalY,
     // No Theme Area flashed, or the selected theme has no wallpaper: fall
     // back to a flat background instead of reading garbage.
     for (int i = 0; i < rectHeight * rectWidth; i++) {
-      buffer[i] = KDColorWhite;
+      buffer[i] = Palette::WallpaperColor;
     }
     return;
   }
@@ -30,7 +30,7 @@ void fillWallpaperLineRange(KDRect nameRect, int globalX, int globalY,
     const KDColor* chunk = ThemeManager::wallpaperChunkContaining(srcY, &localY);
     if (chunk == nullptr) {
       for (int x = 0; x < rectWidth; x++) {
-        buffer[y * rectWidth + x] = KDColorWhite;
+        buffer[y * rectWidth + x] = Palette::WallpaperColor;
       }
       continue;
     }
@@ -50,7 +50,7 @@ void fillWallpaperLineRange(KDRect nameRect, int globalX, int globalY,
 void fillWholeCellWallpaper(KDContext* ctx, KDRect bounds, int globalX,
                             int globalY, int nameHeight) {
   if (!ThemeManager::hasWallpaper()) {
-    ctx->fillRect(bounds, KDColorWhite);
+    ctx->fillRect(bounds, Palette::WallpaperColor);
     return;
   }
 
@@ -73,7 +73,7 @@ void fillWholeCellWallpaper(KDContext* ctx, KDRect bounds, int globalX,
     const KDColor* chunk =
         ThemeManager::wallpaperChunkContaining(srcY, &localY);
     if (chunk == nullptr) {
-      ctx->fillRect(KDRect(0, y, bounds.width(), 1), KDColorWhite);
+      ctx->fillRect(KDRect(0, y, bounds.width(), 1), Palette::WallpaperColor);
       continue;
     }
     const KDColor* sourceRow = chunk + localY * wallpaperWidth + globalX;

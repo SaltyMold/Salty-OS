@@ -2,8 +2,6 @@
 
 namespace Escher {
 
-constexpr KDColor HighlightImageCell::k_unselectedBackgroundColor;
-
 HighlightImageCell::HighlightImageCell() : HighlightCell() {
   m_contentView.setBackgroundColor(k_unselectedBackgroundColor);
 }

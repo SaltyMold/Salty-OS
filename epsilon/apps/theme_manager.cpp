@@ -1,5 +1,6 @@
 #include "theme_manager.h"
 
+#include <escher/palette.h>
 #include <omg/memory.h>
 #include <string.h>
 
@@ -181,6 +182,33 @@ int ThemeManager::iconIndexForApp(I18n::Message appName) {
     default:
       return -1;
   }
+}
+
+bool ThemeManager::hasPalette() {
+  const ThemeEntry* e = currentEntry();
+  return e != nullptr && e->isPalette && e->paletteOffset != 0;
+}
+
+void ThemeManager::applyPalette() {
+  if (!hasPalette()) {
+    return;
+  }
+  const ThemeEntry* e = currentEntry();
+  // Raw uint32s written by encode_palette() in generate_theme.py: one
+  // 0x00RRGGBB value per color, already in the exact format KDColor::RGB24
+  // expects, so no bit-shuffling needed here.
+  const uint32_t* rawColors =
+      reinterpret_cast<const uint32_t*>(ThemeAreaStart + e->paletteOffset);
+  size_t count = e->paletteSize / sizeof(uint32_t);
+  size_t n = count < Escher::Palette::numberOfPaletteSlots()
+                 ? count
+                 : Escher::Palette::numberOfPaletteSlots();
+
+  KDColor colors[Escher::Palette::numberOfPaletteSlots()];
+  for (size_t i = 0; i < n; i++) {
+    colors[i] = KDColor::RGB24(rawColors[i]);
+  }
+  Escher::Palette::ApplyPalette(colors, n);
 }
 
 bool ThemeManager::hasIcon(int iconIndex) {

@@ -13,7 +13,7 @@ enum class KDGrayscale : uint8_t {
   NumberOfShades,
 };
 
-constexpr KDColor KDGrayscaleToKDColor(KDGrayscale color) {
+static inline KDColor KDGrayscaleToKDColor(KDGrayscale color) {
   switch (color) {
     case KDGrayscale::Darkest:
       return KDColorBlack;

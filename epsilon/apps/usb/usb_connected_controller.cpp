@@ -11,7 +11,7 @@ constexpr I18n::Message sUSBConnectedMessages[] = {
     I18n::Message::BlankMessage,      I18n::Message::ConnectedMessage3,
     I18n::Message::ConnectedMessage4, I18n::Message::ConnectedMessage5};
 
-constexpr KDColor sUSBConnectedColors[] = {
+static inline KDColor sUSBConnectedColors[] = {
     KDColorBlack, KDColorBlack, KDColorBlack, Escher::Palette::YellowDark,
     KDColorWhite, KDColorBlack, KDColorBlack, KDColorBlack};
 

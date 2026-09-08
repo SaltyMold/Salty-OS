@@ -26,16 +26,16 @@ using namespace Escher;
 
 namespace Code {
 
-constexpr KDColor CommentColor = KDColor::RGB24(0x999988);
-constexpr KDColor NumberColor = KDColor::RGB24(0x009999);
-constexpr KDColor KeywordColor = KDColor::RGB24(0xFF000C);
-// constexpr KDColor BuiltinColor = KDColor::RGB24(0x0086B3);
-constexpr KDColor OperatorColor = KDColor::RGB24(0xd73a49);
-constexpr KDColor StringColor = KDColor::RGB24(0x032f62);
-constexpr KDColor AutocompleteColor = KDColor::RGB24(0xC6C6C6);
-constexpr KDColor BackgroundColor = KDColorWhite;
-constexpr KDColor HighlightColor = Palette::Select;
-constexpr KDColor DefaultColor = KDColorBlack;
+static inline KDColor CommentColor = KDColor::RGB24(0x999988);
+static inline KDColor NumberColor = KDColor::RGB24(0x009999);
+static inline KDColor KeywordColor = KDColor::RGB24(0xFF000C);
+// static inline KDColor BuiltinColor = KDColor::RGB24(0x0086B3);
+static inline KDColor OperatorColor = KDColor::RGB24(0xd73a49);
+static inline KDColor StringColor = KDColor::RGB24(0x032f62);
+static inline KDColor AutocompleteColor = KDColor::RGB24(0xC6C6C6);
+static inline KDColor BackgroundColor = KDColorWhite;
+static inline KDColor HighlightColor = Palette::Select;
+static inline KDColor DefaultColor = KDColorBlack;
 
 static inline KDColor TokenColor(mp_token_kind_t tokenKind) {
   if (tokenKind == MP_TOKEN_STRING) {

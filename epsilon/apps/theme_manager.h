@@ -57,6 +57,19 @@ class ThemeManager {
   // calling again for a different icon/theme.
   static const KDColor* iconPixels(int iconIndex, int iconWidth, int iconHeight);
 
+  // --- Palette of the CURRENTLY SELECTED theme ------------------------
+  // True if the current theme actually provides a palette (a Theme Area
+  // can have isPalette == 0, e.g. a theme with only a wallpaper).
+  static bool hasPalette();
+
+  // Reads the currently selected theme's palette blob (raw 0x00RRGGBB
+  // uint32s, see encode_palette() in generate_theme.py) and pushes it
+  // into Escher::Palette::ApplyPalette(). No-op if the current theme has
+  // no palette - whatever colors Escher::Palette already has (its
+  // compiled-in defaults, or a previously applied theme's palette) are
+  // left untouched.
+  static void applyPalette();
+
  private:
   static const Ion::Device::Board::Config::ThemeEntry* currentEntry();
 

@@ -22,8 +22,8 @@ class TitleBarView : public Escher::View {
   void refreshPreferences();
   void reload();
 
-  constexpr static KDColor k_backgroundColor = Escher::Palette::YellowDark;
-
+    // Use Escher::Palette::YellowDark at draw-time to avoid static init order
+    // issues; do not cache the value in a static data member.
  private:
   constexpr static size_t k_preferenceTextSize = sizeof("tech/rad");
   constexpr static KDCoordinate k_alphaRightMargin = 5;
@@ -32,12 +32,8 @@ class TitleBarView : public Escher::View {
   constexpr static KDCoordinate k_examIconMargin = 93;
   constexpr static KDCoordinate k_examTextWidth =
       KDFont::GlyphWidth(KDFont::Size::Large) * 3;
-  constexpr static KDGlyph::Format k_glyphsFormat = {
-      .style = {.glyphColor = KDColorWhite,
-                .backgroundColor = k_backgroundColor,
-                .font = KDFont::Size::Small},
-      .horizontalAlignment = KDGlyph::k_alignCenter,
-      .verticalAlignment = KDGlyph::k_alignCenter};
+    // Glyph format will be constructed at runtime in the constructor so it
+    // reads the current palette value.
 
   int numberOfSubviews() const override;
   void layoutSubviews(bool force = false) override;

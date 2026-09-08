@@ -18,7 +18,6 @@ constexpr uint16_t patterns[] = {
 
 constexpr uint16_t startPattern = 0x690;
 constexpr uint16_t stopPattern = 0x18EB;
-constexpr KDColor Code128BView::k_borderColor;
 
 Code128BView::Code128BView() : View(), m_moduleWidth(0), m_data{nullptr} {}
 

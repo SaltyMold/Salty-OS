@@ -111,7 +111,7 @@ void BatteryView::drawRect(KDContext* ctx, KDRect rect) const {
    *'content' depends on the charge */
 
   // Draw the background
-  ctx->fillRect(bounds(), TitleBarView::k_backgroundColor);
+  ctx->fillRect(bounds(), Escher::Palette::YellowDark);
 
   // Draw the left part
   ctx->fillRect(KDRect(0, 0, k_elementWidth, k_batteryHeight), KDColorWhite);
@@ -142,7 +142,7 @@ void BatteryView::drawRect(KDContext* ctx, KDRect rect) const {
                    (k_batteryHeight - k_tickHeight) / 2, k_tickWidth,
                    k_tickHeight);
       KDColor tickWorkingBuffer[k_tickHeight * k_tickWidth];
-      ctx->blendRectWithMask(frame, TitleBarView::k_backgroundColor,
+      ctx->blendRectWithMask(frame, Escher::Palette::YellowDark,
                              (const uint8_t*)tickMask, tickWorkingBuffer);
     }
   } else {

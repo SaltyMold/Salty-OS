@@ -18,7 +18,7 @@ using namespace Escher;
 
 namespace Solver {
 
-constexpr KDColor SolutionsController::ContentView::k_backgroundColor;
+
 
 SolutionsController::ContentView::ContentView(SolutionsController* controller)
     : m_warningMessageView(k_warningFormat),

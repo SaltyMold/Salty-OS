@@ -74,7 +74,7 @@ QUIZ_CASE(kandinsky_color_hsv) {
    * RGB value of the color since colors are coded on uint16_t in epsilon.
    * The following HSV conversions are the conversions of the real RGB values.
    * */
-  constexpr static KDColor::HSVColor dataColorsConversion[] = {
+  static inline KDColor::HSVColor dataColorsConversion[] = {
       KDColor::HSVColor({357.0, 1.0, 255.0}),    // Red
       KDColor::HSVColor({226.0, 0.669, 242.0}),  // Blue
       KDColor::HSVColor({95.0, 0.99, 193.0}),    // Green

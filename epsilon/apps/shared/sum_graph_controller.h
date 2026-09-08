@@ -89,7 +89,7 @@ class SumGraphController : public SimpleInteractiveCurveViewController {
         Poincare::PrintFloat::charSizeForFloatsWithPrecision(k_valuesPrecision);
     constexpr static KDCoordinate k_legendHeight = 35;
     constexpr static KDFont::Size k_font = KDFont::Size::Small;
-    constexpr static KDGlyph::Format k_glyphsFormat = {
+    static inline KDGlyph::Format k_glyphsFormat = {
         .style = {.backgroundColor = Escher::Palette::GrayMiddle,
                   .font = k_font}};
 

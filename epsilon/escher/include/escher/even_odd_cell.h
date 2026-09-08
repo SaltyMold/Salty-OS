@@ -7,7 +7,7 @@ namespace Escher {
 
 class EvenOddCell : public HighlightCell {
  public:
-  constexpr static KDColor k_hideColor = Escher::Palette::WallScreenDark;
+  static inline KDColor k_hideColor = Escher::Palette::WallScreenDark;
   EvenOddCell();
   virtual void setEven(bool even);
   void setVisible(bool visible) override;
@@ -16,7 +16,7 @@ class EvenOddCell : public HighlightCell {
   void drawRect(KDContext* ctx, KDRect rect) const override;
 
   constexpr static KDCoordinate k_horizontalMargin = Metric::SmallCellMargin;
-  constexpr static KDGlyph::Format k_smallCellDefaultFormat = {
+  static inline KDGlyph::Format k_smallCellDefaultFormat = {
       .style = {.font = KDFont::Size::Small},
       .horizontalAlignment = KDGlyph::k_alignRight};
 

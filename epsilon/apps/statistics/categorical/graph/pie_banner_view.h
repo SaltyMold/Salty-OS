@@ -16,14 +16,14 @@ namespace Statistics::Categorical {
 /* Side banner view of the pie graph. Displays various information about the
  * selected category */
 class PieBannerView : public Escher::View {
-  constexpr static KDColor k_backgroundColor = Escher::Palette::GrayMiddle;
-  constexpr static KDGlyph::Format k_titleFormat = {
+  static inline KDColor k_backgroundColor = Escher::Palette::GrayMiddle;
+  static inline KDGlyph::Format k_titleFormat = {
       .style = {.backgroundColor = k_backgroundColor},
       .horizontalAlignment = KDGlyph::k_alignCenter};
-  constexpr static KDGlyph::Format k_labelFormat = {
+  static inline KDGlyph::Format k_labelFormat = {
       .style = {.backgroundColor = k_backgroundColor,
                 .font = KDFont::Size::Small}};
-  constexpr static KDGlyph::Format k_valueFormat = {
+  static inline KDGlyph::Format k_valueFormat = {
       .style = {.backgroundColor = k_backgroundColor,
                 .font = KDFont::Size::Small},
       .horizontalAlignment = KDGlyph::k_alignRight};

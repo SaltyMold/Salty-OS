@@ -68,7 +68,7 @@ class AbstractWithEditableText : public Responder,
   }
 
  protected:
-  constexpr static KDGlyph::Format k_defaultFormat = {
+  static inline KDGlyph::Format k_defaultFormat = {
       .horizontalAlignment = KDGlyph::k_alignRight};
 
   TextField m_textField;

@@ -37,7 +37,7 @@ void StackView::pushStack(const ViewController* vc) {
   int numberOfStacks = m_stackHeaderViews->size();
   if (m_style == Style::GrayGradation) {
     textColor = KDColorWhite;
-    constexpr KDColor k_grayGradationColors[] = {
+    static KDColor k_grayGradationColors[] = {
         Palette::PurpleBright, Palette::GrayDark, Palette::GrayDarkMiddle};
     backgroundColor = k_grayGradationColors[numberOfStacks];
     separatorColor = k_grayGradationColors[numberOfStacks];

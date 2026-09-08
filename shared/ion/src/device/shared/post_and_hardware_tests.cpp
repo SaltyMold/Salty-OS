@@ -171,7 +171,7 @@ int ColorsLCDPixelFailures() {
 constexpr static int k_smallAWidth = 7;
 constexpr static int k_smallAHeight = 14;
 
-constexpr static KDColor k_smallABuffer[k_smallAHeight][k_smallAWidth] = {
+static inline KDColor k_smallABuffer[k_smallAHeight][k_smallAWidth] = {
     {KDColor::RGB16(63455), KDColor::RGB16(63455), KDColor::RGB16(63455),
      KDColor::RGB16(63455), KDColor::RGB16(63455), KDColor::RGB16(63455),
      KDColor::RGB16(63455)},

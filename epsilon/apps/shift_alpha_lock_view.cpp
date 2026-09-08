@@ -8,16 +8,16 @@ using namespace Escher;
 
 ShiftAlphaLockView::ShiftAlphaLockView()
     : View(),
-      m_shiftAlphaView(
+        m_shiftAlphaView(
           I18n::Message::Default,
-          {.style = {.glyphColor = KDColorWhite,
-                     .backgroundColor = TitleBarView::k_backgroundColor,
-                     .font = KDFont::Size::Small},
-           .horizontalAlignment = KDGlyph::k_alignRight}),
+          KDGlyph::Format{.style = {.glyphColor = KDColorWhite,
+                      .backgroundColor = Escher::Palette::YellowDark,
+                      .font = KDFont::Size::Small},
+                   .horizontalAlignment = KDGlyph::k_alignRight}),
       m_status(Ion::Events::ShiftAlphaStatus()) {}
 
 void ShiftAlphaLockView::drawRect(KDContext* ctx, KDRect rect) const {
-  ctx->fillRect(bounds(), TitleBarView::k_backgroundColor);
+  ctx->fillRect(bounds(), Escher::Palette::YellowDark);
 }
 
 bool ShiftAlphaLockView::setStatus(Ion::Events::ShiftAlphaStatus status) {

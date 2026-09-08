@@ -11,12 +11,12 @@ class KDColor {
   constexpr KDColor() : m_struct{0} {}
   constexpr KDColor(KDColorStruct color) : m_struct{color} {}
   // FIXME: This should not be needed, and is probably wasting CPU cycles
-  constexpr static KDColor RGB16(uint16_t rgb) { return KDColor(rgb); }
-  constexpr static KDColor RGB24(uint32_t rgb) {
+  static constexpr KDColor RGB16(uint16_t rgb) { return KDColor(rgb); }
+  static constexpr KDColor RGB24(uint32_t rgb) {
     return KDColor(((rgb & 0xF80000) >> 8) | ((rgb & 0x00FC00) >> 5) |
                    ((rgb & 0x0000F8) >> 3));
   }
-  constexpr static KDColor RGB888(uint8_t r, uint8_t g, uint8_t b) {
+  static inline KDColor RGB888(uint8_t r, uint8_t g, uint8_t b) {
     return KDColor((r >> 3) << 11 | (g >> 2) << 5 | (b >> 3));
   }
   uint8_t red() const {
@@ -73,11 +73,11 @@ class KDColor {
   KDColorStruct m_struct;
 };
 
-constexpr KDColor KDColorBlack = KDColor::RGB24(0x000000);
-constexpr KDColor KDColorWhite = KDColor::RGB24(0xFFFFFF);
-constexpr KDColor KDColorRed = KDColor::RGB24(0xFF0000);
-constexpr KDColor KDColorGreen = KDColor::RGB24(0x00FF00);
-constexpr KDColor KDColorBlue = KDColor::RGB24(0x0000FF);
-constexpr KDColor KDColorYellow = KDColor::RGB24(0xFFFF00);
-constexpr KDColor KDColorOrange = KDColor::RGB24(0xFF9900);
-constexpr KDColor KDColorPurple = KDColor::RGB24(0xFF00DD);
+constexpr static KDColor KDColorBlack = KDColor::RGB24(0x000000);
+constexpr static KDColor KDColorWhite = KDColor::RGB24(0xFFFFFF);
+constexpr static KDColor KDColorRed = KDColor::RGB24(0xFF0000);
+constexpr static KDColor KDColorGreen = KDColor::RGB24(0x00FF00);
+constexpr static KDColor KDColorBlue = KDColor::RGB24(0x0000FF);
+constexpr static KDColor KDColorYellow = KDColor::RGB24(0xFFFF00);
+constexpr static KDColor KDColorOrange = KDColor::RGB24(0xFF9900);
+constexpr static KDColor KDColorPurple = KDColor::RGB24(0xFF00DD);

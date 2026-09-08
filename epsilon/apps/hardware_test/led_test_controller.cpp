@@ -7,7 +7,7 @@ using namespace Escher;
 
 namespace HardwareTest {
 
-constexpr KDColor LEDTestController::k_LEDColors[k_numberOfColors];
+
 
 LEDTestController::LEDTestController(Responder* parentResponder)
     : ViewController(parentResponder), m_LEDColorIndex(0) {}

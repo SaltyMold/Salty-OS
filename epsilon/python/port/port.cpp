@@ -218,7 +218,7 @@ KDColor MicroPython::Color::Parse(mp_obj_t input, Mode mode) {
   if (mp_obj_is_str(input)) {
     size_t l;
     const char* color = mp_obj_str_get_data(input, &l);
-    constexpr NamedColor pairs[] = {
+    static const NamedColor pairs[] = {
         NamedColor("blue", KDColorBlue),
         NamedColor("b", KDColorBlue),
         NamedColor("red", KDColorRed),

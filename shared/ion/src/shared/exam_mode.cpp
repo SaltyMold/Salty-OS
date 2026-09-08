@@ -123,8 +123,8 @@ bool Configuration::isActive() const {
 
 KDColor Configuration::color() const {
   assert(!isUninitialized());
-  constexpr KDColor k_standardLEDColor = KDColorRed;
-  constexpr KDColor k_portugueseLEDColor = KDColorGreen;
+  static KDColor k_standardLEDColor = KDColorRed;
+  static KDColor k_portugueseLEDColor = KDColorGreen;
   /* The Dutch exam mode LED is supposed to be orange but, due to a disparity in
    * plastic quality, this color needs to be toned down closer to a yellow so
    * that it cannot be confused with the red color. In addition, light guide
@@ -132,7 +132,7 @@ KDColor Configuration::color() const {
    * orangish yellow on most calculators, and is good enough for all plastic
    * disparities. Note : pure Orange LED is already used when the battery is
    * charging. */
-  constexpr KDColor k_dutchLEDColor = KDColor::RGB24(0xA1FF00);
+  static KDColor k_dutchLEDColor = KDColor::RGB24(0xA1FF00);
 
   switch (ruleset()) {
     case Ruleset::Standard:

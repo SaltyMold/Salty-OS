@@ -27,10 +27,10 @@ class BannerView : public Escher::View {
   SuggestionTextField* textField() { return &m_textField; }
 
  private:
-  constexpr static KDColor k_backgroundColor = Escher::Palette::GrayWhite;
-  constexpr static KDColor k_borderColor = Escher::Palette::GrayMiddle;
-  constexpr static KDColor k_legendColor = Escher::Palette::GrayVeryDark;
-  constexpr static KDColor k_selectedButtonColor = Escher::Palette::Select;
+  static inline KDColor k_backgroundColor = Escher::Palette::GrayWhite;
+  static inline KDColor k_borderColor = Escher::Palette::GrayMiddle;
+  static inline KDColor k_legendColor = Escher::Palette::GrayVeryDark;
+  static inline KDColor k_selectedButtonColor = Escher::Palette::Select;
   constexpr static KDCoordinate k_dotLeftMargin = 16;
   constexpr static KDCoordinate k_dotDiameter = 8;
   constexpr static KDCoordinate k_bannerHeight = 25;

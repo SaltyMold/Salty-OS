@@ -17,7 +17,7 @@ constexpr static KDCoordinate k_iconBodySize = 5;
 constexpr static KDCoordinate k_iconHeadSize = 3;
 constexpr static KDCoordinate k_iconPawSize = 2;
 
-constexpr KDColor Turtle::k_defaultColor;
+ 
 
 template <typename T>
 static inline T* allocate(size_t count) {

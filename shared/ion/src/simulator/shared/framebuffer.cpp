@@ -33,7 +33,7 @@ class IntializedFrameBuffer : public KDFrameBuffer {
       : KDFrameBuffer(pixels, size) {
     pushRectUniform(bounds(), k_fillColor);
   }
-  constexpr static KDColor k_fillColor = ION_DISPLAY_BORDER_COLOR;
+  static inline KDColor k_fillColor = ION_DISPLAY_BORDER_COLOR;
 };
 
 static IntializedFrameBuffer sFrameBuffer =

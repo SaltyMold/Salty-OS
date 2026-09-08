@@ -24,9 +24,9 @@ class ModalViewEmptyController : public ViewController {
     void drawRect(KDContext* ctx, KDRect rect) const override;
 
    private:
-    constexpr static KDColor k_backgroundColor = Palette::WallScreen;
+    static inline KDColor k_backgroundColor = Palette::WallScreen;
     constexpr static KDFont::Size k_font = KDFont::Size::Small;
-    constexpr static KDGlyph::Format k_format = {
+    static inline KDGlyph::Format k_format = {
         .style = {.backgroundColor = k_backgroundColor, .font = k_font},
         .horizontalAlignment = KDGlyph::k_alignCenter,
         .verticalAlignment = KDGlyph::k_alignCenter};

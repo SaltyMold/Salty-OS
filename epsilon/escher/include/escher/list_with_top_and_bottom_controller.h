@@ -82,7 +82,7 @@ class ListWithTopAndBottomController : public SelectableViewController,
   void selectFirstCell() { selectRow(firstCellIndex()); }
 
  protected:
-  constexpr static KDGlyph::Format k_messageFormat = {
+  static inline KDGlyph::Format k_messageFormat = {
       .style = {.glyphColor = Escher::Palette::GrayDark,
                 .backgroundColor = Escher::Palette::WallScreen,
                 .font = KDFont::Size::Small},

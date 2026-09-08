@@ -13,6 +13,7 @@ namespace Apps {
 
 void Init() {
   ThemeManager::init();
+  ThemeManager::applyPalette();
   Shared::GlobalStore::Init();
   GlobalPreferences::Init();
   ExamModeManager::Init();

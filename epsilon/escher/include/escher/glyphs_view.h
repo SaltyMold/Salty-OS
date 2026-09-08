@@ -29,10 +29,10 @@ class GlyphsView : public View, public CellWidget {
     return type == Type::Accessory;
   }
 
-  constexpr static KDGlyph::Format k_defaultLabel = {};
-  constexpr static KDGlyph::Format k_defaultSubLabel = {
+  static inline KDGlyph::Format k_defaultLabel = {};
+  static inline KDGlyph::Format k_defaultSubLabel = {
       .style = {.glyphColor = Palette::GrayDark, .font = KDFont::Size::Small}};
-  constexpr static KDGlyph::Format k_defaultAccessory = {
+  static inline KDGlyph::Format k_defaultAccessory = {
       .horizontalAlignment = KDGlyph::k_alignRight};
 
   static KDGlyph::Format FormatForWidgetType(CellWidget::Type type) {

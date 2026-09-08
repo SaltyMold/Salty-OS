@@ -74,7 +74,7 @@ class WithCurves {
 
    private:
     constexpr static size_t k_size = 4;
-    constexpr static KDColor k_transparent =
+    static inline KDColor k_transparent =
         AbstractPlotView::k_backgroundColor;
 
     KDColor m_c0, m_c1, m_c2, m_c3, m_cBackground;

@@ -9,7 +9,7 @@ namespace Escher {
 
 class ScrollViewIndicator : public View {
  protected:
-  constexpr static KDColor k_color = Palette::GrayDark;
+  static inline KDColor k_color = Palette::GrayDark;
 };
 
 class ScrollViewBar : public ScrollViewIndicator {
@@ -22,7 +22,7 @@ class ScrollViewBar : public ScrollViewIndicator {
  protected:
   constexpr static KDCoordinate k_indicatorThickness =
       Metric::ScrollViewBarThickness;
-  constexpr static KDColor k_trackColor = Palette::GrayMiddle;
+  static inline KDColor k_trackColor = Palette::GrayMiddle;
 #if ESCHER_VIEW_LOGGING
   const char* className() const override;
   void logAttributes(std::ostream& os) const override;

@@ -22,8 +22,8 @@ constexpr static int k_glyphHeight = KDFont::GlyphHeight(k_fontSize);
 constexpr static int k_margin = 6;
 #if DEBUG && ION_LOG_EVENTS_NAME
 constexpr static int k_glyphWidth = KDFont::GlyphMaxWidth(k_fontSize);  // TODO
-constexpr static KDColor k_backgroundColor = KDColorBlack;
-constexpr static KDColor k_glyphColor = KDColorWhite;
+static inline KDColor k_backgroundColor = KDColorBlack;
+static inline KDColor k_glyphColor = KDColorWhite;
 #endif
 
 Screenshot::Screenshot(const char* path) { init(path); }

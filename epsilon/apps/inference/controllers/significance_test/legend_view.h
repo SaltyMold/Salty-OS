@@ -21,7 +21,7 @@ class LegendView : public Escher::View {
   constexpr static int k_marginBetween = 5;
   constexpr static int k_offsetTop = 3;
   constexpr static int k_diameter = 8;
-  constexpr static KDColor k_backgroundColor = TestCurveView::k_backgroundColor;
+  static inline KDColor k_backgroundColor = TestCurveView::k_backgroundColor;
 
   class DotView : public Escher::View {
    public:

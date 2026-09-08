@@ -86,7 +86,7 @@ class SolutionsController : public Escher::ViewController,
                       public Escher::SelectableTableViewDelegate {
    public:
     constexpr static KDCoordinate k_bottomMessageSpace = 60;
-    constexpr static KDColor k_backgroundColor =
+    static inline KDColor k_backgroundColor =
         Escher::Palette::WallScreenDark;
     ContentView(SolutionsController* controller);
     void drawRect(KDContext* ctx, KDRect rect) const override;
@@ -104,7 +104,7 @@ class SolutionsController : public Escher::ViewController,
 
    private:
     constexpr static KDFont::Size k_warningMessageFont = KDFont::Size::Small;
-    constexpr static KDGlyph::Format k_warningFormat{
+    static inline KDGlyph::Format k_warningFormat{
         .style = {.backgroundColor = k_backgroundColor,
                   .font = k_warningMessageFont},
         .horizontalAlignment = KDGlyph::k_alignCenter};

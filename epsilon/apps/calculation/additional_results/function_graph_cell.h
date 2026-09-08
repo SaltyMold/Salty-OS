@@ -23,7 +23,7 @@ class FunctionAxis : public Shared::PlotPolicy::LabeledAxis<N> {
   constexpr static int k_labelAvoidanceMargin = 2;
   constexpr static int k_labelsPrecision =
       Poincare::Preferences::VeryShortNumberOfSignificantDigits;
-  constexpr static KDColor k_specialLabelsColor = Escher::Palette::Red;
+  static inline KDColor k_specialLabelsColor = Escher::Palette::Red;
 
   // AbstractLabeledAxis
   bool labelWillBeDisplayed(size_t labelIndex, KDRect labelRect) const override;
@@ -61,7 +61,7 @@ class FunctionGraphPolicy : public Shared::PlotPolicy::WithCurves {
   FunctionModel* m_model;
 
  private:
-  constexpr static KDColor k_color = Escher::Palette::Red;
+  static inline KDColor k_color = Escher::Palette::Red;
 };
 
 class FunctionGraphView

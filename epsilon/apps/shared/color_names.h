@@ -8,7 +8,7 @@ namespace Shared {
 namespace ColorNames {
 
 constexpr static int k_count = 8;
-constexpr static KDColor k_colors[k_count] = {
+static inline KDColor k_colors[k_count] = {
     Escher::Palette::Red,     Escher::Palette::Blue,
     Escher::Palette::Green,   Escher::Palette::YellowDark,
     Escher::Palette::Magenta, Escher::Palette::Turquoise,

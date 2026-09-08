@@ -8,38 +8,38 @@ header_size        12 bytes  (sizeof(ThemeAreaHeader))
 entry_size         132 bytes  (sizeof(ThemeEntry))
 table_size         132 bytes (1 x 132)
 asset_region_start 0x000090  (offset 144 from ThemeAreaStart)
-payload_size       10756 B (10.50 KiB)
+payload_size       8363 B (8.17 KiB)
 
-capacity           [#---------------------------------------]   4.2%
-                   10900 / 262144 bytes used, 251244 bytes free
+capacity           [#---------------------------------------]   3.2%
+                   8507 / 262144 bytes used, 253637 bytes free
 
 ------------------------------------------------------------------------------
 THEME 0: "Theme"  (source: input/1)
   entry offset       0x00000C (+0 in table)
-  total asset size   10756 B (10.50 KiB)
+  total asset size   8363 B (8.17 KiB)
 
   Palette: 43/64 colors
-    offset 0x0009E9   size 172 B
+    offset 0x000090   size 172 B
 
   Wallpaper:
-    wallpaper.png  (320x240)
-    offset 0x000090   compressed 2393 B (2.34 KiB)   raw 153600 B (150.00 KiB)   ratio 64.19x
+    (none)
 
   Icons: 11/12 present
-    calculation_icon.png    offset 0x000A95               625 B  raw 6160 B (6.02 KiB)  (55x56, 9.86x)
-    code_icon.png           offset 0x000D06               608 B  raw 6160 B (6.02 KiB)  (55x56, 10.13x)
-    distributions_icon.png  offset 0x000F66               650 B  raw 6160 B (6.02 KiB)  (55x56, 9.48x)
-    elements_icon.png       offset 0x0011F0   1174 B (1.15 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.25x)
-    finance_icon.png        offset 0x001686   1195 B (1.17 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.15x)
-    graph_icon.png          offset 0x001B31               495 B  raw 6160 B (6.02 KiB)  (55x56, 12.44x)
-    inference_icon.png      offset 0x001D20   1166 B (1.14 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.28x)
-    regression_icon.png     offset 0x0021AE               607 B  raw 6160 B (6.02 KiB)  (55x56, 10.15x)
-    sequence_icon.png       offset 0x00240D               335 B  raw 6160 B (6.02 KiB)  (55x56, 18.39x)
-    settings_icon.png       offset 0x00255C               393 B  raw 6160 B (6.02 KiB)  (55x56, 15.67x)
-    solver_icon.png         offset 0x0026E5               943 B  raw 6160 B (6.02 KiB)  (55x56, 6.53x)
+    calculation_icon.png    offset 0x00013C               625 B  raw 6160 B (6.02 KiB)  (55x56, 9.86x)
+    code_icon.png           offset 0x0003AD               608 B  raw 6160 B (6.02 KiB)  (55x56, 10.13x)
+    distributions_icon.png  offset 0x00060D               650 B  raw 6160 B (6.02 KiB)  (55x56, 9.48x)
+    elements_icon.png       offset 0x000897   1174 B (1.15 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.25x)
+    finance_icon.png        offset 0x000D2D   1195 B (1.17 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.15x)
+    graph_icon.png          offset 0x0011D8               495 B  raw 6160 B (6.02 KiB)  (55x56, 12.44x)
+    inference_icon.png      offset 0x0013C7   1166 B (1.14 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.28x)
+    regression_icon.png     offset 0x001855               607 B  raw 6160 B (6.02 KiB)  (55x56, 10.15x)
+    sequence_icon.png       offset 0x001AB4               335 B  raw 6160 B (6.02 KiB)  (55x56, 18.39x)
+    settings_icon.png       offset 0x001C03               393 B  raw 6160 B (6.02 KiB)  (55x56, 15.67x)
+    solver_icon.png         offset 0x001D8C               943 B  raw 6160 B (6.02 KiB)  (55x56, 6.53x)
     missing: stat_icon.png
 
   Warnings:
+    ! No wallpaper.png found - theme will have no wallpaper.
     ! Palette has only 43/64 colors defined.
     ! 1/12 icons missing: stat_icon.png
 

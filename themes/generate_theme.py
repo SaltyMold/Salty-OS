@@ -386,7 +386,29 @@ def build_theme(theme_dir: Path, asset_cursor: int,
     return entry, report, asset_cursor
 
 
-def discover_theme_dirs(root: Path) -> list[Path]:
+def resolve_theme_dir(theme_dir: Path) -> Path:
+    candidates: list[Path] = []
+    if theme_dir.is_absolute():
+        candidates.append(theme_dir)
+    else:
+        candidates.extend([
+            Path.cwd() / theme_dir,
+            Path(__file__).resolve().parent.parent / theme_dir,
+            Path(__file__).resolve().parents[2] / theme_dir,
+        ])
+
+    for candidate in candidates:
+        if candidate.exists() and candidate.is_dir():
+            return candidate
+
+    raise FileNotFoundError(f"Theme directory not found: {theme_dir}")
+
+
+def discover_theme_dirs(root: Path | None = None, explicit_dirs: list[Path] | None = None) -> list[Path]:
+    if explicit_dirs:
+        return [resolve_theme_dir(p) for p in explicit_dirs]
+
+    root = root or Path("input")
     if (root / "name.txt").exists() or (root / "palette.txt").exists():
         return [root]
     dirs = [p for p in sorted(root.iterdir()) if p.is_dir()]
@@ -398,8 +420,8 @@ def discover_theme_dirs(root: Path) -> list[Path]:
 # --------------------------------------------------------------------------
 # Top-level generation
 # --------------------------------------------------------------------------
-def generate_theme_area(input_dir: Path, output_path: Path) -> None:
-    theme_dirs = discover_theme_dirs(input_dir)
+def generate_theme_area(input_dir: Path, output_path: Path, explicit_dirs: list[Path] | None = None) -> None:
+    theme_dirs = discover_theme_dirs(input_dir, explicit_dirs)
     if len(theme_dirs) > THEME_COUNT_MAX:
         raise ValueError(f"Too many themes: {len(theme_dirs)} > {THEME_COUNT_MAX}")
 
@@ -557,14 +579,29 @@ def render_summary(theme_dirs: list[Path], reports: list[ThemeReport],
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate a Theme Area binary from input folders.")
-    parser.add_argument("input_dir", nargs="?", default=Path("input"), type=Path,
-                        help="Theme directory or folder containing theme subdirs")
-    parser.add_argument("output", nargs="?", default=Path("output/theme_area.bin"), type=Path,
-                        help="Path of the output binary")
+    parser = argparse.ArgumentParser(
+        description="Generate a Theme Area binary from one or more theme folders."
+    )
+    parser.add_argument(
+        "theme_dirs",
+        nargs="*",
+        type=Path,
+        help="Theme directory names to use instead of the default input/ folder. "
+             "Examples: kawaii omega or themes/kawaii themes/omega",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        default=Path("output/theme_area.bin"),
+        type=Path,
+        help="Path of the output binary",
+    )
     args = parser.parse_args()
 
-    generate_theme_area(args.input_dir, args.output)
+    if args.theme_dirs:
+        generate_theme_area(Path("input"), args.output, explicit_dirs=args.theme_dirs)
+    else:
+        generate_theme_area(Path("input"), args.output)
 
 
 if __name__ == "__main__":

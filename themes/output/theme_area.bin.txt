@@ -8,15 +8,15 @@ header_size        12 bytes  (sizeof(ThemeAreaHeader))
 entry_size         132 bytes  (sizeof(ThemeEntry))
 table_size         132 bytes (1 x 132)
 asset_region_start 0x000090  (offset 144 from ThemeAreaStart)
-payload_size       8363 B (8.17 KiB)
+payload_size       8430 B (8.23 KiB)
 
-capacity           [#---------------------------------------]   3.2%
-                   8507 / 262144 bytes used, 253637 bytes free
+capacity           [#---------------------------------------]   3.3%
+                   8574 / 262144 bytes used, 253570 bytes free
 
 ------------------------------------------------------------------------------
-THEME 0: "Theme"  (source: input/1)
+THEME 0: "Theme"  (source: /home/gauthier/Projets/Numworks/Firmware/Salty-OS/themes/omega)
   entry offset       0x00000C (+0 in table)
-  total asset size   8363 B (8.17 KiB)
+  total asset size   8430 B (8.23 KiB)
 
   Palette: 43/64 colors
     offset 0x000090   size 172 B
@@ -24,24 +24,23 @@ THEME 0: "Theme"  (source: input/1)
   Wallpaper:
     (none)
 
-  Icons: 11/12 present
+  Icons: 12/12 present
     calculation_icon.png    offset 0x00013C               625 B  raw 6160 B (6.02 KiB)  (55x56, 9.86x)
     code_icon.png           offset 0x0003AD               608 B  raw 6160 B (6.02 KiB)  (55x56, 10.13x)
     distributions_icon.png  offset 0x00060D               650 B  raw 6160 B (6.02 KiB)  (55x56, 9.48x)
     elements_icon.png       offset 0x000897   1174 B (1.15 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.25x)
-    finance_icon.png        offset 0x000D2D   1195 B (1.17 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.15x)
-    graph_icon.png          offset 0x0011D8               495 B  raw 6160 B (6.02 KiB)  (55x56, 12.44x)
-    inference_icon.png      offset 0x0013C7   1166 B (1.14 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.28x)
-    regression_icon.png     offset 0x001855               607 B  raw 6160 B (6.02 KiB)  (55x56, 10.15x)
-    sequence_icon.png       offset 0x001AB4               335 B  raw 6160 B (6.02 KiB)  (55x56, 18.39x)
-    settings_icon.png       offset 0x001C03               393 B  raw 6160 B (6.02 KiB)  (55x56, 15.67x)
-    solver_icon.png         offset 0x001D8C               943 B  raw 6160 B (6.02 KiB)  (55x56, 6.53x)
-    missing: stat_icon.png
+    finance_icon.png        offset 0x000D2D   1160 B (1.13 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.31x)
+    graph_icon.png          offset 0x0011B5               495 B  raw 6160 B (6.02 KiB)  (55x56, 12.44x)
+    inference_icon.png      offset 0x0013A4   1031 B (1.01 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.97x)
+    regression_icon.png     offset 0x0017AB               607 B  raw 6160 B (6.02 KiB)  (55x56, 10.15x)
+    sequence_icon.png       offset 0x001A0A               335 B  raw 6160 B (6.02 KiB)  (55x56, 18.39x)
+    settings_icon.png       offset 0x001B59               393 B  raw 6160 B (6.02 KiB)  (55x56, 15.67x)
+    solver_icon.png         offset 0x001CE2               943 B  raw 6160 B (6.02 KiB)  (55x56, 6.53x)
+    stat_icon.png           offset 0x002091               237 B  raw 6160 B (6.02 KiB)  (55x56, 25.99x)
 
   Warnings:
     ! No wallpaper.png found - theme will have no wallpaper.
     ! Palette has only 43/64 colors defined.
-    ! 1/12 icons missing: stat_icon.png
 
 ==============================================================================
 Flash with:  python3 ../device/dfu.py -D <output.bin> -s 0x907B0000

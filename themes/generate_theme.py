@@ -76,12 +76,12 @@ except ImportError:  # pragma: no cover - fallback for minimal environments
 # way to parse the C++ header automatically here.
 # --------------------------------------------------------------------------
 MAGIC = 0x87654321
-VERSION = 1
+VERSION = 2
 THEME_COUNT_MAX = 4
 THEME_ICON_COUNT = 12
 THEME_NAME_LENGTH = 16
 THEME_COLOR_COUNT = 64
-THEME_AREA_SIZE = 256 * 1024
+THEME_AREA_SIZE = 2 * 1024 * 1024
 
 # struct ThemeAreaHeader { uint32_t magic, version, themeCount; }
 HEADER_FORMAT = "<III"
@@ -572,7 +572,7 @@ def render_summary(theme_dirs: list[Path], reports: list[ThemeReport],
             lines.append("")
 
     rule()
-    lines.append(f"Flash with:  python3 ../device/dfu.py -D <output.bin> -s 0x907B0000")
+    lines.append(f"Flash with:  python3 ../device/dfu.py -D <output.bin> -s 0x901F0000")
     rule()
 
     return "\n".join(lines) + "\n"

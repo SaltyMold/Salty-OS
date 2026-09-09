@@ -147,6 +147,43 @@ constexpr int NumberOfMPUSectors = 8;
 
 // clang-format off
 
+// 256KiB at the end of ExtApp B
+// constexpr uint32_t ThemeAreaSize = 0x40000; // 256KiB
+// constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x800000 - 0x40000 - 0x10000 = 0x907B0000
+// constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;
+
+// 2MB at the end of ExtApp A
+constexpr uint32_t ThemeAreaSize = 0x200000; // 2MiB
+constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength / 2 - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x400000 - 0x200000 - 0x10000 = 0x901F0000
+constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;
+
+constexpr uint32_t ThemeAreaHeaderMagic = 0x87654321;
+constexpr uint32_t ThemeAreaHeaderVersion = 2;
+
+constexpr uint32_t ThemeCount = 256;
+constexpr uint32_t ThemeIconCount = 12;
+constexpr uint32_t ThemeNameLength = 16;
+
+struct ThemeEntry {
+  char name[ThemeNameLength];
+  uint8_t isWallpaper;
+  uint8_t isPalette;
+  uint8_t isIcons;
+  uint8_t reserved;
+  uint32_t wallpaperOffset;
+  uint32_t wallpaperSize;
+  uint32_t paletteOffset;
+  uint32_t paletteSize;
+  uint32_t iconOffsets[ThemeIconCount];
+  uint32_t iconSizes[ThemeIconCount];
+};
+
+struct ThemeAreaHeader {
+  uint32_t magic;
+  uint32_t version;
+  uint32_t themeCount;
+};
+
 } // namespace Config
 } // namespace Board
 } // namespace Device

@@ -61,7 +61,7 @@ class Palette {
   static inline KDColor TextColor = KDColor::RGB24(0xffa6c8);
   static inline KDColor TextColorHover = KDColor::RGB24(0xffffff);
 
-  static inline KDColor WallpaperColor = KDColor::RGB24(0xff0000);
+  static inline KDColor WallpaperColor = KDColor::RGB24(0x000000);
 
   // DataColor/DataColorLight can no longer be `constexpr` (their
   // initializers reference the now-mutable colors above, so they're not

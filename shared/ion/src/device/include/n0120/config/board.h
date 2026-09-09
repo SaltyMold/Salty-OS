@@ -155,17 +155,21 @@ constexpr int NumberOfMPUSectors = 8;
 
 /*--------------------------------------------*/
 
-constexpr uint32_t ThemeAreaSize = 0x40000; // 256KiB
-constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x800000 - 0x40000 - 0x10000 = 0x907B0000
+// 256KiB at the end of ExtApp B
+// constexpr uint32_t ThemeAreaSize = 0x40000; // 256KiB
+// constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x800000 - 0x40000 - 0x10000 = 0x907B0000
+// constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;
+
+// 2MB at the end of ExtApp A
+constexpr uint32_t ThemeAreaSize = 0x200000; // 2MiB
+constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength / 2 - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x400000 - 0x200000 - 0x10000 = 0x901F0000
 constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;
 
 constexpr uint32_t ThemeAreaHeaderMagic = 0x87654321;
-constexpr uint32_t ThemeAreaHeaderVersion = 1;
-// constexpr uint32_t ThemeAreaHeaderSize = 
+constexpr uint32_t ThemeAreaHeaderVersion = 2;
 
-constexpr uint32_t ThemeCount = 4;
+constexpr uint32_t ThemeCount = 256;
 constexpr uint32_t ThemeIconCount = 12;
-constexpr uint32_t ThemeColorCount = 64;
 constexpr uint32_t ThemeNameLength = 16;
 
 struct ThemeEntry {
@@ -187,25 +191,6 @@ struct ThemeAreaHeader {
   uint32_t version;
   uint32_t themeCount;
 };
-
-/*
-Theme area header layout:
-
-Magic (4 bytes)
-Version (4 bytes)
-Theme count (4 bytes)
-Reserved (4 bytes)
-Theme 1:
-    Name (16 bytes)
-    Wallpaper offset (4 bytes)
-    Wallpaper size (4 bytes)
-    Palette offset (4 bytes)
-    Palette size (4 bytes)
-    Icon offsets (12 * 4 bytes)
-    Icon sizes (12 * 4 bytes)
-Theme 2:
-....
-*/
 
 }  // namespace Config
 }  // namespace Board

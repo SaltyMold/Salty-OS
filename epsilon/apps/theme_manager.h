@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "../../shared/ion/src/device/include/n0120/config/board.h"
+#include "apps_window.h"
 
 class ThemeManager {
  public:
@@ -69,6 +70,8 @@ class ThemeManager {
   // compiled-in defaults, or a previously applied theme's palette) are
   // left untouched.
   static void applyPalette();
+
+  static void refreshTheme(AppsWindow* window);
 
  private:
   static const Ion::Device::Board::Config::ThemeEntry* currentEntry();

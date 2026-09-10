@@ -17,6 +17,16 @@ extern "C" {
 using namespace Poincare;
 using namespace Escher;
 
+void TitleBarView::RefreshTitleBarColors(
+    Escher::MessageTextView* titleView,
+    Escher::BufferTextView<k_preferenceTextSize>* preferenceView,
+    Escher::MessageTextView* examModeTextView) {
+  const KDColor titleBackground = Escher::Palette::YellowDark;
+  titleView->setBackgroundColor(titleBackground);
+  preferenceView->setBackgroundColor(titleBackground);
+  examModeTextView->setBackgroundColor(titleBackground);
+}
+
 TitleBarView::TitleBarView()
     : View(),
       m_titleView(I18n::Message::Default,
@@ -38,6 +48,8 @@ TitleBarView::TitleBarView()
                                          .verticalAlignment = KDGlyph::k_alignCenter}) {
   m_preferenceView.setAlignment(KDGlyph::k_alignRight, KDGlyph::k_alignCenter);
   m_examModeIconView.setImage(ImageStore::ExamIcon);
+  RefreshTitleBarColors(&m_titleView, &m_preferenceView, &m_examModeTextView);
+  m_shiftAlphaLockView.refreshColors();
 }
 
 void TitleBarView::drawRect(KDContext* ctx, KDRect rect) const {
@@ -200,5 +212,7 @@ void TitleBarView::refreshPreferences() {
 
 void TitleBarView::reload() {
   refreshPreferences();
+  RefreshTitleBarColors(&m_titleView, &m_preferenceView, &m_examModeTextView);
+  m_shiftAlphaLockView.refreshColors();
   markWholeFrameAsDirty();
 }

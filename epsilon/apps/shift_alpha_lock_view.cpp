@@ -14,7 +14,14 @@ ShiftAlphaLockView::ShiftAlphaLockView()
                       .backgroundColor = Escher::Palette::YellowDark,
                       .font = KDFont::Size::Small},
                    .horizontalAlignment = KDGlyph::k_alignRight}),
-      m_status(Ion::Events::ShiftAlphaStatus()) {}
+      m_status(Ion::Events::ShiftAlphaStatus()) {
+  refreshColors();
+}
+
+void ShiftAlphaLockView::refreshColors() {
+  m_shiftAlphaView.setBackgroundColor(Escher::Palette::YellowDark);
+  markWholeFrameAsDirty();
+}
 
 void ShiftAlphaLockView::drawRect(KDContext* ctx, KDRect rect) const {
   ctx->fillRect(bounds(), Escher::Palette::YellowDark);
@@ -29,6 +36,7 @@ bool ShiftAlphaLockView::setStatus(Ion::Events::ShiftAlphaStatus status) {
         {I18n::Message::Alpha, I18n::Message::CapitalAlpha}};
     m_shiftAlphaView.setMessage(
         k_messages[m_status.alphaIsActive()][m_status.shiftIsActive()]);
+    refreshColors();
 
     layoutSubviews();
     markWholeFrameAsDirty();

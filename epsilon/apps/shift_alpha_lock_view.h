@@ -12,6 +12,7 @@ class ShiftAlphaLockView : public Escher::View {
   void drawRect(KDContext* ctx, KDRect rect) const override;
   bool setStatus(Ion::Events::ShiftAlphaStatus status);
   KDSize minimalSizeForOptimalDisplay() const override;
+  void refreshColors();
 
  private:
   constexpr static KDCoordinate k_lockRightMargin = 5;

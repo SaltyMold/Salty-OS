@@ -248,3 +248,11 @@ const KDColor* ThemeManager::iconPixels(int iconIndex, int iconWidth,
 
   return s_iconBuffer;
 }
+
+void ThemeManager::refreshTheme(AppsWindow* window) {
+  ThemeManager::applyPalette();
+  if (window != nullptr) {
+    window->reloadTitleBarView();
+    window->redraw(true);
+  }
+}

@@ -22,10 +22,14 @@ class TitleBarView : public Escher::View {
   void refreshPreferences();
   void reload();
 
-    // Use Escher::Palette::YellowDark at draw-time to avoid static init order
-    // issues; do not cache the value in a static data member.
  private:
+  // Use Escher::Palette::YellowDark at draw-time to avoid static init order
+  // issues; do not cache the value in a static data member.
   constexpr static size_t k_preferenceTextSize = sizeof("tech/rad");
+  static void RefreshTitleBarColors(Escher::MessageTextView* titleView,
+                                    Escher::BufferTextView<k_preferenceTextSize>*
+                                        preferenceView,
+                                    Escher::MessageTextView* examModeTextView);
   constexpr static KDCoordinate k_alphaRightMargin = 5;
   constexpr static KDCoordinate k_examIconWidth = 18;
   constexpr static KDCoordinate k_examIconHeight = 9;

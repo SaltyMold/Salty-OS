@@ -210,7 +210,7 @@ class GlobalPreferences : public Escher::LayoutPreferences::Interface,
 
   constexpr static BrightnessType k_defaultBrightnessLevel =
       Ion::Backlight::MaxBrightness;
-  constexpr static I18n::Language k_defaultLanguage = I18n::Language::EN;  //
+  constexpr static I18n::Language k_defaultLanguage = I18n::Language::FR;  //
   constexpr static bool k_defaultShowPopUp = true;                         //
   constexpr static KDFont::Size k_defaultFont = KDFont::Size::Large;       //
   constexpr static EditionMode k_defaultEditionMode = EditionMode::Edition2D;

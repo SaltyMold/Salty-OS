@@ -145,27 +145,18 @@ bool AppsContainer::dispatchEvent(Ion::Events::Event event) {
   bool alphaLockWantsRedraw = updateAlphaLock();
 
   const Ion::Keyboard::State keyboardState = Ion::Keyboard::scan();
-  const bool shorcutBtnPreviusTheme = keyboardState.keyDown(Ion::Keyboard::Key::Shift);
-  const bool shorcutBtnNextTheme = keyboardState.keyDown(Ion::Keyboard::Key::Alpha);
+
   const bool shortcutBtn1 = keyboardState.keyDown(Ion::Keyboard::Key::LeftParenthesis);
   const bool shortcutBtn2 = keyboardState.keyDown(Ion::Keyboard::Key::RightParenthesis);
 
+  const bool shorcutBtnPreviusTheme = keyboardState.keyDown(Ion::Keyboard::Key::Shift);
+  const bool shorcutBtnNextTheme = keyboardState.keyDown(Ion::Keyboard::Key::Alpha);
+  
+  const bool shorcutBtnPreviusCircleLevel = keyboardState.keyDown(Ion::Keyboard::Key::Exp);
+  const bool shorcutBtnNextCircleLevel = keyboardState.keyDown(Ion::Keyboard::Key::Ln);
+
   const bool needChangeTheme = shortcutBtn1 && shortcutBtn2 && (shorcutBtnPreviusTheme || shorcutBtnNextTheme);
-
-  // Debug
-  // const int debugSquareSize = 8;
-  // const int debugGap = 2;
-  // const int debugX = Ion::Display::Width - 4 * debugSquareSize - 3 * debugGap;
-
-  // const KDRect leftParenthesisDebugRect(debugX, 0, debugSquareSize, debugSquareSize);
-  // const KDRect rightParenthesisDebugRect(debugX + debugSquareSize + debugGap, 0, debugSquareSize, debugSquareSize);
-  // const KDRect leftDebugRect(debugX + 2 * (debugSquareSize + debugGap), 0, debugSquareSize, debugSquareSize);
-  // const KDRect rightDebugRect(debugX + 3 * (debugSquareSize + debugGap), 0, debugSquareSize, debugSquareSize);
-
-  // Ion::Display::pushRectUniform(leftParenthesisDebugRect, leftParenthesisPressed ? KDColorGreen : KDColorRed);
-  // Ion::Display::pushRectUniform(rightParenthesisDebugRect, rightParenthesisPressed ? KDColorGreen : KDColorRed);
-  // Ion::Display::pushRectUniform(leftDebugRect, leftDirectionPressed ? KDColorGreen : KDColorRed);
-  // Ion::Display::pushRectUniform(rightDebugRect, rightDirectionPressed ? KDColorGreen : KDColorRed);
+  const bool needChangeCircleLevel = shortcutBtn1 && shortcutBtn2 && (shorcutBtnPreviusCircleLevel || shorcutBtnNextCircleLevel);
 
   if (needChangeTheme) {
     int currentTheme = ThemeManager::selectedTheme();
@@ -183,6 +174,20 @@ bool AppsContainer::dispatchEvent(Ion::Events::Event event) {
       ThemeManager::refreshTheme(&m_window);
     }
   }
+
+  if (needChangeCircleLevel) {
+    if (shorcutBtnPreviusCircleLevel && Home::circleLevel > 0) {
+      Home::circleLevel--;
+      resetShiftAlphaStatus();
+      ThemeManager::refreshTheme(&m_window);
+    } else if (shorcutBtnNextCircleLevel && Home::circleLevel < 7) {
+      Home::circleLevel++;
+      resetShiftAlphaStatus();
+      ThemeManager::refreshTheme(&m_window);
+    }
+  }
+
+  /*------------------------------------------------------------------------*/
 
   if (event == Ion::Events::USBEnumeration || event == Ion::Events::USBPlug ||
       event == Ion::Events::BatteryCharging) {

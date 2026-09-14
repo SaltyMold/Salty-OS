@@ -86,6 +86,8 @@ void fillWholeCellWallpaper(KDContext* ctx, KDRect bounds, int globalX,
 
 namespace Home {
 
+uint8_t circleLevel = 2;
+
 AppCell::AppCell()
     : HighlightCell(),
       m_messageNameView((I18n::Message)0, k_glyphsFormat),
@@ -129,7 +131,6 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   // Get the width and height of the rectangle
   int rectWidth = nameRect.width();
   int rectHeight = nameRect.height();
-  int screenWidth = 320;
   
   // Max temp buffer for copying
   KDColor buffer[104 * 20];
@@ -158,7 +159,40 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
     const KDColor* pixels =
         ThemeManager::iconPixels(m_themeIconIndex, k_iconWidth, k_iconHeight);
     if (pixels != nullptr) {
-      ctx->fillRectWithPixels(iconRect, pixels, nullptr);
+      // Apply circle animation mask based on circleLevel
+      // Each pixel shows only if the bit at position circleLevel is set
+      uint8_t bitMask = 1 << circleLevel;
+      KDColor maskedPixels[k_iconWidth * k_iconHeight];
+      
+      KDPoint globalOrigin = ctx->origin();
+      int wallpaperWidth = ThemeManager::wallpaperWidth();
+      
+      for (int y = 0; y < k_iconHeight; y++) {
+        for (int x = 0; x < k_iconWidth; x++) {
+          int idx = y * k_iconWidth + x;
+          if (k_circleMask[y][x] & bitMask) {
+            // Pixel is in the circle, show it
+            maskedPixels[idx] = pixels[idx];
+          } else {
+            // Pixel is outside the circle, show wallpaper or flat color
+            if (ThemeManager::hasWallpaper()) {
+              int srcX = globalOrigin.x() + iconRect.origin().x() + x;
+              int srcY = globalOrigin.y() + iconRect.origin().y() + y - nameSize.height() - 4;
+              int localY = 0;
+              const KDColor* chunk = ThemeManager::wallpaperChunkContaining(srcY, &localY);
+              if (chunk != nullptr && srcX >= 0 && srcX < wallpaperWidth) {
+                maskedPixels[idx] = chunk[localY * wallpaperWidth + srcX];
+              } else {
+                maskedPixels[idx] = Palette::WallpaperColor;
+              }
+            } else {
+              maskedPixels[idx] = Palette::WallpaperColor;
+            }
+          }
+        }
+      }
+      
+      ctx->fillRectWithPixels(iconRect, maskedPixels, nullptr);
     }
   }
 }

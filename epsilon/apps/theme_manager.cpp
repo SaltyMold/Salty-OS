@@ -4,6 +4,9 @@
 #include <omg/memory.h>
 #include <string.h>
 
+#include "apps/apps_container.h"
+#include "apps/home/app.h"
+
 using namespace Ion::Device::Board::Config;
 
 const ThemeAreaHeader* ThemeManager::s_header = nullptr;
@@ -251,6 +254,14 @@ const KDColor* ThemeManager::iconPixels(int iconIndex, int iconWidth,
 
 void ThemeManager::refreshTheme(AppsWindow* window) {
   ThemeManager::applyPalette();
+
+  AppsContainer* appsContainer = AppsContainer::sharedAppsContainer();
+  Home::App* homeApp = Home::App::app();
+  if (appsContainer != nullptr && homeApp != nullptr &&
+      homeApp->snapshot() == appsContainer->homeAppSnapshot()) {
+    homeApp->reloadAppCells();
+  }
+
   if (window != nullptr) {
     window->reloadTitleBarView();
     window->redraw(true);

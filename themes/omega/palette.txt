@@ -38,6 +38,6 @@ Violet 0x5A001A
 VioletLight 0x7A0022
 Mint 0x663333
 MintLight 0x885555
-TextColor 0xff0000
+TextColor 0x000000
 TextColorHover 0xFFFFFF
 WallpaperColor 0x000000

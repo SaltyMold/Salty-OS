@@ -117,36 +117,39 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
     return;
   }
 
-  // KDSize nameSize = textView()->minimalSizeForOptimalDisplay();
-  // ctx->fillRect(
-  //     KDRect(0, bounds().height() - nameSize.height() - 2 * k_nameHeightMargin,
-  //            bounds().width(), nameSize.height() + 2 * k_nameHeightMargin),
-  //     KDColorWhite);
-    
   KDSize nameSize = textView()->minimalSizeForOptimalDisplay();
 
   KDRect nameRect = KDRect(0, bounds().height() - nameSize.height() - 2 * k_nameHeightMargin,
                            bounds().width(), nameSize.height() + 2 * k_nameHeightMargin);
-  
-  // Get the width and height of the rectangle
-  int rectWidth = nameRect.width();
-  int rectHeight = nameRect.height();
-  
-  // Max temp buffer for copying
-  KDColor buffer[104 * 20];
 
-  // Get position
-  KDPoint globalOrigin = ctx->origin();
-  int globalX = globalOrigin.x();
-  int globalY = globalOrigin.y();
+  if (!ThemeManager::hasWallpaper()) {
+    // No wallpaper on the selected theme: keep the previous, simpler
+    // behavior. Just paint the flat background band; the name itself is
+    // drawn by the TextView as a normal (opaque) subview - see
+    // numberOfSubviews()/subviewAtIndex() below.
+    ctx->fillRect(nameRect, Palette::WallpaperColor);
+  } else {
+    // Get the width and height of the rectangle
+    int rectWidth = nameRect.width();
+    int rectHeight = nameRect.height();
 
-  fillWallpaperLineRange(nameRect, globalX, globalY, nameSize.height(), buffer,
-                         rectHeight, rectWidth);
+    // Max temp buffer for copying
+    KDColor buffer[104 * 20];
 
-  ctx->fillRectWithPixels(nameRect, buffer, nullptr);
-  // Draw the text transparently on top of the wallpaper so we don't fill an
-  // opaque background. Then avoid letting the TextView draw itself later.
-  const_cast<TextView*>(textView())->drawTextTransparent(ctx, nameRect);
+    // Get position
+    KDPoint globalOrigin = ctx->origin();
+    int globalX = globalOrigin.x();
+    int globalY = globalOrigin.y();
+
+    fillWallpaperLineRange(nameRect, globalX, globalY, nameSize.height(), buffer,
+                           rectHeight, rectWidth);
+
+    ctx->fillRectWithPixels(nameRect, buffer, nullptr);
+    // Draw the text transparently on top of the wallpaper so we don't fill an
+    // opaque background. Then avoid letting the TextView draw itself later
+    // (excluded from subviews below).
+    const_cast<TextView*>(textView())->drawTextTransparent(ctx, nameRect);
+  }
 
   // Themed icon: decompressed manually (see ThemeManager::iconPixels), since
   // we don't know the codec Escher::Image/IconView expect for
@@ -203,12 +206,28 @@ int AppCell::numberOfSubviews() const {
   }
   // When we're drawing the themed icon manually above, don't also let the
   // normal IconView subview draw the builtin icon on top of it.
-  return hasThemedIcon() ? 0 : 1;
+  int count = hasThemedIcon() ? 0 : 1;
+  // The name is only drawn manually (drawTextTransparent, see drawRect())
+  // when there's a wallpaper to blend with. Without a wallpaper we fall
+  // back to the previous behavior: the TextView draws itself normally, as
+  // an ordinary opaque subview.
+  if (!ThemeManager::hasWallpaper()) {
+    count += 1;
+  }
+  return count;
 }
 
 View* AppCell::subviewAtIndex(int index) {
-  View* views[] = {&m_iconView, const_cast<TextView*>(textView())};
-  return views[index];
+  bool includeIcon = !hasThemedIcon();
+  bool includeText = !ThemeManager::hasWallpaper();
+  if (includeIcon) {
+    if (index == 0) {
+      return &m_iconView;
+    }
+    index--;
+  }
+  assert(includeText && index == 0);
+  return const_cast<TextView*>(textView());
 }
 
 void AppCell::layoutSubviews(bool force) {
@@ -256,7 +275,16 @@ void AppCell::setVisible(bool visible) {
 void AppCell::reloadCell() {
   TextView* t = const_cast<TextView*>(textView());
   t->setTextColor(isHighlighted() ? Palette::TextColor : Palette::TextColorHover);
-  // Do not set an opaque background so wallpaper remains visible.
+  if (!ThemeManager::hasWallpaper()) {
+    // No wallpaper: the TextView draws itself as a normal opaque subview
+    // (see numberOfSubviews()/subviewAtIndex()), so give it an opaque
+    // background again, same spirit as the pre-wallpaper code.
+    t->setBackgroundColor(isHighlighted() ? Palette::YellowDark
+                                          : Palette::WallpaperColor);
+  }
+  // With a wallpaper, the name is painted manually via drawTextTransparent()
+  // in drawRect(), which ignores the TextView's own background - leave it
+  // alone so nothing opaque gets set on it.
   markWholeFrameAsDirty();
 }
 

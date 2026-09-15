@@ -3,15 +3,15 @@ THEME AREA - GENERATION REPORT
 ==============================================================================
 magic              0x87654321
 version            2
-theme_count        1 / 4
+theme_count        4 / 4
 header_size        12 bytes  (sizeof(ThemeAreaHeader))
 entry_size         132 bytes  (sizeof(ThemeEntry))
-table_size         132 bytes (1 x 132)
-asset_region_start 0x000090  (offset 144 from ThemeAreaStart)
-payload_size       11592 B (11.32 KiB)
+table_size         528 bytes (4 x 132)
+asset_region_start 0x00021C  (offset 540 from ThemeAreaStart)
+payload_size       194816 B (190.25 KiB)
 
-capacity           [----------------------------------------]   0.6%
-                   11736 / 2097152 bytes used, 2085416 bytes free
+capacity           [###-------------------------------------]   9.3%
+                   195356 / 2097152 bytes used, 1901796 bytes free
 
 ------------------------------------------------------------------------------
 THEME 0: "Epsilon"  (source: /home/gauthier/Projets/Numworks/Firmware/Salty-OS/themes/epsilon)
@@ -19,27 +19,114 @@ THEME 0: "Epsilon"  (source: /home/gauthier/Projets/Numworks/Firmware/Salty-OS/t
   total asset size   11592 B (11.32 KiB)
 
   Palette: 43/64 colors
-    offset 0x000090   size 172 B
+    offset 0x00021C   size 172 B
 
   Wallpaper:
     (none)
 
   Icons: 12/12 present
-    calculation_icon.png    offset 0x00013C               412 B  raw 6160 B (6.02 KiB)  (55x56, 14.95x)
-    code_icon.png           offset 0x0002D8               926 B  raw 6160 B (6.02 KiB)  (55x56, 6.65x)
-    distributions_icon.png  offset 0x000676               971 B  raw 6160 B (6.02 KiB)  (55x56, 6.34x)
-    elements_icon.png       offset 0x000A41   1857 B (1.81 KiB)  raw 6160 B (6.02 KiB)  (55x56, 3.32x)
-    finance_icon.png        offset 0x001182   1325 B (1.29 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.65x)
-    graph_icon.png          offset 0x0016AF               621 B  raw 6160 B (6.02 KiB)  (55x56, 9.92x)
-    inference_icon.png      offset 0x00191C   1306 B (1.28 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.72x)
-    regression_icon.png     offset 0x001E36               790 B  raw 6160 B (6.02 KiB)  (55x56, 7.80x)
-    sequence_icon.png       offset 0x00214C               325 B  raw 6160 B (6.02 KiB)  (55x56, 18.95x)
-    settings_icon.png       offset 0x002291               577 B  raw 6160 B (6.02 KiB)  (55x56, 10.68x)
-    solver_icon.png         offset 0x0024D2   1506 B (1.47 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.09x)
-    stat_icon.png           offset 0x002AB4               804 B  raw 6160 B (6.02 KiB)  (55x56, 7.66x)
+    calculation_icon.png    offset 0x0002C8               412 B  raw 6160 B (6.02 KiB)  (55x56, 14.95x)
+    code_icon.png           offset 0x000464               926 B  raw 6160 B (6.02 KiB)  (55x56, 6.65x)
+    distributions_icon.png  offset 0x000802               971 B  raw 6160 B (6.02 KiB)  (55x56, 6.34x)
+    elements_icon.png       offset 0x000BCD   1857 B (1.81 KiB)  raw 6160 B (6.02 KiB)  (55x56, 3.32x)
+    finance_icon.png        offset 0x00130E   1325 B (1.29 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.65x)
+    graph_icon.png          offset 0x00183B               621 B  raw 6160 B (6.02 KiB)  (55x56, 9.92x)
+    inference_icon.png      offset 0x001AA8   1306 B (1.28 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.72x)
+    regression_icon.png     offset 0x001FC2               790 B  raw 6160 B (6.02 KiB)  (55x56, 7.80x)
+    sequence_icon.png       offset 0x0022D8               325 B  raw 6160 B (6.02 KiB)  (55x56, 18.95x)
+    settings_icon.png       offset 0x00241D               577 B  raw 6160 B (6.02 KiB)  (55x56, 10.68x)
+    solver_icon.png         offset 0x00265E   1506 B (1.47 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.09x)
+    stat_icon.png           offset 0x002C40               804 B  raw 6160 B (6.02 KiB)  (55x56, 7.66x)
 
   Warnings:
     ! No wallpaper.png found - theme will have no wallpaper.
+    ! Palette has only 43/64 colors defined.
+
+------------------------------------------------------------------------------
+THEME 1: "Theme"  (source: /home/gauthier/Projets/Numworks/Firmware/Salty-OS/themes/kawaii)
+  entry offset       0x000090 (+132 in table)
+  total asset size   99065 B (96.74 KiB)
+
+  Palette: 43/64 colors
+    offset 0x01920D   size 172 B
+
+  Wallpaper:
+    wallpaper.png  (320x240)
+    offset 0x002F64   compressed 90793 B (88.67 KiB)   raw 153600 B (150.00 KiB)   ratio 1.69x
+
+  Icons: 12/12 present
+    calculation_icon.png    offset 0x0192B9               214 B  raw 6160 B (6.02 KiB)  (55x56, 28.79x)
+    code_icon.png           offset 0x01938F   1320 B (1.29 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.67x)
+    distributions_icon.png  offset 0x0198B7               810 B  raw 6160 B (6.02 KiB)  (55x56, 7.60x)
+    elements_icon.png       offset 0x019BE1   1480 B (1.45 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.16x)
+    finance_icon.png        offset 0x01A1A9   1195 B (1.17 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.15x)
+    graph_icon.png          offset 0x01A654               354 B  raw 6160 B (6.02 KiB)  (55x56, 17.40x)
+    inference_icon.png      offset 0x01A7B6   1166 B (1.14 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.28x)
+    regression_icon.png     offset 0x01AC44               543 B  raw 6160 B (6.02 KiB)  (55x56, 11.34x)
+    sequence_icon.png       offset 0x01AE63               128 B  raw 6160 B (6.02 KiB)  (55x56, 48.12x)
+    settings_icon.png       offset 0x01AEE3               253 B  raw 6160 B (6.02 KiB)  (55x56, 24.35x)
+    solver_icon.png         offset 0x01AFE0               528 B  raw 6160 B (6.02 KiB)  (55x56, 11.67x)
+    stat_icon.png           offset 0x01B1F0               109 B  raw 6160 B (6.02 KiB)  (55x56, 56.51x)
+
+  Warnings:
+    ! Palette has only 43/64 colors defined.
+
+------------------------------------------------------------------------------
+THEME 2: "Theme"  (source: /home/gauthier/Projets/Numworks/Firmware/Salty-OS/themes/omega)
+  entry offset       0x000114 (+264 in table)
+  total asset size   8462 B (8.26 KiB)
+
+  Palette: 43/64 colors
+    offset 0x01B25D   size 172 B
+
+  Wallpaper:
+    (none)
+
+  Icons: 12/12 present
+    calculation_icon.png    offset 0x01B309               625 B  raw 6160 B (6.02 KiB)  (55x56, 9.86x)
+    code_icon.png           offset 0x01B57A               608 B  raw 6160 B (6.02 KiB)  (55x56, 10.13x)
+    distributions_icon.png  offset 0x01B7DA               650 B  raw 6160 B (6.02 KiB)  (55x56, 9.48x)
+    elements_icon.png       offset 0x01BA64   1174 B (1.15 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.25x)
+    finance_icon.png        offset 0x01BEFA   1160 B (1.13 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.31x)
+    graph_icon.png          offset 0x01C382               495 B  raw 6160 B (6.02 KiB)  (55x56, 12.44x)
+    inference_icon.png      offset 0x01C571   1063 B (1.04 KiB)  raw 6160 B (6.02 KiB)  (55x56, 5.79x)
+    regression_icon.png     offset 0x01C998               607 B  raw 6160 B (6.02 KiB)  (55x56, 10.15x)
+    sequence_icon.png       offset 0x01CBF7               335 B  raw 6160 B (6.02 KiB)  (55x56, 18.39x)
+    settings_icon.png       offset 0x01CD46               393 B  raw 6160 B (6.02 KiB)  (55x56, 15.67x)
+    solver_icon.png         offset 0x01CECF               943 B  raw 6160 B (6.02 KiB)  (55x56, 6.53x)
+    stat_icon.png           offset 0x01D27E               237 B  raw 6160 B (6.02 KiB)  (55x56, 25.99x)
+
+  Warnings:
+    ! No wallpaper.png found - theme will have no wallpaper.
+    ! Palette has only 43/64 colors defined.
+
+------------------------------------------------------------------------------
+THEME 3: "Epsilon"  (source: /home/gauthier/Projets/Numworks/Firmware/Salty-OS/themes/test)
+  entry offset       0x000198 (+396 in table)
+  total asset size   75697 B (73.92 KiB)
+
+  Palette: 43/64 colors
+    offset 0x02CDD4   size 172 B
+
+  Wallpaper:
+    wallpaper.png  (320x240)
+    offset 0x01D36B   compressed 64105 B (62.60 KiB)   raw 153600 B (150.00 KiB)   ratio 2.40x
+
+  Icons: 12/12 present
+    calculation_icon.png    offset 0x02CE80               412 B  raw 6160 B (6.02 KiB)  (55x56, 14.95x)
+    code_icon.png           offset 0x02D01C               926 B  raw 6160 B (6.02 KiB)  (55x56, 6.65x)
+    distributions_icon.png  offset 0x02D3BA               971 B  raw 6160 B (6.02 KiB)  (55x56, 6.34x)
+    elements_icon.png       offset 0x02D785   1857 B (1.81 KiB)  raw 6160 B (6.02 KiB)  (55x56, 3.32x)
+    finance_icon.png        offset 0x02DEC6   1325 B (1.29 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.65x)
+    graph_icon.png          offset 0x02E3F3               621 B  raw 6160 B (6.02 KiB)  (55x56, 9.92x)
+    inference_icon.png      offset 0x02E660   1306 B (1.28 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.72x)
+    regression_icon.png     offset 0x02EB7A               790 B  raw 6160 B (6.02 KiB)  (55x56, 7.80x)
+    sequence_icon.png       offset 0x02EE90               325 B  raw 6160 B (6.02 KiB)  (55x56, 18.95x)
+    settings_icon.png       offset 0x02EFD5               577 B  raw 6160 B (6.02 KiB)  (55x56, 10.68x)
+    solver_icon.png         offset 0x02F216   1506 B (1.47 KiB)  raw 6160 B (6.02 KiB)  (55x56, 4.09x)
+    stat_icon.png           offset 0x02F7F8               804 B  raw 6160 B (6.02 KiB)  (55x56, 7.66x)
+
+  Warnings:
     ! Palette has only 43/64 colors defined.
 
 ==============================================================================

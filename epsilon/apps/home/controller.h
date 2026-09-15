@@ -23,7 +23,12 @@ class Controller : public Escher::ViewController,
   Escher::View* view() override { return &m_view; }
 
   bool handleEvent(Ion::Events::Event event) override;
-  void reloadAppCells() { m_view.selectableTableView()->reloadData(false, false); }
+  void reloadAppCells() {
+    for (int i = 0; i < k_numberOfReusableCells; i++) {
+      m_reusableCells[i].reloadCell();
+    }
+    m_view.selectableTableView()->reloadData(false, false);
+  }
 
   int numberOfRows() const override {
     return ((numberOfIcons() - 1) / k_numberOfColumns) + 1;

@@ -41,6 +41,13 @@ void fillWallpaperBackground(KDContext* ctx, KDRect rect) {
     const KDColor* sourceRow = chunk + localY * wallpaperWidth;
     memcpy(lineBuffer, sourceRow, lineWidth * sizeof(KDColor));
     ctx->fillRectWithPixels(KDRect(0, y, lineWidth, 1), lineBuffer, nullptr);
+    if (lineWidth < rect.width()) {
+      // Wallpaper narrower than the screen (e.g. it doesn't cover the
+      // scrollbar column): paint the leftover strip on the right with the
+      // flat fallback color instead of leaving it unpainted.
+      ctx->fillRect(KDRect(lineWidth, y, rect.width() - lineWidth, 1),
+                    Palette::WallpaperColor);
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 #include <escher/scroll_view_indicator.h>
+#include <escher/palette.h>
 extern "C" {
 #include <assert.h>
 }
@@ -30,12 +31,14 @@ void ScrollViewHorizontalBar::drawRect(KDContext* ctx, KDRect rect) const {
   }
   KDCoordinate y = (bounds().height() - k_indicatorThickness) / 2;
   KDCoordinate height = k_indicatorThickness;
-  ctx->fillRect(KDRect(k_leftMargin, y, totalLength(), height), k_trackColor);
+  ctx->fillRect(KDRect(k_leftMargin, y, totalLength(), height),
+                Palette::GrayMiddle);
 
   KDCoordinate x = int(std::round(m_offset * totalLength()));
   KDCoordinate width =
       std::min(int(m_visibleLength * totalLength()), totalLength() - x);
-  ctx->fillRect(KDRect(k_leftMargin + x, y, width, height), k_color);
+  ctx->fillRect(KDRect(k_leftMargin + x, y, width, height),
+                Palette::GrayDark);
 }
 
 ScrollViewVerticalBar::ScrollViewVerticalBar()
@@ -47,12 +50,14 @@ void ScrollViewVerticalBar::drawRect(KDContext* ctx, KDRect rect) const {
   }
   KDCoordinate x = (bounds().width() - k_indicatorThickness) / 2;
   KDCoordinate width = k_indicatorThickness;
-  ctx->fillRect(KDRect(x, m_margins.top(), width, totalLength()), k_trackColor);
+  ctx->fillRect(KDRect(x, m_margins.top(), width, totalLength()),
+                Palette::GrayMiddle);
 
   KDCoordinate y = int(std::round(m_offset * totalLength()));
   KDCoordinate height =
       std::min(int(m_visibleLength * totalLength()), totalLength() - y);
-  ctx->fillRect(KDRect(x, m_margins.top() + y, width, height), k_color);
+  ctx->fillRect(KDRect(x, m_margins.top() + y, width, height),
+                Palette::GrayDark);
 }
 
 ScrollViewArrow::ScrollViewArrow()
@@ -69,7 +74,7 @@ bool ScrollViewArrow::update(bool visible) {
 void ScrollViewArrow::drawRect(KDContext* ctx, KDRect rect) const {
   ctx->fillRect(bounds(), m_backgroundColor);
   ctx->alignAndDrawString(arrow(), KDPointZero, bounds().size(),
-                          {.style = {.glyphColor = k_color,
+                          {.style = {.glyphColor = Palette::GrayDark,
                                      .backgroundColor = m_backgroundColor,
                                      .font = m_font},
                            .horizontalAlignment = KDGlyph::k_alignLeft,

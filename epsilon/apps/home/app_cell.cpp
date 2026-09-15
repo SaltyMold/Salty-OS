@@ -36,8 +36,20 @@ void fillWallpaperLineRange(KDRect nameRect, int globalX, int globalY,
     }
 
     int srcX = globalX + nameRect.origin().x();
+    // Clamp to what the wallpaper actually has on this row: srcX + rectWidth
+    // can run past wallpaperWidth (narrower wallpaper, or a cell near the
+    // right edge), and reading past it would walk off the end of the
+    // (shared, fixed-size) chunk buffer.
+    int available = wallpaperWidth - srcX;
+    int copyWidth = available < rectWidth ? available : rectWidth;
+    if (copyWidth < 0) {
+      copyWidth = 0;
+    }
     const KDColor* sourceRow = chunk + localY * wallpaperWidth + srcX;
-    memcpy(&buffer[y * rectWidth], sourceRow, rectWidth * sizeof(KDColor));
+    memcpy(&buffer[y * rectWidth], sourceRow, copyWidth * sizeof(KDColor));
+    for (int x = copyWidth; x < rectWidth; x++) {
+      buffer[y * rectWidth + x] = Palette::WallpaperColor;
+    }
   }
 }
 
@@ -79,6 +91,13 @@ void fillWholeCellWallpaper(KDContext* ctx, KDRect bounds, int globalX,
     const KDColor* sourceRow = chunk + localY * wallpaperWidth + globalX;
     memcpy(lineBuffer, sourceRow, lineWidth * sizeof(KDColor));
     ctx->fillRectWithPixels(KDRect(0, y, lineWidth, 1), lineBuffer, nullptr);
+    if (lineWidth < bounds.width()) {
+      // Wallpaper doesn't reach this far right (narrower image, or this
+      // cell sits past its edge): paint the leftover strip flat instead of
+      // leaving it unpainted.
+      ctx->fillRect(KDRect(lineWidth, y, bounds.width() - lineWidth, 1),
+                    Palette::WallpaperColor);
+    }
   }
 }
 

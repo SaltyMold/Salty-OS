@@ -105,7 +105,7 @@ void fillWholeCellWallpaper(KDContext* ctx, KDRect bounds, int globalX,
 
 namespace Home {
 
-uint8_t circleLevel = 2;
+uint8_t circleLevel = 1;
 
 void fillRoundedIcon(KDContext* ctx, KDRect iconRect, const KDColor* pixels,
                      int iconWidth, int iconHeight, int globalX, int globalY,
@@ -219,7 +219,8 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
     }
   }
 
-  if (m_pointerNameView.text() != nullptr && m_image.width() > 0) {
+  if (m_pointerNameView.text() != nullptr && m_image.width() > 0 &&
+      ThemeManager::hasWallpaper()) {
     KDRect iconRect((bounds().width() - k_iconWidth) / 2, k_iconMargin,
                     k_iconWidth, k_iconHeight);
     KDColor pixels[k_iconWidth * k_iconHeight];
@@ -238,8 +239,14 @@ int AppCell::numberOfSubviews() const {
     return 0;
   }
   // When we're drawing the themed icon manually above, don't also let the
-  // normal IconView subview draw the builtin icon on top of it.
-  bool manuallyDrawIcon = hasThemedIcon() || m_pointerNameView.text() != nullptr;
+  // normal IconView subview draw the builtin icon on top of it. External
+  // apps have no themed-icon slot of their own (see setExternalApp()), so
+  // they only need this manual/rounded treatment when there's a wallpaper
+  // to blend into - with no wallpaper (e.g. the "Default" theme) they fall
+  // back to the same plain square iconView as an untheme builtin app.
+  bool manuallyDrawIcon =
+      hasThemedIcon() ||
+      (m_pointerNameView.text() != nullptr && ThemeManager::hasWallpaper());
   int count = manuallyDrawIcon ? 0 : 1;
   // The name is only drawn manually (drawTextTransparent, see drawRect())
   // when there's a wallpaper to blend with. Without a wallpaper we fall
@@ -252,7 +259,9 @@ int AppCell::numberOfSubviews() const {
 }
 
 View* AppCell::subviewAtIndex(int index) {
-  bool manuallyDrawIcon = hasThemedIcon() || m_pointerNameView.text() != nullptr;
+  bool manuallyDrawIcon =
+      hasThemedIcon() ||
+      (m_pointerNameView.text() != nullptr && ThemeManager::hasWallpaper());
   bool includeIcon = !manuallyDrawIcon;
   bool includeText = !ThemeManager::hasWallpaper();
   if (includeIcon) {

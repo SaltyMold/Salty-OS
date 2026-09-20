@@ -26,6 +26,9 @@ void ThemeManager::init() {
 
   s_header = h;
   s_valid = true;
+  // Boot on the virtual "Default" theme (index 0): applyPalette() called
+  // right after init() will then be a no-op, leaving Escher's builtin
+  // palette/icons untouched until the user explicitly picks a real theme.
   s_selectedTheme = 0;
 }
 
@@ -39,12 +42,20 @@ const ThemeEntry* ThemeManager::entry(int index) {
 }
 
 void ThemeManager::selectTheme(int index) {
-  if (s_valid && index >= 0 && index < (int)s_header->themeCount) {
+  if (s_valid && index >= 0 && index < themeCount()) {
     s_selectedTheme = index;
   }
 }
 
-const ThemeEntry* ThemeManager::currentEntry() { return entry(s_selectedTheme); }
+const ThemeEntry* ThemeManager::currentEntry() {
+  // Index 0 is the virtual "Default" theme: no backing ThemeEntry, so every
+  // hasXxx()/accessor built on top of currentEntry() naturally falls back
+  // to the same "no theme" behavior as an invalid Theme Area.
+  if (s_selectedTheme == 0) {
+    return nullptr;
+  }
+  return entry(s_selectedTheme - 1);
+}
 
 namespace {
 
@@ -194,6 +205,11 @@ bool ThemeManager::hasPalette() {
 
 void ThemeManager::applyPalette() {
   if (!hasPalette()) {
+    // Nothing to apply for the current selection (the virtual "Default"
+    // theme, or a real theme flashed without a palette): fall back to
+    // Escher's compiled-in colors instead of leaving whatever a
+    // previously-selected theme last wrote into them.
+    Escher::Palette::ResetToDefaults();
     return;
   }
   const ThemeEntry* e = currentEntry();

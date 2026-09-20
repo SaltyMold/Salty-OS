@@ -11,12 +11,26 @@ class ThemeManager {
  public:
   static void init();
   static bool isValid() { return s_valid; }
+
+  // themeCount() includes the virtual "Default" entry at index 0, so it is
+  // (number of flashed themes) + 1 whenever the Theme Area is valid.
   static int themeCount() {
-    return s_valid ? (int)s_header->themeCount : 0;
+    return s_valid ? (int)s_header->themeCount + 1 : 0;
   }
+
+  // Raw access to a FLASHED theme entry, 0-based within the Theme Area
+  // (i.e. NOT offset by the virtual "Default" entry). Returns nullptr if
+  // index is out of range. Most callers should go through
+  // selectTheme()/currentEntry()-backed accessors (hasWallpaper(),
+  // hasPalette(), ...) instead.
   static const Ion::Device::Board::Config::ThemeEntry* entry(int index);
 
   // --- Theme selection -----------------------------------------------
+  // Index 0 is a virtual "Default" theme that is not backed by any
+  // flashed ThemeEntry: selecting it makes every accessor below behave
+  // exactly as if the Theme Area were invalid/empty (no wallpaper, no
+  // palette, no icons), which restores Escher's builtin palette/icons.
+  // Indices [1, themeCount()) map to flashed entries at index-1.
   static int selectedTheme() { return s_selectedTheme; }
   // No-op (keeps previous selection) if index is out of range.
   static void selectTheme(int index);
@@ -65,10 +79,10 @@ class ThemeManager {
 
   // Reads the currently selected theme's palette blob (raw 0x00RRGGBB
   // uint32s, see encode_palette() in generate_theme.py) and pushes it
-  // into Escher::Palette::ApplyPalette(). No-op if the current theme has
-  // no palette - whatever colors Escher::Palette already has (its
-  // compiled-in defaults, or a previously applied theme's palette) are
-  // left untouched.
+  // into Escher::Palette::ApplyPalette(). If the current theme has no
+  // palette (including the virtual "Default" theme), resets Escher's
+  // colors to their compiled-in defaults instead of leaving a previously
+  // applied theme's colors in place.
   static void applyPalette();
 
   static void refreshTheme(AppsWindow* window);

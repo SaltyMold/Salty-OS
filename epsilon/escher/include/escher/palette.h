@@ -88,11 +88,22 @@ class Palette {
   // value if one was already applied). This order must stay in sync with
   // the palette.txt slot order documented in generate_theme.py.
   static void ApplyPalette(const KDColor* colors, size_t count);
+  // Restores every themable slot to the value it had before the very first
+  // ApplyPalette() call (i.e. the compiled-in defaults above), undoing
+  // whatever theme is currently applied. Used when switching back to the
+  // "Default" theme, or to any theme that doesn't ship its own palette -
+  // without this, those slots would simply keep whatever a *previous*
+  // theme left them at.
+  static void ResetToDefaults();
   static constexpr size_t numberOfPaletteSlots() {
     return std::size(s_paletteSlots);
   }
 
  private:
+  static void CaptureDefaultsIfNeeded();
+  static bool s_defaultsCaptured;
+  static KDColor s_defaultValues[];
+
   // Order = palette.txt slot order. Pointers (not indices) so ApplyPalette
   // doesn't need a big switch statement - taking the address of a static
   // data member is a compile-time constant even though the member itself

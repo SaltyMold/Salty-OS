@@ -107,6 +107,38 @@ namespace Home {
 
 uint8_t circleLevel = 2;
 
+void fillRoundedIcon(KDContext* ctx, KDRect iconRect, const KDColor* pixels,
+                     int iconWidth, int iconHeight, int globalX, int globalY,
+                     int nameHeight) {
+  uint8_t bitMask = 1 << circleLevel;
+  KDColor maskedPixels[55 * 56];
+
+  int wallpaperWidth = ThemeManager::wallpaperWidth();
+  for (int y = 0; y < iconHeight; y++) {
+    for (int x = 0; x < iconWidth; x++) {
+      int idx = y * iconWidth + x;
+      if (k_circleMask[y][x] & bitMask) {
+        maskedPixels[idx] = pixels[idx];
+      } else if (ThemeManager::hasWallpaper()) {
+        int srcX = globalX + iconRect.origin().x() + x;
+        int srcY = globalY + iconRect.origin().y() + y - nameHeight - 4;
+        int localY = 0;
+        const KDColor* chunk =
+            ThemeManager::wallpaperChunkContaining(srcY, &localY);
+        if (chunk != nullptr && srcX >= 0 && srcX < wallpaperWidth) {
+          maskedPixels[idx] = chunk[localY * wallpaperWidth + srcX];
+        } else {
+          maskedPixels[idx] = Palette::WallpaperColor;
+        }
+      } else {
+        maskedPixels[idx] = Palette::WallpaperColor;
+      }
+    }
+  }
+
+  ctx->fillRectWithPixels(iconRect, maskedPixels, nullptr);
+}
+
 AppCell::AppCell()
     : HighlightCell(),
       m_messageNameView((I18n::Message)0, k_glyphsFormat),
@@ -181,41 +213,23 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
     const KDColor* pixels =
         ThemeManager::iconPixels(m_themeIconIndex, k_iconWidth, k_iconHeight);
     if (pixels != nullptr) {
-      // Apply circle animation mask based on circleLevel
-      // Each pixel shows only if the bit at position circleLevel is set
-      uint8_t bitMask = 1 << circleLevel;
-      KDColor maskedPixels[k_iconWidth * k_iconHeight];
-      
       KDPoint globalOrigin = ctx->origin();
-      int wallpaperWidth = ThemeManager::wallpaperWidth();
-      
-      for (int y = 0; y < k_iconHeight; y++) {
-        for (int x = 0; x < k_iconWidth; x++) {
-          int idx = y * k_iconWidth + x;
-          if (k_circleMask[y][x] & bitMask) {
-            // Pixel is in the circle, show it
-            maskedPixels[idx] = pixels[idx];
-          } else {
-            // Pixel is outside the circle, show wallpaper or flat color
-            if (ThemeManager::hasWallpaper()) {
-              int srcX = globalOrigin.x() + iconRect.origin().x() + x;
-              int srcY = globalOrigin.y() + iconRect.origin().y() + y - nameSize.height() - 4;
-              int localY = 0;
-              const KDColor* chunk = ThemeManager::wallpaperChunkContaining(srcY, &localY);
-              if (chunk != nullptr && srcX >= 0 && srcX < wallpaperWidth) {
-                maskedPixels[idx] = chunk[localY * wallpaperWidth + srcX];
-              } else {
-                maskedPixels[idx] = Palette::WallpaperColor;
-              }
-            } else {
-              maskedPixels[idx] = Palette::WallpaperColor;
-            }
-          }
-        }
-      }
-      
-      ctx->fillRectWithPixels(iconRect, maskedPixels, nullptr);
+      fillRoundedIcon(ctx, iconRect, pixels, k_iconWidth, k_iconHeight,
+                      globalOrigin.x(), globalOrigin.y(), nameSize.height());
     }
+  }
+
+  if (m_pointerNameView.text() != nullptr && m_image.width() > 0) {
+    KDRect iconRect((bounds().width() - k_iconWidth) / 2, k_iconMargin,
+                    k_iconWidth, k_iconHeight);
+    KDColor pixels[k_iconWidth * k_iconHeight];
+    OMG::Memory::Decompress(m_image.compressedPixelData(),
+                            reinterpret_cast<uint8_t*>(pixels),
+                            m_image.compressedPixelDataSize(),
+                            k_iconWidth * k_iconHeight * sizeof(KDColor));
+    KDPoint globalOrigin = ctx->origin();
+    fillRoundedIcon(ctx, iconRect, pixels, k_iconWidth, k_iconHeight,
+                    globalOrigin.x(), globalOrigin.y(), nameSize.height());
   }
 }
 
@@ -225,7 +239,8 @@ int AppCell::numberOfSubviews() const {
   }
   // When we're drawing the themed icon manually above, don't also let the
   // normal IconView subview draw the builtin icon on top of it.
-  int count = hasThemedIcon() ? 0 : 1;
+  bool manuallyDrawIcon = hasThemedIcon() || m_pointerNameView.text() != nullptr;
+  int count = manuallyDrawIcon ? 0 : 1;
   // The name is only drawn manually (drawTextTransparent, see drawRect())
   // when there's a wallpaper to blend with. Without a wallpaper we fall
   // back to the previous behavior: the TextView draws itself normally, as
@@ -237,7 +252,8 @@ int AppCell::numberOfSubviews() const {
 }
 
 View* AppCell::subviewAtIndex(int index) {
-  bool includeIcon = !hasThemedIcon();
+  bool manuallyDrawIcon = hasThemedIcon() || m_pointerNameView.text() != nullptr;
+  bool includeIcon = !manuallyDrawIcon;
   bool includeText = !ThemeManager::hasWallpaper();
   if (includeIcon) {
     if (index == 0) {

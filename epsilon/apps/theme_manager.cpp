@@ -230,6 +230,16 @@ void ThemeManager::applyPalette() {
   Escher::Palette::ApplyPalette(colors, n);
 }
 
+int ThemeManager::defaultCircleLevel() {
+  const ThemeEntry* e = currentEntry();
+  return e ? e->defaultCircleLevel : 0;
+}
+
+bool ThemeManager::isAppNameBackgroundHover() {
+  const ThemeEntry* e = currentEntry();
+  return e ? (bool)e->isAppNameBackgroundHover : false;
+}
+
 bool ThemeManager::hasIcon(int iconIndex) {
   const ThemeEntry* e = currentEntry();
   return e != nullptr && e->isIcons && iconIndex >= 0 &&

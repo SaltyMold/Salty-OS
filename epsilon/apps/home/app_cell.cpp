@@ -101,6 +101,21 @@ void fillWholeCellWallpaper(KDContext* ctx, KDRect bounds, int globalX,
   }
 }
 
+// True when the app name band should be painted on an opaque background
+// instead of blended transparently into the wallpaper.
+//
+// - No wallpaper to blend into at all: always opaque, regardless of
+//   highlight state (nothing to show through anyway).
+// - Wallpaper present and the theme's variables.txt asks for an opaque
+//   name background on highlight (isAppNameBackgroundHover): opaque ONLY
+//   for the currently highlighted cell (the solid YellowDark selection
+//   box). Every other, non-highlighted cell still blends into the real
+//   wallpaper pixels instead of showing a flat color box.
+bool useOpaqueNameBackground(bool cellIsHighlighted) {
+  return !ThemeManager::hasWallpaper() ||
+         (ThemeManager::isAppNameBackgroundHover() && cellIsHighlighted);
+}
+
 }  // namespace
 
 namespace Home {
@@ -110,7 +125,12 @@ uint8_t circleLevel = 1;
 void fillRoundedIcon(KDContext* ctx, KDRect iconRect, const KDColor* pixels,
                      int iconWidth, int iconHeight, int globalX, int globalY,
                      int nameHeight) {
-  uint8_t bitMask = 1 << circleLevel;
+  // The theme's variables.txt sets the circle level (see VARIABLE_DEFS in
+  // generate_theme.py); circleLevel above stays as a fallback for when no
+  // theme is selected (ThemeManager::defaultCircleLevel() then returns 0).
+  uint8_t level = ThemeManager::isValid() ? (uint8_t)ThemeManager::defaultCircleLevel()
+                                          : circleLevel;
+  uint8_t bitMask = 1 << level;
   KDColor maskedPixels[55 * 56];
 
   int wallpaperWidth = ThemeManager::wallpaperWidth();
@@ -173,13 +193,41 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   KDRect nameRect = KDRect(0, bounds().height() - nameSize.height() - 2 * k_nameHeightMargin,
                            bounds().width(), nameSize.height() + 2 * k_nameHeightMargin);
 
-  if (!ThemeManager::hasWallpaper()) {
-    // No wallpaper on the selected theme: keep the previous, simpler
-    // behavior. Just paint the flat background band; the name itself is
-    // drawn by the TextView as a normal (opaque) subview - see
-    // numberOfSubviews()/subviewAtIndex() below.
-    ctx->fillRect(nameRect, Palette::WallpaperColor);
+  if (useOpaqueNameBackground(isHighlighted())) {
+    // Either there's no wallpaper at all, or the theme asks for an opaque
+    // highlight box (isAppNameBackgroundHover) AND this cell is currently
+    // the highlighted one. Either way the name itself is drawn by the
+    // TextView as a normal (opaque) subview - see
+    // numberOfSubviews()/subviewAtIndex() below - so it stays perfectly
+    // readable. But we still need to clear the *whole* nameRect band (full
+    // cell width, not just the width of the text) every time we draw, or
+    // leftovers from a previous, wider TextView content / themed icon can
+    // remain visible at the edges.
+    if (ThemeManager::hasWallpaper()) {
+      // This only happens for the highlighted cell of a theme that asks
+      // for an opaque name background: clear the band with the real
+      // wallpaper pixels first (rather than a flat color), so the area
+      // around the TextView's own, narrower opaque YellowDark box still
+      // shows the photo instead of a plain rectangle.
+      int rectWidth = nameRect.width();
+      int rectHeight = nameRect.height();
+
+      KDColor buffer[104 * 20];
+
+      KDPoint globalOrigin = ctx->origin();
+      fillWallpaperLineRange(nameRect, globalOrigin.x(), globalOrigin.y(),
+                             nameSize.height(), buffer, rectHeight, rectWidth);
+
+      ctx->fillRectWithPixels(nameRect, buffer, nullptr);
+    } else {
+      // No wallpaper at all: keep the previous, simpler behavior of a flat
+      // background fill.
+      ctx->fillRect(nameRect, Palette::WallpaperColor);
+    }
   } else {
+    // Not the highlighted cell (or the theme doesn't ask for an opaque
+    // highlight box at all): blend the name into the real wallpaper pixels
+    // instead of painting any flat rectangle behind it.
     // Get the width and height of the rectangle
     int rectWidth = nameRect.width();
     int rectHeight = nameRect.height();
@@ -249,10 +297,12 @@ int AppCell::numberOfSubviews() const {
       (m_pointerNameView.text() != nullptr && ThemeManager::hasWallpaper());
   int count = manuallyDrawIcon ? 0 : 1;
   // The name is only drawn manually (drawTextTransparent, see drawRect())
-  // when there's a wallpaper to blend with. Without a wallpaper we fall
-  // back to the previous behavior: the TextView draws itself normally, as
-  // an ordinary opaque subview.
-  if (!ThemeManager::hasWallpaper()) {
+  // when there's a wallpaper to blend with, and either the theme doesn't
+  // ask for an opaque name background at all, or it does but this cell
+  // isn't the currently highlighted one. Otherwise we fall back to the
+  // previous behavior: the TextView draws itself normally, as an ordinary
+  // opaque subview.
+  if (useOpaqueNameBackground(isHighlighted())) {
     count += 1;
   }
   return count;
@@ -263,7 +313,7 @@ View* AppCell::subviewAtIndex(int index) {
       hasThemedIcon() ||
       (m_pointerNameView.text() != nullptr && ThemeManager::hasWallpaper());
   bool includeIcon = !manuallyDrawIcon;
-  bool includeText = !ThemeManager::hasWallpaper();
+  bool includeText = useOpaqueNameBackground(isHighlighted());
   if (includeIcon) {
     if (index == 0) {
       return &m_iconView;
@@ -319,16 +369,23 @@ void AppCell::setVisible(bool visible) {
 void AppCell::reloadCell() {
   TextView* t = const_cast<TextView*>(textView());
   t->setTextColor(isHighlighted() ? Palette::TextColor : Palette::TextColorHover);
-  if (!ThemeManager::hasWallpaper()) {
-    // No wallpaper: the TextView draws itself as a normal opaque subview
-    // (see numberOfSubviews()/subviewAtIndex()), so give it an opaque
+  if (useOpaqueNameBackground(isHighlighted())) {
+    // Opaque name background: either there's no wallpaper at all, or this
+    // is the highlighted cell of a theme that asks for an opaque highlight
+    // box. In the wallpaper case isHighlighted() is necessarily true here
+    // (see useOpaqueNameBackground()), so this always resolves to
+    // YellowDark; in the no-wallpaper case both branches still apply as
+    // before. The TextView draws itself as a normal opaque subview (see
+    // numberOfSubviews()/subviewAtIndex()), so give it an opaque
     // background again, same spirit as the pre-wallpaper code.
     t->setBackgroundColor(isHighlighted() ? Palette::YellowDark
                                           : Palette::WallpaperColor);
   }
-  // With a wallpaper, the name is painted manually via drawTextTransparent()
-  // in drawRect(), which ignores the TextView's own background - leave it
-  // alone so nothing opaque gets set on it.
+  // Otherwise (wallpaper present, and either the theme doesn't ask for an
+  // opaque highlight box, or this cell isn't the highlighted one), the name
+  // is painted manually via drawTextTransparent() in drawRect(), which
+  // ignores the TextView's own background - leave it alone so nothing
+  // opaque gets set on it.
   markWholeFrameAsDirty();
 }
 

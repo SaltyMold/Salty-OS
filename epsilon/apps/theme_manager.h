@@ -85,6 +85,14 @@ class ThemeManager {
   // applied theme's colors in place.
   static void applyPalette();
 
+  // --- Variables of the CURRENTLY SELECTED theme ----------------------
+  // Read directly from the ThemeEntry (see VARIABLE_DEFS in
+  // generate_theme.py); return the same default as an unflashed/invalid
+  // Theme Area (0) when there is no current entry, so callers never need
+  // to check isValid()/hasXxx() first.
+  static int defaultCircleLevel();
+  static bool isAppNameBackgroundHover();
+
   static void refreshTheme(AppsWindow* window);
 
  private:

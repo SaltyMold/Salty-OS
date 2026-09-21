@@ -1,0 +1,2 @@
+defaultCircleLevel 2
+isAppNameBackgroundHover 0

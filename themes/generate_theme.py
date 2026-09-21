@@ -15,14 +15,16 @@ in: shared/ion/src/device/include/n0120/config/board.h
       uint8_t  isWallpaper;
       uint8_t  isPalette;
       uint8_t  isIcons;
-      uint8_t  reserved;
+      uint8_t  defaultCircleLevel;
+      uint8_t  isAppNameBackgroundHover;
+      uint8_t  reserved[3];
       uint32_t wallpaperOffset;
       uint32_t wallpaperSize;
       uint32_t paletteOffset;
       uint32_t paletteSize;
       uint32_t iconOffsets[12];
       uint32_t iconSizes[12];
-    };                                              // 132 bytes, no padding
+    };                                              // 136 bytes, no padding
 
 Binary layout produced by this script:
 
@@ -45,6 +47,7 @@ Usage:
 Each theme folder may contain:
     - name.txt
     - palette.txt        (up to 64 lines: "<name> 0x<RRGGBB>")
+    - variables.txt       (optional, "<name> <int>" lines, see VARIABLE_DEFS)
     - wallpaper.png       (optional)
     - <fixed icon names>.png (optional, up to 12, see FIXED_ICON_FILES)
 
@@ -76,7 +79,7 @@ except ImportError:  # pragma: no cover - fallback for minimal environments
 # way to parse the C++ header automatically here.
 # --------------------------------------------------------------------------
 MAGIC = 0x87654321
-VERSION = 2
+VERSION = 3
 THEME_COUNT_MAX = 4
 THEME_ICON_COUNT = 12
 THEME_NAME_LENGTH = 16
@@ -87,11 +90,25 @@ THEME_AREA_SIZE = 2 * 1024 * 1024
 HEADER_FORMAT = "<III"
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)  # 12
 
-# struct ThemeEntry { char name[16]; uint8_t x4; uint32_t x4; uint32_t[12]; uint32_t[12]; }
-ENTRY_FORMAT = f"<{THEME_NAME_LENGTH}sBBBBIIII{THEME_ICON_COUNT}I{THEME_ICON_COUNT}I"
-ENTRY_SIZE = struct.calcsize(ENTRY_FORMAT)  # 132
+# struct ThemeEntry {
+#   char name[16]; uint8_t x8 (isWallpaper, isPalette, isIcons,
+#   defaultCircleLevel, isAppNameBackgroundHover, reserved[3]);
+#   uint32_t x4; uint32_t[12]; uint32_t[12];
+# }
+ENTRY_FORMAT = f"<{THEME_NAME_LENGTH}sBBBBBBBBIIII{THEME_ICON_COUNT}I{THEME_ICON_COUNT}I"
+ENTRY_SIZE = struct.calcsize(ENTRY_FORMAT)  # 136
 
 WALLPAPER_FILE = "wallpaper.png"
+VARIABLES_FILE = "variables.txt"
+
+# Known theme variables: name -> (default, min, max). generate_theme.py
+# rejects any name in variables.txt that isn't listed here, and any value
+# out of range, so a typo fails loudly at generation time instead of being
+# silently ignored on-device.
+VARIABLE_DEFS: dict[str, dict[str, int]] = {
+    "defaultCircleLevel": {"default": 0, "min": 0, "max": 7},
+    "isAppNameBackgroundHover": {"default": 0, "min": 0, "max": 1},
+}
 FIXED_ICON_FILES = [
     "calculation_icon.png",
     "code_icon.png",
@@ -134,6 +151,7 @@ class ThemeReport:
         self.wallpaper_asset: AssetInfo | None = None
         self.icon_assets: list[AssetInfo] = []
         self.missing_icons: list[str] = []
+        self.variables: dict[str, int] = {}
         self.warnings: list[str] = []
 
     @property
@@ -182,6 +200,42 @@ def encode_palette(colors: list[int]) -> bytes:
     # per entry compared to tightly-packed RGB888 (3 bytes), but keeps every
     # entry 4-byte aligned for cheap direct indexing on the Cortex-M4.
     return b"".join(struct.pack("<I", color) for color in colors)
+
+
+# --------------------------------------------------------------------------
+# Variables
+# --------------------------------------------------------------------------
+def parse_variables_file(path: Path) -> dict[str, int]:
+    """Parses "<name> <int>" lines against VARIABLE_DEFS. Missing file or
+    missing names fall back to their default; unknown names or out-of-range
+    values raise, so a typo in a theme's variables.txt fails at generation
+    time instead of silently doing nothing on-device."""
+    values = {name: spec["default"] for name, spec in VARIABLE_DEFS.items()}
+    if not path.exists():
+        return values
+
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        match = re.match(r"^\s*(\S+)\s+(-?\d+)\s*$", line)
+        if not match:
+            raise ValueError(f"Invalid variables line: {line!r} in {path}")
+        name, raw_value = match.group(1), int(match.group(2))
+        if name not in VARIABLE_DEFS:
+            raise ValueError(
+                f"Unknown variable {name!r} in {path} "
+                f"(known: {', '.join(VARIABLE_DEFS)})"
+            )
+        spec = VARIABLE_DEFS[name]
+        if not (spec["min"] <= raw_value <= spec["max"]):
+            raise ValueError(
+                f"{name}={raw_value} out of range "
+                f"[{spec['min']}, {spec['max']}] in {path}"
+            )
+        values[name] = raw_value
+
+    return values
 
 
 # --------------------------------------------------------------------------
@@ -372,10 +426,16 @@ def build_theme(theme_dir: Path, asset_cursor: int,
             + ", ".join(missing_icons)
         )
 
+    # --- Variables -----------------------------------------------------
+    variables = parse_variables_file(theme_dir / VARIABLES_FILE)
+    report.variables = variables
+
     entry = struct.pack(
         ENTRY_FORMAT,
         name_bytes.ljust(THEME_NAME_LENGTH, b"\x00"),
-        is_wallpaper, is_palette, is_icons, 0,
+        is_wallpaper, is_palette, is_icons,
+        variables["defaultCircleLevel"], variables["isAppNameBackgroundHover"],
+        0, 0, 0,  # reserved[3]
         wallpaper_offset, wallpaper_size,
         palette_offset, palette_size,
         *icon_offsets,
@@ -563,6 +623,12 @@ def render_summary(theme_dirs: list[Path], reports: list[ThemeReport],
                 )
         if report.missing_icons:
             lines.append(f"    missing: {', '.join(report.missing_icons)}")
+        lines.append("")
+
+        # Variables
+        lines.append("  Variables:")
+        for name, value in report.variables.items():
+            lines.append(f"    {name:<24} {value}")
         lines.append("")
 
         if report.warnings:

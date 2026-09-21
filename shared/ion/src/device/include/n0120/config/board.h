@@ -166,7 +166,7 @@ constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength / 
 constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;
 
 constexpr uint32_t ThemeAreaHeaderMagic = 0x87654321;
-constexpr uint32_t ThemeAreaHeaderVersion = 2;
+constexpr uint32_t ThemeAreaHeaderVersion = 3;
 
 constexpr uint32_t ThemeCount = 256;
 constexpr uint32_t ThemeIconCount = 12;
@@ -177,7 +177,9 @@ struct ThemeEntry {
   uint8_t isWallpaper;
   uint8_t isPalette;
   uint8_t isIcons;
-  uint8_t reserved;
+  uint8_t defaultCircleLevel;
+  uint8_t isAppNameBackgroundHover;
+  uint8_t reserved[3]; // padding
   uint32_t wallpaperOffset;
   uint32_t wallpaperSize;
   uint32_t paletteOffset;

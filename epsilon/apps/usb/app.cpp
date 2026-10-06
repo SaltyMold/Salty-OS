@@ -2,6 +2,7 @@
 
 #include <apps/apps_container.h>
 #include <apps/i18n.h>
+#include "../theme_manager.h"
 #include <assert.h>
 
 namespace USB {
@@ -23,7 +24,9 @@ const App::Descriptor* App::Snapshot::descriptor() const {
 }
 
 App::App(Snapshot* snapshot)
-    : Escher::App(snapshot, &m_usbConnectedController) {}
+    : Escher::App(snapshot, &m_usbConnectedController) {
+  ThemeManager::refreshTheme(nullptr);
+}
 
 bool App::processEvent(Ion::Events::Event e) { return false; }
 

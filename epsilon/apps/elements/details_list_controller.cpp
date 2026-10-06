@@ -16,7 +16,7 @@ DetailsListController::DetailsListController(
                                      &m_bottomMessageView),
       m_topElementView(Escher::Palette::WallScreen),
       m_bottomMessageView(I18n::Message::ElementsDataConditions,
-                          k_messageFormat) {}
+                          MessageFormat()) {}
 
 bool DetailsListController::handleEvent(Ion::Events::Event e) {
   /* Navigate through elements, sorted by their atomic number.

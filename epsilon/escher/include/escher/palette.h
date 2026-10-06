@@ -17,6 +17,13 @@ class Palette {
   // ApplyPalette() below, called by ThemeManager when a themed palette
   // is flashed. Everywhere that read `Palette::TextColor` etc. keeps
   // working unchanged.
+  //
+  // IMPORTANT: on device, C++ static constructors (.init_array) are never
+  // run. Every initializer below MUST therefore be a constant expression
+  // (a literal passed to the constexpr KDColor::RGB24), so the compiler
+  // emits the value directly in .data. An initializer that *reads* another
+  // mutable variable (e.g. `= Palette::Red`) is a dynamic initializer: it
+  // would never run and the variable would stay at 0 (black).
   static inline KDColor YellowDark = KDColor::RGB24(0xffb734);
   static inline KDColor YellowLightBattery = KDColor::RGB24(0xffcc7b);
   static inline KDColor YellowLight = KDColor::RGB24(0xffebc7);
@@ -63,16 +70,40 @@ class Palette {
 
   static inline KDColor WallpaperColor = KDColor::RGB24(0xffffff);
 
-  // DataColor/DataColorLight can no longer be `constexpr` (their
-  // initializers reference the now-mutable colors above, so they're not
-  // constant expressions anymore), but they stay in RAM as plain arrays
-  // and are still readable/indexable exactly like before.
-  static inline KDColor DataColor[] = {Red,     Blue,      Green, YellowDark,
-                                        Magenta, Turquoise, Pink,  Orange,
-                                        Violet,  Mint};
+  // DataColor/DataColorLight are plain mutable arrays living in RAM, still
+  // readable/indexable exactly like before.
+  // Their defaults are written as *literals* (same values as the named
+  // colors above) so that they are constant-initialized: referencing
+  // `Red`, `Blue`... here would make them dynamically initialized, which
+  // never happens on device (all entries would be black).
+  // They are kept in sync with the named colors by RefreshDataColors(),
+  // called at the end of ApplyPalette() and ResetToDefaults().
+  // Order: Red, Blue, Green, YellowDark, Magenta, Turquoise, Pink, Orange,
+  // Violet, Mint.
+  static inline KDColor DataColor[] = {
+      KDColor::RGB24(0xff000c),   // Red
+      KDColor::RGB24(0x5075f2),   // Blue
+      KDColor::RGB24(0x50c102),   // Green
+      KDColor::RGB24(0xffb734),   // YellowDark
+      KDColor::RGB24(0xff0588),   // Magenta
+      KDColor::RGB24(0x60c1ec),   // Turquoise
+      KDColor::RGB24(0xff99aa),   // Pink
+      KDColor::RGB24(0xfe871f),   // Orange
+      KDColor::RGB24(0x8d37e9),   // Violet
+      KDColor::RGB24(0x00c6b1)};  // Mint
+  // Order: RedLight, BlueLight, GreenLight, YellowLight, MagentaLight,
+  // TurquoiseLight, PinkLight, OrangeLight, VioletLight, MintLight.
   static inline KDColor DataColorLight[] = {
-      RedLight,       BlueLight, GreenLight,  YellowLight, MagentaLight,
-      TurquoiseLight, PinkLight, OrangeLight, VioletLight, MintLight};
+      KDColor::RGB24(0xffcccc),   // RedLight
+      KDColor::RGB24(0xdce3fd),   // BlueLight
+      KDColor::RGB24(0xdcf3cc),   // GreenLight
+      KDColor::RGB24(0xffebc7),   // YellowLight
+      KDColor::RGB24(0xffd9eb),   // MagentaLight
+      KDColor::RGB24(0xd0edff),   // TurquoiseLight
+      KDColor::RGB24(0xffe3e7),   // PinkLight
+      KDColor::RGB24(0xffc89a),   // OrangeLight
+      KDColor::RGB24(0xd7b3ff),   // VioletLight
+      KDColor::RGB24(0xb1fef7)};  // MintLight
 
   static constexpr size_t numberOfDataColors() { return std::size(DataColor); }
   static constexpr size_t numberOfLightDataColors() {
@@ -87,13 +118,14 @@ class Palette {
   // currently have (their compiled-in default, or a previous theme's
   // value if one was already applied). This order must stay in sync with
   // the palette.txt slot order documented in generate_theme.py.
+  // DataColor/DataColorLight are refreshed afterwards.
   static void ApplyPalette(const KDColor* colors, size_t count);
   // Restores every themable slot to the value it had before the very first
   // ApplyPalette() call (i.e. the compiled-in defaults above), undoing
   // whatever theme is currently applied. Used when switching back to the
   // "Default" theme, or to any theme that doesn't ship its own palette -
   // without this, those slots would simply keep whatever a *previous*
-  // theme left them at.
+  // theme left them at. DataColor/DataColorLight are refreshed afterwards.
   static void ResetToDefaults();
   static constexpr size_t numberOfPaletteSlots() {
     return std::size(s_paletteSlots);
@@ -101,6 +133,8 @@ class Palette {
 
  private:
   static void CaptureDefaultsIfNeeded();
+  // Copies the named colors into DataColor/DataColorLight.
+  static void RefreshDataColors();
   static bool s_defaultsCaptured;
   static KDColor s_defaultValues[];
 

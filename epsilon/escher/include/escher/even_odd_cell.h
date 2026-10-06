@@ -7,7 +7,7 @@ namespace Escher {
 
 class EvenOddCell : public HighlightCell {
  public:
-  static inline KDColor k_hideColor = Escher::Palette::WallScreenDark;
+  // static inline KDColor k_hideColor = Escher::Palette::WallScreenDark;
   EvenOddCell();
   virtual void setEven(bool even);
   void setVisible(bool visible) override;

@@ -82,11 +82,12 @@ class ListWithTopAndBottomController : public SelectableViewController,
   void selectFirstCell() { selectRow(firstCellIndex()); }
 
  protected:
-  static inline KDGlyph::Format k_messageFormat = {
-      .style = {.glyphColor = Escher::Palette::GrayDark,
-                .backgroundColor = Escher::Palette::WallScreen,
-                .font = KDFont::Size::Small},
-      .horizontalAlignment = KDGlyph::k_alignCenter};
+    static KDGlyph::Format MessageFormat() {
+      return {.style = {.glyphColor = Escher::Palette::GrayDark,
+                        .backgroundColor = Escher::Palette::WallScreen,
+                        .font = KDFont::Size::Small},
+              .horizontalAlignment = KDGlyph::k_alignCenter};
+  }
 
   void viewWillAppear() override;
   int innerRowFromRow(int row) const {

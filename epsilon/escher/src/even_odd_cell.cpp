@@ -28,7 +28,7 @@ void EvenOddCell::setHighlighted(bool highlighted) {
 
 KDColor EvenOddCell::backgroundColor() const {
   if (!isVisible()) {
-    return k_hideColor;
+    return Palette::WallScreenDark;
   } else if (isHighlighted()) {
     return Palette::Select;
   }

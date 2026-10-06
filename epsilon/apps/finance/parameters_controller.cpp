@@ -13,7 +13,7 @@ ParametersController::ParametersController(StackViewController* parent,
     : Shared::FloatParameterController<double>(parent, &m_messageView),
       m_dropdown(&m_selectableListView, &m_dropdownDataSource, this),
       m_resultController(resultController),
-      m_messageView(I18n::Message::DefineParameters, k_messageFormat) {
+      m_messageView(I18n::Message::DefineParameters, MessageFormat()) {
   for (size_t i = 0; i < k_numberOfReusableInputs; i++) {
     m_cells[i].setParentResponder(&m_selectableListView);
     m_cells[i].setDelegate(this);

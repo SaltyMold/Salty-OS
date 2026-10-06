@@ -22,7 +22,7 @@ InputController::InputController(Escher::StackViewController* parent,
     : InferenceController(inference, controllerContainer),
       FloatParameterController<double>(parent, &m_messageView),
       m_significanceCell(&m_selectableListView, this),
-      m_messageView(I18n::Message::InputStatistics, k_messageFormat) {
+      m_messageView(I18n::Message::InputStatistics, MessageFormat()) {
   m_okButton.setMessage(I18n::Message::Next);
 }
 

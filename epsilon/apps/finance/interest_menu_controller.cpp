@@ -8,7 +8,7 @@ InterestMenuController::InterestMenuController(
     Escher::StackViewController* parentResponder,
     ParametersController* interestController)
     : Escher::ListWithTopAndBottomController(parentResponder, &m_messageView),
-      m_messageView(I18n::Message::ParameterChoose, k_messageFormat),
+      m_messageView(I18n::Message::ParameterChoose, MessageFormat()),
       m_parametersController(interestController) {
   selectRow(0);
 }

@@ -19,9 +19,9 @@ namespace Settings {
 PressToTestController::PressToTestController(Responder* parentResponder)
     : ListWithTopAndBottomController(parentResponder, &m_topMessageView,
                                      &m_bottomMessageView),
-      m_topMessageView(I18n::Message::Default, k_messageFormat),
+      m_topMessageView(I18n::Message::Default, MessageFormat()),
       m_bottomMessageView(I18n::Message::ToDeactivatePressToTest,
-                          k_messageFormat),
+                          MessageFormat()),
       m_tempPressToTestParams{},
       m_activateButton(
           &m_selectableListView, I18n::Message::ActivateTestMode,

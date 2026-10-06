@@ -14,7 +14,7 @@ namespace Finance {
 
 ResultController::ResultController(Escher::StackViewController* parentResponder)
     : Escher::ListWithTopAndBottomController(parentResponder, &m_messageView),
-      m_messageView(I18n::Message::CalculatedValues, k_messageFormat) {}
+      m_messageView(I18n::Message::CalculatedValues, MessageFormat()) {}
 
 void ResultController::viewWillAppear() {
   /* Build the result cell here because it only needs to be updated once this

@@ -14,8 +14,8 @@ ParametersController::ParametersController(
     Escher::StackViewController* parentResponder, Distribution* distribution,
     CalculationController* calculationController)
     : FloatParameterController<double>(parentResponder, &m_headerView),
-      m_headerView(I18n::Message::DefineParameters, k_messageFormat),
-      m_bottomView(I18n::Message::LeaveAFieldEmpty, k_messageFormat),
+      m_headerView(I18n::Message::DefineParameters, MessageFormat()),
+      m_bottomView(I18n::Message::LeaveAFieldEmpty, MessageFormat()),
       m_distribution(distribution),
       m_calculationController(calculationController) {
   assert(m_distribution != nullptr);

@@ -11,11 +11,12 @@ namespace Shared {
 class BannerView : public Escher::View {
  public:
   constexpr static KDFont::Size k_font = KDFont::Size::Small;
-  static inline KDGlyph::Format k_bannerFieldFormat = {
-      .style = {.glyphColor = KDColorBlack,
-                .backgroundColor = Escher::Palette::GrayMiddle,
-                .font = k_font},
-      .horizontalAlignment = KDGlyph::k_alignCenter};
+  static KDGlyph::Format BannerFieldFormat() {
+    return {.style = {.glyphColor = KDColorBlack,
+                      .backgroundColor = Escher::Palette::GrayMiddle,
+                      .font = k_font},
+            .horizontalAlignment = KDGlyph::k_alignCenter};
+  }
   using BannerBufferTextView = Escher::OneLineBufferTextView<k_font>;
 
   static KDCoordinate HeightGivenNumberOfLines(int linesCount);

@@ -5,7 +5,7 @@
 namespace Statistics {
 
 PlotBannerView::PlotBannerView()
-    : m_seriesName(k_bannerFieldFormat), m_result(k_bannerFieldFormat) {}
+    : m_seriesName(BannerFieldFormat()), m_result(BannerFieldFormat()) {}
 
 Escher::View* PlotBannerView::subviewAtIndex(int index) {
   assert(0 <= index && index < numberOfSubviews());

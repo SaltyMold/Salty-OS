@@ -17,7 +17,7 @@ void BannerView::drawRect(KDContext* ctx, KDRect rect) const {
   const KDCoordinate lineWidth = bounds().width();
   for (KDCoordinate y = 0; y < frameHeight; y += lineHeight) {
     ctx->fillRect(KDRect(0, y, lineWidth, k_lineSpacing),
-                  k_bannerFieldFormat.style.backgroundColor);
+                  BannerFieldFormat().style.backgroundColor);
   }
 }
 

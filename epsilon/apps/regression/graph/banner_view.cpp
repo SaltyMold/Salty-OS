@@ -11,9 +11,9 @@ namespace Regression {
 BannerView::BannerView(Responder* parentResponder,
                        TextFieldDelegate* textFieldDelegate)
     : Shared::XYBannerView(parentResponder, textFieldDelegate),
-      m_otherView(k_bannerFieldFormat),
+      m_otherView(BannerFieldFormat()),
       m_dataNotSuitableView(I18n::Message::DataNotSuitableForRegression,
-                            k_bannerFieldFormat),
+                            BannerFieldFormat()),
       m_displayOtherView(false),
       m_otherViewIsFirst(false),
       m_displayDataNotSuitable(false) {}

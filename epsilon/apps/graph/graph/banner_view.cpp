@@ -10,16 +10,16 @@ namespace Graph {
 BannerView::BannerView(Responder* parentResponder,
                        TextFieldDelegate* textFieldDelegate)
     : Shared::XYBannerView(parentResponder, textFieldDelegate),
-      m_firstDerivativeView(k_bannerFieldFormat),
-      m_secondDerivativeView(k_bannerFieldFormat),
-      m_slopeView(k_bannerFieldFormat),
+      m_firstDerivativeView(BannerFieldFormat()),
+      m_secondDerivativeView(BannerFieldFormat()),
+      m_slopeView(BannerFieldFormat()),
       m_tangentEquationView(I18n::Message::LinearRegressionFormula,
-                            k_bannerFieldFormat),
-      m_aView(k_bannerFieldFormat),
-      m_bView(k_bannerFieldFormat) {
+                            BannerFieldFormat()),
+      m_aView(BannerFieldFormat()),
+      m_bView(BannerFieldFormat()) {
   for (int i = 0; i < k_maxNumberOfInterests; i++) {
     m_interestMessageView[i] =
-        MessageTextView(I18n::Message::Default, k_bannerFieldFormat);
+        MessageTextView(I18n::Message::Default, BannerFieldFormat());
   }
 }
 

@@ -20,7 +20,7 @@ CalculationGraphController::CalculationGraphController(
       m_graphView(graphView),
       m_bannerView(bannerView),
       m_graphRange(curveViewRange),
-      m_defaultBannerView(defaultMessage, BannerView::k_bannerFieldFormat),
+      m_defaultBannerView(defaultMessage, BannerView::BannerFieldFormat()),
       m_isActive(false) {}
 
 bool CalculationGraphController::handleEvent(Ion::Events::Event event) {

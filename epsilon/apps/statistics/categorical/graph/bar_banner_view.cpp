@@ -8,15 +8,15 @@ using namespace Escher;
 namespace Statistics {
 
 BarBannerView::BarBannerView()
-    : m_categoryName(k_bannerFieldFormat),
-      m_groupName(k_bannerFieldFormat),
-      m_frequency(k_bannerFieldFormat),
-      m_relativeFrequency(k_bannerFieldFormat),
+    : m_categoryName(BannerFieldFormat()),
+      m_groupName(BannerFieldFormat()),
+      m_frequency(BannerFieldFormat()),
+      m_relativeFrequency(BannerFieldFormat()),
       m_isSelected(false) {}
 
 void BarBannerView::drawRect(KDContext* ctx, KDRect rect) const {
   // Draw background
-  ctx->fillRect(rect, BannerView::k_bannerFieldFormat.style.backgroundColor);
+  ctx->fillRect(rect, BannerView::BannerFieldFormat().style.backgroundColor);
 }
 
 void BarBannerView::toggleSelection(bool isSelected) {

@@ -121,13 +121,39 @@ bool useOpaqueNameBackground(bool cellIsHighlighted) {
 namespace Home {
 
 uint8_t circleLevel = 1;
+// Smooth coverage (0..255) of the circle mask at (x, y)
+static uint8_t circleCoverage(int x, int y, int width, int height,
+                              uint8_t bitMask) {
+  static constexpr uint8_t k_weights[3][3] = {{1, 2, 1}, {2, 4, 2}, {1, 2, 1}};
+  int sum = 0;
+  for (int dy = -1; dy <= 1; dy++) {
+    int ny = y + dy;
+    ny = ny < 0 ? 0 : (ny >= height ? height - 1 : ny);
+    for (int dx = -1; dx <= 1; dx++) {
+      int nx = x + dx;
+      nx = nx < 0 ? 0 : (nx >= width ? width - 1 : nx);
+      if (k_circleMask[ny][nx] & bitMask) {
+        sum += k_weights[dy + 1][dx + 1];
+      }
+    }
+  }
+  return (sum * 255) / 16;
+}
+
+static KDColor wallpaperPixelAt(int srcX, int srcY, int wallpaperWidth) {
+  if (ThemeManager::hasWallpaper()) {
+    int localY = 0;
+    const KDColor* chunk = ThemeManager::wallpaperChunkContaining(srcY, &localY);
+    if (chunk != nullptr && srcX >= 0 && srcX < wallpaperWidth) {
+      return chunk[localY * wallpaperWidth + srcX];
+    }
+  }
+  return Palette::WallpaperColor;
+}
 
 void fillRoundedIcon(KDContext* ctx, KDRect iconRect, const KDColor* pixels,
                      int iconWidth, int iconHeight, int globalX, int globalY,
                      int nameHeight) {
-  // The theme's variables.txt sets the circle level (see VARIABLE_DEFS in
-  // generate_theme.py); circleLevel above stays as a fallback for when no
-  // theme is selected (ThemeManager::defaultCircleLevel() then returns 0).
   uint8_t level = ThemeManager::isValid() ? (uint8_t)ThemeManager::defaultCircleLevel()
                                           : circleLevel;
   uint8_t bitMask = 1 << level;
@@ -137,25 +163,25 @@ void fillRoundedIcon(KDContext* ctx, KDRect iconRect, const KDColor* pixels,
   for (int y = 0; y < iconHeight; y++) {
     for (int x = 0; x < iconWidth; x++) {
       int idx = y * iconWidth + x;
-      if (k_circleMask[y][x] & bitMask) {
-        maskedPixels[idx] = pixels[idx];
-      } else if (ThemeManager::hasWallpaper()) {
-        int srcX = globalX + iconRect.origin().x() + x;
-        int srcY = globalY + iconRect.origin().y() + y - nameHeight - 4;
-        int localY = 0;
-        const KDColor* chunk =
-            ThemeManager::wallpaperChunkContaining(srcY, &localY);
-        if (chunk != nullptr && srcX >= 0 && srcX < wallpaperWidth) {
-          maskedPixels[idx] = chunk[localY * wallpaperWidth + srcX];
-        } else {
-          maskedPixels[idx] = Palette::WallpaperColor;
+      bool insideMask = (k_circleMask[y][x] & bitMask) != 0;
+      uint8_t alpha = 0;
+      if (insideMask) {
+        alpha = circleCoverage(x, y, iconWidth, iconHeight, bitMask);
+        if (alpha == 0xFF) {
+          maskedPixels[idx] = pixels[idx];
+          continue;
         }
-      } else {
-        maskedPixels[idx] = Palette::WallpaperColor;
       }
+      // Outside the mask: alpha stays 0, so we get the plain wallpaper
+      // (same as the original hard mask). Inside the mask, only the contour
+      // pixels of the icon (those with an outside neighbour) are blended.
+      int srcX = globalX + iconRect.origin().x() + x;
+      int srcY = globalY + iconRect.origin().y() + y - nameHeight - 4;
+      KDColor background = wallpaperPixelAt(srcX, srcY, wallpaperWidth);
+      maskedPixels[idx] = alpha == 0 ? background
+                                     : KDColor::Blend(pixels[idx], background, alpha);
     }
   }
-
   ctx->fillRectWithPixels(iconRect, maskedPixels, nullptr);
 }
 

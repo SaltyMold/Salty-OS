@@ -76,6 +76,8 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   static const int k_promptNumberOfMessages;
   bool m_firstUSBEnumeration;
   bool m_dfuBetweenEvents;
+  bool m_externalAppsHidden;
+  bool m_toolboxKeyWasDown;
   AppsWindow m_window;
   EmptyBatteryWindow m_emptyBatteryWindow;
   ExamPopUpController m_examPopUpController;

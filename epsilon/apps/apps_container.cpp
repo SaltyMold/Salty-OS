@@ -31,6 +31,8 @@ AppsContainer::AppsContainer()
     : Container(),
       m_firstUSBEnumeration(true),
       m_dfuBetweenEvents(false),
+      m_externalAppsHidden(false),
+      m_toolboxKeyWasDown(false),
       m_examPopUpController(),
       m_promptController(k_promptMessages, k_promptColors,
                          k_promptNumberOfMessages,
@@ -48,6 +50,9 @@ AppsContainer::AppsContainer()
 }
 
 int AppsContainer::numberOfExternalApps() {
+  if (m_externalAppsHidden) {
+    return 0;
+  }
   return Ion::ExternalApps::numberOfApps(
       ExamModeManager::ExamMode().isActive());
 }
@@ -151,12 +156,22 @@ bool AppsContainer::dispatchEvent(Ion::Events::Event event) {
 
   const bool shorcutBtnPreviusTheme = keyboardState.keyDown(Ion::Keyboard::Key::Shift);
   const bool shorcutBtnNextTheme = keyboardState.keyDown(Ion::Keyboard::Key::Alpha);
-  
-  const bool shorcutBtnPreviusCircleLevel = keyboardState.keyDown(Ion::Keyboard::Key::Exp);
-  const bool shorcutBtnNextCircleLevel = keyboardState.keyDown(Ion::Keyboard::Key::Ln);
-
   const bool needChangeTheme = shortcutBtn1 && shortcutBtn2 && (shorcutBtnPreviusTheme || shorcutBtnNextTheme);
-  const bool needChangeCircleLevel = shortcutBtn1 && shortcutBtn2 && (shorcutBtnPreviusCircleLevel || shorcutBtnNextCircleLevel);
+  
+  const bool shorcutBtnHideExternalApps = keyboardState.keyDown(Ion::Keyboard::Key::XNT);
+  const bool toggleExternalApps = shortcutBtn1 && shortcutBtn2 && shorcutBtnHideExternalApps;
+
+  if (toggleExternalApps && !m_toolboxKeyWasDown) {
+    m_externalAppsHidden = !m_externalAppsHidden;
+    m_toolboxKeyWasDown = true;
+    if (activeApp() != nullptr && activeApp()->snapshot() == homeAppSnapshot()) {
+      Home::App::app()->snapshot()->selectCellAtLocation(0, 0);
+      Home::App::app()->reloadAppCells();
+      window()->redraw(true);
+    }
+  } else if (!shorcutBtnHideExternalApps || !shortcutBtn1 || !shortcutBtn2) {
+    m_toolboxKeyWasDown = false;
+  }
 
   if (needChangeTheme) {
     int currentTheme = ThemeManager::selectedTheme();

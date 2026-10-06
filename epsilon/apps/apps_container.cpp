@@ -175,18 +175,6 @@ bool AppsContainer::dispatchEvent(Ion::Events::Event event) {
     }
   }
 
-  if (needChangeCircleLevel) {
-    if (shorcutBtnPreviusCircleLevel && Home::circleLevel > 0) {
-      Home::circleLevel--;
-      resetShiftAlphaStatus();
-      ThemeManager::refreshTheme(&m_window);
-    } else if (shorcutBtnNextCircleLevel && Home::circleLevel < 7) {
-      Home::circleLevel++;
-      resetShiftAlphaStatus();
-      ThemeManager::refreshTheme(&m_window);
-    }
-  }
-
   /*------------------------------------------------------------------------*/
 
   if (event == Ion::Events::USBEnumeration || event == Ion::Events::USBPlug ||

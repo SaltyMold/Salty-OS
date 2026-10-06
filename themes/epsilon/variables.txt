@@ -1,2 +1,2 @@
-defaultCircleLevel 2
+defaultCircleLevel 0
 isAppNameBackgroundHover 1

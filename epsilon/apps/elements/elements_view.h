@@ -27,7 +27,7 @@ class ElementsView : public Escher::View {
   constexpr static KDCoordinate k_zoomedViewMargin = 11;
   constexpr static KDCoordinate k_lanthanideTopMargin = 5;
   static inline KDColor k_backgroundColor = KDColorWhite;
-  static inline KDColor k_ligatureColor = Escher::Palette::GrayMiddle;
+  static KDColor k_ligatureColor() { return Escher::Palette::GrayMiddle; }
 
   /* rectForCell returns the rect for the colored part of the cell, without
    * its border. This avoid redrawing cells just because their border overlaps

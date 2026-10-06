@@ -12,13 +12,13 @@ static void FillWithMessageAndColon(Escher::TextView* textView,
 }
 
 PieBannerView::PieBannerView(Store* store)
-    : m_categoryTitle(k_titleFormat),
-      m_colorLabel(k_labelFormat),
-      m_freqLabel(k_labelFormat),
-      m_relativeLabel(k_labelFormat),
-      m_colorCell(k_backgroundColor, k_backgroundColor, 1),
-      m_freqValue(k_valueFormat),
-      m_relativeValue(k_valueFormat),
+    : m_categoryTitle(k_titleFormat()),
+      m_colorLabel(k_labelFormat()),
+      m_freqLabel(k_labelFormat()),
+      m_relativeLabel(k_labelFormat()),
+      m_colorCell(k_backgroundColor(), k_backgroundColor(), 1),
+      m_freqValue(k_valueFormat()),
+      m_relativeValue(k_valueFormat()),
       m_store(store) {
   FillWithMessageAndColon(&m_colorLabel, I18n::Message::Color);
   FillWithMessageAndColon(&m_freqLabel, I18n::Message::Frequency);

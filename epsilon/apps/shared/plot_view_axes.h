@@ -56,8 +56,8 @@ class WithCartesianGrid {
                        KDRect rect);
 
  private:
-  static inline KDColor k_boldColor = Escher::Palette::GrayMiddle;
-  static inline KDColor k_lightColor = Escher::Palette::GrayWhite;
+  static KDColor k_boldColor() { return Escher::Palette::GrayMiddle; }
+  static KDColor k_lightColor() { return Escher::Palette::GrayWhite; }
   static void DrawGridLines(const AbstractPlotView* plotView, KDContext* ctx,
                             KDRect rect, OMG::Axis parallel, bool boldGrid);
 };
@@ -70,8 +70,8 @@ class WithPolarGrid {
                        KDRect rect);
 
  private:
-  static inline KDColor k_boldColor = Escher::Palette::GrayMiddle;
-  static inline KDColor k_lightColor = Escher::Palette::GrayBright;
+  static KDColor k_boldColor() { return Escher::Palette::GrayMiddle; }
+  static KDColor k_lightColor() { return Escher::Palette::GrayBright; }
   constexpr static float k_minimumGraduationDistanceToCenter = 60;
   constexpr static int k_angleStepInDegree = 15;
 

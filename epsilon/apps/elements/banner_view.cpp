@@ -14,7 +14,7 @@ namespace Elements {
 
 void BannerView::DotView::drawRect(KDContext* ctx, KDRect rect) const {
   ctx->fillAntialiasedCircle(KDPointZero, k_dotDiameter / 2, m_color,
-                             k_backgroundColor);
+                             k_backgroundColor());
 }
 
 void BannerView::DotView::setColor(KDColor color) {
@@ -29,18 +29,18 @@ void BannerView::DotView::setColor(KDColor color) {
 BannerView::BannerView(Escher::Responder* textFieldParent,
                        Escher::TextFieldDelegate* textFieldDelegate)
     : m_textField(textFieldParent, textFieldDelegate),
-      m_legendView({.style = {.glyphColor = k_legendColor,
-                              .backgroundColor = k_backgroundColor,
+      m_legendView({.style = {.glyphColor = k_legendColor(),
+                              .backgroundColor = k_backgroundColor(),
                               .font = k_legendSize}}),
-      m_button(k_backgroundColor) {
+      m_button(k_backgroundColor()) {
   m_textField.margins()->setLeft(Escher::Metric::CommonSmallMargin);
 }
 
 void BannerView::drawRect(KDContext* ctx, KDRect rect) const {
-  ctx->fillRect(KDRect(0, 0, bounds().width(), k_borderHeight), k_borderColor);
+  ctx->fillRect(KDRect(0, 0, bounds().width(), k_borderHeight), k_borderColor());
   ctx->fillRect(KDRect(0, k_borderHeight, bounds().width() - k_buttonWidth,
                        k_bannerHeight),
-                k_backgroundColor);
+                k_backgroundColor());
 }
 
 void BannerView::reload() {
@@ -88,10 +88,10 @@ void BannerView::layoutSubviews(bool force) {
     setChildFrame(&m_dotView, dotRect, force);
     m_dotView.setColor(dataSource->field()->getColors(z).fg());
     x += dotRect.width() + k_dotLegendMargin;
-    buttonColor = k_backgroundColor;
+    buttonColor = k_backgroundColor();
   } else {
     setChildFrame(&m_dotView, KDRectZero, force);
-    buttonColor = k_selectedButtonColor;
+    buttonColor = k_selectedButtonColor();
   }
 
   setChildFrame(&m_button,

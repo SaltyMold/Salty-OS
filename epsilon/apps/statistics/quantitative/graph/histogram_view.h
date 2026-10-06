@@ -16,11 +16,9 @@ class HistogramPlotPolicy : public Shared::PlotPolicy::WithHistogram {
   }
 
  protected:
-  static inline KDColor k_notSelectedHistogramColor =
-      Escher::Palette::GrayWhite;
-  static inline KDColor k_notSelectedHistogramBorderColor =
-      Escher::Palette::GrayMiddle;
-  static inline KDColor k_selectedBarColor = Escher::Palette::YellowDark;
+  static KDColor k_notSelectedHistogramColor() { return Escher::Palette::GrayWhite; }
+  static KDColor k_notSelectedHistogramBorderColor() { return Escher::Palette::GrayMiddle; }
+  static KDColor k_selectedBarColor() { return Escher::Palette::YellowDark; }
 
   void drawPlot(const Shared::AbstractPlotView*, KDContext* ctx,
                 KDRect rect) const;

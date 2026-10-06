@@ -54,8 +54,7 @@ class FunctionZoomAndPanCurveViewController
       constexpr static int k_numberOfLegends = 3;
       constexpr static int k_numberOfTokens = 6;
       constexpr static KDCoordinate k_tokenWidth = 10;
-      static inline KDColor k_backgroundColor =
-          Shared::BannerView::BannerFieldFormat().style.backgroundColor;
+      static KDColor k_backgroundColor() { return Shared::BannerView::BannerFieldFormat().style.backgroundColor; }
 
       void layoutSubviews(bool force = false) override;
       int numberOfSubviews() const override;

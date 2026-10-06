@@ -10,23 +10,23 @@ namespace Inference {
 
 void LegendView::DotView::drawRect(KDContext* ctx, KDRect rect) const {
   ctx->fillAntialiasedCircle(KDPointZero, k_diameter / 2, KDColorOrange,
-                             k_backgroundColor);
+                             k_backgroundColor());
 }
 
 void LegendView::StripedDotView::drawRect(KDContext* ctx, KDRect rect) const {
   ctx->fillCircleWithStripes(KDPointZero, k_diameter / 2, Palette::PurpleBright,
-                             k_backgroundColor, 3);
+                             k_backgroundColor(), 3);
 }
 
 LegendView::LegendView()
     : m_pValueLabel(I18n::Message::PValue,
                     {.style = {.glyphColor = Palette::GrayVeryDark,
-                               .backgroundColor = k_backgroundColor,
+                               .backgroundColor = k_backgroundColor(),
                                .font = KDFont::Size::Small},
                      .verticalAlignment = KDGlyph::k_alignTop}),
       m_alphaLabel(I18n::Message::GreekAlpha,
                    {.style = {.glyphColor = Palette::GrayVeryDark,
-                              .backgroundColor = k_backgroundColor,
+                              .backgroundColor = k_backgroundColor(),
                               .font = KDFont::Size::Small},
                     .verticalAlignment = KDGlyph::k_alignTop}) {}
 

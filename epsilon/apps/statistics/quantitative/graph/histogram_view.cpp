@@ -40,14 +40,14 @@ void HistogramPlotPolicy::drawPlot(const Shared::AbstractPlotView* plotView,
     borderColor = DoublePairStore::colorOfSeriesAtIndex(m_series);
     highlights = &barIsHighlighted;
   } else {
-    color = k_notSelectedHistogramColor;
-    borderColor = k_notSelectedHistogramBorderColor;
+    color = k_notSelectedHistogramColor();
+    borderColor = k_notSelectedHistogramBorderColor();
   }
 
   HistogramDrawing histogram(histogramLevels, m_store, context, highlights,
                              m_store->firstDrawnBarAbscissa(),
                              m_store->barWidth(), true, true, color,
-                             k_selectedBarColor, borderColor);
+                             k_selectedBarColor(), borderColor);
   histogram.draw(plotView, ctx, rect);
 }
 

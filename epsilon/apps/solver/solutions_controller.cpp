@@ -21,10 +21,10 @@ namespace Solver {
 
 
 SolutionsController::ContentView::ContentView(SolutionsController* controller)
-    : m_warningMessageView(k_warningFormat),
+    : m_warningMessageView(k_warningFormat()),
       m_selectableTableView(controller, controller, controller, this),
       m_displayWarningMoreSolutions(false) {
-  m_selectableTableView.setBackgroundColor(k_backgroundColor);
+  m_selectableTableView.setBackgroundColor(k_backgroundColor());
   m_selectableTableView.setVerticalCellOverlap(0);
 }
 
@@ -32,12 +32,12 @@ void SolutionsController::ContentView::drawRect(KDContext* ctx,
                                                 KDRect rect) const {
   if (hideTableView()) {
     // No selectable table, fill the entire bound for background
-    ctx->fillRect(KDRect(KDPointZero, bounds().size()), k_backgroundColor);
+    ctx->fillRect(KDRect(KDPointZero, bounds().size()), k_backgroundColor());
   } else if (m_displayWarningMoreSolutions) {
     // Fill the bottom margin for additional warnings
     ctx->fillRect(KDRect(bounds().x(), bounds().height() - k_bottomMessageSpace,
                          bounds().size()),
-                  k_backgroundColor);
+                  k_backgroundColor());
   }
 }
 
@@ -193,7 +193,7 @@ SolutionsController::SolutionsController(Responder* parentResponder,
   }
   for (int i = 0; i < k_numberOfEmptyCells; ++i) {
     m_emptyCell[i].setColor(
-        SolutionsController::ContentView::k_backgroundColor);
+        SolutionsController::ContentView::k_backgroundColor());
   }
 }
 

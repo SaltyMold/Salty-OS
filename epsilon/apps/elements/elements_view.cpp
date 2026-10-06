@@ -170,18 +170,18 @@ void ElementsView::drawLigatures(KDContext* ctx) const {
       k_lanthanideTopMargin + 2 * (k_cellMargin + k_cellSize);
   constexpr KDCoordinate yOffset = k_cellSize + k_cellMargin;
 
-  ctx->fillRect(KDRect(x, y, longArm, thickness), k_ligatureColor);
-  ctx->fillRect(KDRect(x + longArm, y, thickness, height), k_ligatureColor);
+  ctx->fillRect(KDRect(x, y, longArm, thickness), k_ligatureColor());
+  ctx->fillRect(KDRect(x + longArm, y, thickness, height), k_ligatureColor());
   ctx->fillRect(KDRect(x + longArm + thickness, y + height - thickness,
                        shortArm, thickness),
-                k_ligatureColor);
+                k_ligatureColor());
 
-  ctx->fillRect(KDRect(x, y + yOffset, shortArm, thickness), k_ligatureColor);
+  ctx->fillRect(KDRect(x, y + yOffset, shortArm, thickness), k_ligatureColor());
   ctx->fillRect(KDRect(x + shortArm, y + yOffset, thickness, height),
-                k_ligatureColor);
+                k_ligatureColor());
   ctx->fillRect(KDRect(x + shortArm + thickness,
                        y + yOffset + height - thickness, longArm, thickness),
-                k_ligatureColor);
+                k_ligatureColor());
 }
 
 void ElementsView::dirtyElement(AtomicNumber z) {

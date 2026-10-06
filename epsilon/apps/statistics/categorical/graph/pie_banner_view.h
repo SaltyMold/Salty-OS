@@ -16,17 +16,17 @@ namespace Statistics::Categorical {
 /* Side banner view of the pie graph. Displays various information about the
  * selected category */
 class PieBannerView : public Escher::View {
-  static inline KDColor k_backgroundColor = Escher::Palette::GrayMiddle;
-  static inline KDGlyph::Format k_titleFormat = {
-      .style = {.backgroundColor = k_backgroundColor},
-      .horizontalAlignment = KDGlyph::k_alignCenter};
-  static inline KDGlyph::Format k_labelFormat = {
-      .style = {.backgroundColor = k_backgroundColor,
-                .font = KDFont::Size::Small}};
-  static inline KDGlyph::Format k_valueFormat = {
-      .style = {.backgroundColor = k_backgroundColor,
+  static KDColor k_backgroundColor() { return Escher::Palette::GrayMiddle; }
+  static KDGlyph::Format k_titleFormat() { return {
+      .style = {.backgroundColor = k_backgroundColor()},
+      .horizontalAlignment = KDGlyph::k_alignCenter}; }
+  static KDGlyph::Format k_labelFormat() { return {
+      .style = {.backgroundColor = k_backgroundColor(),
+                .font = KDFont::Size::Small}}; }
+  static KDGlyph::Format k_valueFormat() { return {
+      .style = {.backgroundColor = k_backgroundColor(),
                 .font = KDFont::Size::Small},
-      .horizontalAlignment = KDGlyph::k_alignRight};
+      .horizontalAlignment = KDGlyph::k_alignRight}; }
 
   constexpr static KDCoordinate k_titleCellWidth = 40;
   constexpr static KDCoordinate k_colorCellHeight = 15;
@@ -47,7 +47,7 @@ class PieBannerView : public Escher::View {
 
  private:
   void drawRect(KDContext* ctx, KDRect rect) const override {
-    ctx->fillRect(bounds(), m_isSelected ? k_backgroundColor : KDColorWhite);
+    ctx->fillRect(bounds(), m_isSelected ? k_backgroundColor() : KDColorWhite);
   }
 
   int numberOfSubviews() const override {

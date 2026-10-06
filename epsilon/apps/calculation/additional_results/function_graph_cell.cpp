@@ -48,10 +48,10 @@ void FunctionAxis<N>::drawAxis(const AbstractPlotView* plotView, KDContext* ctx,
   PlotPolicy::SimpleAxis::drawAxis(plotView, ctx, rect, axis);
   // Draw the dashed lines since they are the ticks of the special labels
   plotView->drawDashedStraightSegment(ctx, rect, otherAxis, t, 0.0f, other,
-                                      k_specialLabelsColor);
+                                      k_specialLabelsColor());
   // Draw the special label
   PlotPolicy::AbstractLabeledAxis::drawLabel(N, t, plotView, ctx, rect, axis,
-                                             k_specialLabelsColor);
+                                             k_specialLabelsColor());
 }
 
 template <size_t N>
@@ -76,7 +76,7 @@ void FunctionGraphPolicy::drawPlot(const Shared::AbstractPlotView* plotView,
   // Draw the curve
   CurveDrawing plot(Curve2D(evaluateFunction, &function), nullptr,
                     m_model->xMin(), m_model->xMax(), plotView->pixelWidth(),
-                    k_color);
+                    k_color());
   plot.draw(plotView, ctx, rect);
 
   // Since exp(-2.5) is generalized as exp(-x), x cannot be negative
@@ -85,7 +85,7 @@ void FunctionGraphPolicy::drawPlot(const Shared::AbstractPlotView* plotView,
   float y = m_model->ordinate();
 
   // Draw the dot
-  plotView->drawDot(ctx, rect, Dots::Size::Large, {x, y}, k_color);
+  plotView->drawDot(ctx, rect, Dots::Size::Large, {x, y}, k_color());
 }
 
 template bool

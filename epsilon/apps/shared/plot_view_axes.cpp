@@ -29,7 +29,7 @@ void WithCartesianGrid::DrawGrid(const AbstractPlotView* plotView,
 void WithCartesianGrid::DrawGridLines(const AbstractPlotView* plotView,
                                       KDContext* ctx, KDRect rect,
                                       OMG::Axis parallel, bool boldGrid) {
-  KDColor color = boldGrid ? k_boldColor : k_lightColor;
+  KDColor color = boldGrid ? k_boldColor() : k_lightColor();
   bool oddIndexes = !boldGrid;
   assert(plotView);
   float min, max, step;
@@ -121,7 +121,7 @@ void WithPolarGrid::DrawPolarCircles(const AbstractPlotView* plotView,
   for (int i = std::max<int>(1, std::floor(radiusMin / step));
        i <= std::ceil(radiusMax / step); i++) {
     plotView->drawCircle(ctx, rect, {0.f, 0.f}, i * step,
-                         i % 2 ? k_lightColor : k_boldColor);
+                         i % 2 ? k_lightColor() : k_boldColor());
   }
 }
 
@@ -186,7 +186,7 @@ void WithPolarGrid::DrawGrid(const AbstractPlotView* plotView, KDContext* ctx,
                          plotView->floatToKDCoordinatePixel(OMG::Axis::Vertical,
                                                             sin * radiusMax)};
       ctx->drawAntialiasedLine(
-          pixelFrom, pixelTo, shouldHaveGraduation ? k_boldColor : k_lightColor,
+          pixelFrom, pixelTo, shouldHaveGraduation ? k_boldColor() : k_lightColor(),
           plotView->k_backgroundColor);
     }
     if (!shouldHaveGraduation) {
@@ -225,13 +225,13 @@ void WithPolarGrid::DrawGrid(const AbstractPlotView* plotView, KDContext* ctx,
     // TODO: update condition for non-orthonormal axes
     if (x * x + y * y > minimumSquareDistanceToCenter) {
       plotView->drawLabel(ctx, rect, buffer, {x, y}, horizontalRelativePosition,
-                          verticalRelativePosition, k_boldColor);
+                          verticalRelativePosition, k_boldColor());
 
       if (angle == 0) {
         // Show 360° as well
         plotView->drawLabel(
             ctx, rect, "360°", {x, y + labelMargin}, horizontalRelativePosition,
-            AbstractPlotView::RelativePosition::After, k_boldColor);
+            AbstractPlotView::RelativePosition::After, k_boldColor());
       }
     }
     /* TODO: don't print labels if the origin is off-screen and they end up on

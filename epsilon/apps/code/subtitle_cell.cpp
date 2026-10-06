@@ -10,12 +10,12 @@ namespace Code {
 SubtitleCell::SubtitleCell()
     : Bordered(),
       HighlightCell(),
-      m_textView({.style = {.glyphColor = k_textColor,
-                            .backgroundColor = k_backgroundColor,
+      m_textView({.style = {.glyphColor = k_textColor(),
+                            .backgroundColor = k_backgroundColor(),
                             .font = KDFont::Size::Small}}) {}
 
 void SubtitleCell::drawRect(KDContext* ctx, KDRect rect) const {
-  KDColor backColor = isHighlighted() ? Palette::Select : k_backgroundColor;
+  KDColor backColor = isHighlighted() ? Palette::Select : k_backgroundColor();
   drawInnerRect(ctx, bounds(), backColor);
   drawBorderOfRect(ctx, bounds(), Palette::GrayBright);
 }

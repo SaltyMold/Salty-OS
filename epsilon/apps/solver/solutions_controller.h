@@ -86,8 +86,7 @@ class SolutionsController : public Escher::ViewController,
                       public Escher::SelectableTableViewDelegate {
    public:
     constexpr static KDCoordinate k_bottomMessageSpace = 60;
-    static inline KDColor k_backgroundColor =
-        Escher::Palette::WallScreenDark;
+    static KDColor k_backgroundColor() { return Escher::Palette::WallScreenDark; }
     ContentView(SolutionsController* controller);
     void drawRect(KDContext* ctx, KDRect rect) const override;
     void setWarning(bool warning);
@@ -104,10 +103,10 @@ class SolutionsController : public Escher::ViewController,
 
    private:
     constexpr static KDFont::Size k_warningMessageFont = KDFont::Size::Small;
-    static inline KDGlyph::Format k_warningFormat{
-        .style = {.backgroundColor = k_backgroundColor,
+    static KDGlyph::Format k_warningFormat() { return {
+        .style = {.backgroundColor = k_backgroundColor(),
                   .font = k_warningMessageFont},
-        .horizontalAlignment = KDGlyph::k_alignCenter};
+        .horizontalAlignment = KDGlyph::k_alignCenter}; }
 
     bool hideTableView() const {
       return m_selectableTableView.totalNumberOfRows() == 0;
@@ -131,7 +130,7 @@ class SolutionsController : public Escher::ViewController,
               (I18n::Message)0,
               {.style =
                    {.backgroundColor =
-                        SolutionsController::ContentView::k_backgroundColor,
+                        SolutionsController::ContentView::k_backgroundColor(),
                     .font = KDFont::Size::Small},
                .verticalAlignment = k_verticalAlignment}) {}
 

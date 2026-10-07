@@ -93,9 +93,11 @@ class AppCell : public Escher::HighlightCell {
       .horizontalAlignment = KDGlyph::k_alignCenter};
   const Escher::TextView* textView() const;
   bool hasThemedIcon() const;
+  bool shouldRoundCustomIcon() const;
   Escher::ImageView m_iconView;
   Escher::MessageTextView m_messageNameView;
   Escher::Image m_image;
+  const Escher::Image* m_iconImage = nullptr;
   Escher::PointerTextView m_pointerNameView;
   int m_themeIconIndex = -1;
 };

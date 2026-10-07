@@ -202,6 +202,11 @@ bool AppCell::hasThemedIcon() const {
   return m_themeIconIndex >= 0 && ThemeManager::hasIcon(m_themeIconIndex);
 }
 
+bool AppCell::shouldRoundCustomIcon() const {
+  return ThemeManager::hasWallpaper() &&
+         (ThemeManager::isValid() || m_pointerNameView.text() != nullptr);
+}
+
 void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   if (!isVisible()) {
     // See fillWholeCellWallpaper's comment: drawRect has no automatic
@@ -291,10 +296,22 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
       fillRoundedIcon(ctx, iconRect, pixels, k_iconWidth, k_iconHeight,
                       globalOrigin.x(), globalOrigin.y(), nameSize.height());
     }
+  } else if (ThemeManager::hasWallpaper() && ThemeManager::isValid() &&
+             m_iconImage != nullptr && m_iconImage->width() > 0) {
+    KDRect iconRect((bounds().width() - k_iconWidth) / 2, k_iconMargin,
+                    k_iconWidth, k_iconHeight);
+    KDColor pixels[k_iconWidth * k_iconHeight];
+    OMG::Memory::Decompress(m_iconImage->compressedPixelData(),
+                            reinterpret_cast<uint8_t*>(pixels),
+                            m_iconImage->compressedPixelDataSize(),
+                            k_iconWidth * k_iconHeight * sizeof(KDColor));
+    KDPoint globalOrigin = ctx->origin();
+    fillRoundedIcon(ctx, iconRect, pixels, k_iconWidth, k_iconHeight,
+                    globalOrigin.x(), globalOrigin.y(), nameSize.height());
   }
 
   if (m_pointerNameView.text() != nullptr && m_image.width() > 0 &&
-      ThemeManager::hasWallpaper()) {
+      ThemeManager::hasWallpaper() && !ThemeManager::isValid()) {
     KDRect iconRect((bounds().width() - k_iconWidth) / 2, k_iconMargin,
                     k_iconWidth, k_iconHeight);
     KDColor pixels[k_iconWidth * k_iconHeight];
@@ -320,7 +337,9 @@ int AppCell::numberOfSubviews() const {
   // back to the same plain square iconView as an untheme builtin app.
   bool manuallyDrawIcon =
       hasThemedIcon() ||
-      (m_pointerNameView.text() != nullptr && ThemeManager::hasWallpaper());
+      (m_pointerNameView.text() != nullptr && ThemeManager::hasWallpaper()) ||
+      (ThemeManager::hasWallpaper() && ThemeManager::isValid() &&
+       m_iconImage != nullptr);
   int count = manuallyDrawIcon ? 0 : 1;
   // The name is only drawn manually (drawTextTransparent, see drawRect())
   // when there's a wallpaper to blend with, and either the theme doesn't
@@ -337,7 +356,9 @@ int AppCell::numberOfSubviews() const {
 View* AppCell::subviewAtIndex(int index) {
   bool manuallyDrawIcon =
       hasThemedIcon() ||
-      (m_pointerNameView.text() != nullptr && ThemeManager::hasWallpaper());
+      (m_pointerNameView.text() != nullptr && ThemeManager::hasWallpaper()) ||
+      (ThemeManager::hasWallpaper() && ThemeManager::isValid() &&
+       m_iconImage != nullptr);
   bool includeIcon = !manuallyDrawIcon;
   bool includeText = useOpaqueNameBackground(isHighlighted());
   if (includeIcon) {
@@ -366,9 +387,10 @@ void AppCell::layoutSubviews(bool force) {
 }
 
 void AppCell::setBuiltinAppDescriptor(const ::App::Descriptor* descriptor) {
-  m_iconView.setImage(descriptor->icon());
   m_messageNameView.setMessage(descriptor->name());
   m_pointerNameView.setText(nullptr);
+  m_iconImage = descriptor->icon();
+  m_iconView.setImage(m_iconImage);
   // Only builtin apps can have a themed icon: the theme's fixed icon set
   // (calculation_icon.png, code_icon.png, ...) has no slot for arbitrary
   // external/third-party apps.
@@ -380,6 +402,7 @@ void AppCell::setExternalApp(Ion::ExternalApps::App app) {
   m_pointerNameView.setText(app.name());
   m_messageNameView.setMessage((I18n::Message)0);
   m_image = Image(k_iconWidth, k_iconHeight, app.iconData(), app.iconSize());
+  m_iconImage = &m_image;
   m_iconView.setImage(&m_image);
   m_themeIconIndex = -1;
   layoutSubviews();

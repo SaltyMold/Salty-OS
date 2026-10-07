@@ -674,4 +674,4 @@ if __name__ == "__main__":
     main()
 
 
-# python3 ../device/dfu.py -D output/theme_area.bin -s 0x907B0000
+# python3 ../device/dfu.py -D output/theme_area.bin -s 0x901F0000

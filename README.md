@@ -4,7 +4,14 @@ Salty-OS is a custom userland for the numworks calculator based on the latest pu
 
 <img src="github_assets/numworks.png" width=320 alt="Salty-OS">
 
-# Explanation
+## Table of Contents
+- [Explanations](#explanations)
+- [Features](#functionalities)
+- [How to install](#how-to-install)
+- [How to use](#how-to-use)
+- [How to build](#how-to-build)
+
+## Explanations
 
 A userland is not an OS, it has more restrictions.
 
@@ -21,7 +28,7 @@ The bootloader is in another flash, the internal flash.
 
 See more at https://nwagyu.org/reference/firmware/
 
-# Functionalities
+## Functionalities
 
 The userland is build with onboarding disabled and external apps allowed.
 
@@ -32,14 +39,15 @@ The userland is build with onboarding disabled and external apps allowed.
 - Custom icons per theme.
 - Customizable icon form per theme.
 - Custom color palette per theme.
+- Toggle display of external apps.
 
 Everything customizable via a website.
 
-### Upcomming
+### Upcoming
 
 Open a pull request if you want to add a feature.
 
-# How to install
+## How to install
 
 ### Update the calculator twice
 
@@ -70,7 +78,18 @@ Open a pull request if you want to add a feature.
 - Create your themes.
 - Click install.
 
-# How to build
+## How to use
+
+Every custom feature of the os has its own keybind.
+It is always both parantheses and the keybind.
+
+| Key   | Action        |
+|-------|---------------|
+| Both parantheses + shift | Previous theme    |
+| Both parantheses + alpha | Next theme    |
+| Both parantheses + xnt | Toggle external apps    |
+
+## How to build
 
 - Clone the repo.
 ```sh
@@ -86,7 +105,7 @@ source .venv/bin/activate
 
 - Install the dependencies.
 ```sh
-# Use tools/setup.sh are adapt it to your system.
+# Use tools/setup.sh or adapt it to your system.
 ```
 
 - Build the userland for n0120 for exemple.

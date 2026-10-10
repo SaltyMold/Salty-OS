@@ -30,7 +30,7 @@ See more at https://nwagyu.org/reference/firmware/
 
 ## Functionalities
 
-The userland is build with onboarding disabled and external apps allowed.
+The userland is build with a custom onboarding and external apps allowed.
 
 ### Current
 

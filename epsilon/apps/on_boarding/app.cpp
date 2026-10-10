@@ -19,9 +19,13 @@ const App::Descriptor* App::Snapshot::descriptor() const {
 }
 
 App::App(Snapshot* snapshot)
-    : ::App(snapshot, &m_localizationController),
-      m_localizationController(&m_modalViewController,
-                               LocalizationController::Mode::Language) {}
+    : ::App(snapshot, &m_splashController),
+      m_splashController(&m_modalViewController) {}
+
+Timer* App::timerAtIndex(int i) {
+  assert(i == 0);
+  return snapshot()->splashTimer();
+}
 
 void App::willBecomeInactive() {
   Ion::Power::selectStandbyMode(false);
@@ -37,6 +41,8 @@ void App::didBecomeActive(Window* window) {
     // Forbid standby in exam mode with led since it disables the led
     Ion::Power::selectStandbyMode(true);
   }
+  // The splash screen is displayed for about one second
+  snapshot()->splashTimer()->restart();
 }
 
 }  // namespace OnBoarding

@@ -15,6 +15,7 @@
 #include "shared/prompt_controller.h"
 #include "shortcuts.h"
 #include "suspend_timer.h"
+#include "salty_debug/app.h"
 #include "usb/app.h"
 
 class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
@@ -30,6 +31,8 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   Escher::App::Snapshot* hardwareTestAppSnapshot();
   Escher::App::Snapshot* onBoardingAppSnapshot();
   Escher::App::Snapshot* usbConnectedAppSnapshot();
+  Escher::App::Snapshot* saltyDebugAppSnapshot();
+  bool externalAppsHidden() const { return m_externalAppsHidden; }
   Home::App::Snapshot* homeAppSnapshot() { return &m_homeSnapshot; }
   void setExamMode(Poincare::ExamMode targetExamMode,
                    Poincare::ExamMode previousMode);
@@ -70,6 +73,7 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   void handleShortcuts();
   bool changeTheme(int offset);
   void toggleExternalApps();
+  void toggleDebugApp();
   void resetShiftAlphaStatus();
   bool updateAlphaLock();
   void handleRunException();
@@ -95,6 +99,7 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   OnBoarding::App::Snapshot m_onBoardingSnapshot;
   HardwareTest::App::Snapshot m_hardwareTestSnapshot;
   USB::App::Snapshot m_usbConnectedSnapshot;
+  SaltyDebug::App::Snapshot m_saltyDebugSnapshot;
 #if EPSILON_GETOPT
   // Used to launch a given app on a simulator
   Escher::App::Snapshot* m_initialAppSnapshot;

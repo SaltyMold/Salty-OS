@@ -88,6 +88,7 @@ It is always both parantheses and the keybind.
 | Both parantheses + shift | Previous theme    |
 | Both parantheses + alpha | Next theme    |
 | Both parantheses + xnt | Toggle external apps    |
+| Both parantheses + backspace | Salty-OS debug screen (themes, palettes, icons, versions...) |
 
 ## How to build
 

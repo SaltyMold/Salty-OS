@@ -1,4 +1,5 @@
 #include "apps_container.h"
+#include "exam_mode_manager.h"
 #include "shortcuts.h"
 #include "theme_manager.h"
 
@@ -11,6 +12,10 @@ void AppsContainer::handleShortcuts() {
   if (active.isNewlyActive(Shortcuts::Action::ToggleExternalApps,
                            m_activeShortcuts)) {
     toggleExternalApps();
+  }
+
+  if (active.isNewlyActive(Shortcuts::Action::OpenDebug, m_activeShortcuts)) {
+    toggleDebugApp();
   }
 
   /* Previous theme has priority. If there is no previous theme, the next one
@@ -42,4 +47,20 @@ void AppsContainer::toggleExternalApps() {
     Home::App::app()->reloadAppCells();
     window()->redraw(true);
   }
+}
+
+/* Opens the Salty-OS debug screen, or goes back to the home screen if it is
+ * already displayed. Not available during the onboarding, the hardware tests
+ * or in exam mode. */
+void AppsContainer::toggleDebugApp() {
+  if (activeApp() == nullptr || ExamModeManager::ExamMode().isActive()) {
+    return;
+  }
+  Escher::App::Snapshot* current = activeApp()->snapshot();
+  if (current == onBoardingAppSnapshot() ||
+      current == hardwareTestAppSnapshot()) {
+    return;
+  }
+  switchToBuiltinApp(current == saltyDebugAppSnapshot() ? homeAppSnapshot()
+                                                        : saltyDebugAppSnapshot());
 }

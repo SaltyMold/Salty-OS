@@ -114,6 +114,18 @@ int s_cachedIconIndex = -1;
 
 }  // namespace
 
+bool ThemeManager::wallpaperInfo(const ThemeEntry* e, WallpaperInfo* info) {
+  if (e == nullptr || !e->isWallpaper || e->wallpaperOffset == 0) {
+    return false;
+  }
+  const WallpaperBlobHeader* header = wallpaperBlobHeader(e);
+  info->width = header->width;
+  info->height = header->height;
+  info->chunkRows = header->chunkRows;
+  info->chunkCount = header->chunkCount;
+  return true;
+}
+
 void ThemeManager::invalidateCaches() {
   s_cachedChunkThemeIndex = -1;
   s_cachedChunkIndex = -1;

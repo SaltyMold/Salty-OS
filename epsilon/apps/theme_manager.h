@@ -72,6 +72,17 @@ class ThemeManager {
   // calling again for a different icon/theme.
   static const KDColor* iconPixels(int iconIndex, int iconWidth, int iconHeight);
 
+  // --- Debug / introspection (any flashed entry, not only the selected) --
+  struct WallpaperInfo {
+    uint32_t width;
+    uint32_t height;
+    uint32_t chunkRows;
+    uint32_t chunkCount;
+  };
+  // Reads the header of `e`'s wallpaper blob. False if it has no wallpaper.
+  static bool wallpaperInfo(const Ion::Device::Board::Config::ThemeEntry* e,
+                            WallpaperInfo* info);
+
   // The wallpaper/icon decompression buffers live in the external apps RAM
   // range: call this once an external app has exited, as it may have
   // overwritten them.

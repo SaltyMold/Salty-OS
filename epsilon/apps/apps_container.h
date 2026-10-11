@@ -13,6 +13,7 @@
 #include "home/app.h"
 #include "on_boarding/app.h"
 #include "shared/prompt_controller.h"
+#include "shortcuts.h"
 #include "suspend_timer.h"
 #include "usb/app.h"
 
@@ -65,6 +66,10 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   Escher::Timer* containerTimerAtIndex(int i) override;
   void listenToExternalEvents() override;
   bool processEvent(Ion::Events::Event event);
+  // Salty-OS keybinds, see shortcuts.h
+  void handleShortcuts();
+  bool changeTheme(int offset);
+  void toggleExternalApps();
   void resetShiftAlphaStatus();
   bool updateAlphaLock();
   void handleRunException();
@@ -77,7 +82,7 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   bool m_firstUSBEnumeration;
   bool m_dfuBetweenEvents;
   bool m_externalAppsHidden;
-  bool m_toolboxKeyWasDown;
+  Shortcuts::ActiveSet m_activeShortcuts;
   AppsWindow m_window;
   EmptyBatteryWindow m_emptyBatteryWindow;
   ExamPopUpController m_examPopUpController;

@@ -6,6 +6,7 @@ $(call create_module,apps,1, \
   apps_container_prompt_beta.cpp:+beta:-test \
   apps_container_prompt_none.cpp:-beta:-update:-test \
   apps_container_prompt_update.cpp:+update:-test \
+  apps_container_shortcuts.cpp:-test \
   apps_container_storage.cpp:-test \
   apps_window.cpp:-test \
   backlight_dimming_timer.cpp \
@@ -23,6 +24,7 @@ $(call create_module,apps,1, \
   title_bar_view.cpp:-test \
   apps_container_helper_tests.cpp:+test \
   init_tests.cpp:+test \
+  shortcuts_tests.cpp:+test \
   exam_icon.png:-test \
   theme_manager.cpp:-test \
 )

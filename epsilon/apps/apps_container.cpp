@@ -263,6 +263,8 @@ void AppsContainer::switchToExternalApp(Ion::ExternalApps::App app) {
   if (appStart) {
     appStart();
   }
+  /* NOTE: the theme caches live in the external apps RAM range */
+  ThemeManager::invalidateCaches();
   /* NOTE: init shared objects once we exit external app */
   Internal::TreeStack::SharedTreeStack.init();
   Pool::sharedPool.init();

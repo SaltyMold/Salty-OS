@@ -72,6 +72,11 @@ class ThemeManager {
   // calling again for a different icon/theme.
   static const KDColor* iconPixels(int iconIndex, int iconWidth, int iconHeight);
 
+  // The wallpaper/icon decompression buffers live in the external apps RAM
+  // range: call this once an external app has exited, as it may have
+  // overwritten them.
+  static void invalidateCaches();
+
   // --- Palette of the CURRENTLY SELECTED theme ------------------------
   // True if the current theme actually provides a palette (a Theme Area
   // can have isPalette == 0, e.g. a theme with only a wallpaper).

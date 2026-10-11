@@ -84,7 +84,43 @@ const WallpaperBlobHeader* wallpaperBlobHeader(const ThemeEntry* e) {
                                                         e->wallpaperOffset);
 }
 
+// Generous upper bound so a single static buffer can serve any reasonable
+// fixed icon size. Bump if the builtin icon size ever grows past this.
+constexpr int k_maxIconWidth = 64;
+constexpr int k_maxIconHeight = 64;
+
+/* The wallpaper chunk and icon buffers are pure decompression caches (~18 KiB
+ * together). They are linked at the very start of the external apps RAM range
+ * (see userland_shared.ld) instead of in the protected bss, so that this RAM
+ * is available to external apps. Anything in that range can be overwritten by
+ * an external app: the caches are therefore invalidated when it exits (see
+ * ThemeManager::invalidateCaches). The cache indices stay in the protected
+ * area, they are only trusted while the matching buffer is known to be valid.
+ */
+#if PLATFORM_DEVICE
+#define THEME_CACHE_SECTION __attribute__((section(".bss.$theme_cache")))
+#else
+#define THEME_CACHE_SECTION
+#endif
+
+THEME_CACHE_SECTION KDColor s_chunkBuffer[k_maxChunkWidth * k_maxChunkHeight];
+THEME_CACHE_SECTION KDColor s_iconBuffer[k_maxIconWidth * k_maxIconHeight];
+
+int s_cachedChunkThemeIndex = -1;
+int s_cachedChunkIndex = -1;
+int s_cachedChunkTop = 0;
+int s_cachedIconThemeIndex = -1;
+int s_cachedIconIndex = -1;
+
 }  // namespace
+
+void ThemeManager::invalidateCaches() {
+  s_cachedChunkThemeIndex = -1;
+  s_cachedChunkIndex = -1;
+  s_cachedChunkTop = 0;
+  s_cachedIconThemeIndex = -1;
+  s_cachedIconIndex = -1;
+}
 
 bool ThemeManager::hasWallpaper() {
   const ThemeEntry* e = currentEntry();
@@ -108,11 +144,6 @@ int ThemeManager::wallpaperHeight() {
 }
 
 const KDColor* ThemeManager::wallpaperChunkContaining(int globalY, int* localY) {
-  static KDColor s_chunkBuffer[k_maxChunkWidth * k_maxChunkHeight];
-  static int s_cachedThemeIndex = -1;
-  static int s_cachedChunkIndex = -1;
-  static int s_cachedChunkTop = 0;
-
   const ThemeEntry* e = currentEntry();
   if (!e || !hasWallpaper() || globalY < 0) {
     return nullptr;
@@ -129,7 +160,8 @@ const KDColor* ThemeManager::wallpaperChunkContaining(int globalY, int* localY) 
     return nullptr;
   }
 
-  if (s_cachedThemeIndex != s_selectedTheme || s_cachedChunkIndex != chunkIndex) {
+  if (s_cachedChunkThemeIndex != s_selectedTheme ||
+      s_cachedChunkIndex != chunkIndex) {
     const uint8_t* blobStart = reinterpret_cast<const uint8_t*>(header);
     const uint32_t* offsets = reinterpret_cast<const uint32_t*>(
         blobStart + sizeof(WallpaperBlobHeader));
@@ -148,7 +180,7 @@ const KDColor* ThemeManager::wallpaperChunkContaining(int globalY, int* localY) 
                             reinterpret_cast<uint8_t*>(s_chunkBuffer),
                             sizes[chunkIndex], dstSize);
 
-    s_cachedThemeIndex = s_selectedTheme;
+    s_cachedChunkThemeIndex = s_selectedTheme;
     s_cachedChunkIndex = chunkIndex;
     s_cachedChunkTop = chunkTop;
   }
@@ -248,20 +280,13 @@ bool ThemeManager::hasIcon(int iconIndex) {
 
 const KDColor* ThemeManager::iconPixels(int iconIndex, int iconWidth,
                                         int iconHeight) {
-  // Generous upper bound so a single static buffer can serve any reasonable
-  // fixed icon size. Bump if the builtin icon size ever grows past this.
-  constexpr int k_maxIconWidth = 64;
-  constexpr int k_maxIconHeight = 64;
-  static KDColor s_iconBuffer[k_maxIconWidth * k_maxIconHeight];
-  static int s_cachedThemeIndex = -1;
-  static int s_cachedIconIndex = -1;
-
   if (!hasIcon(iconIndex) || iconWidth <= 0 || iconHeight <= 0 ||
       iconWidth > k_maxIconWidth || iconHeight > k_maxIconHeight) {
     return nullptr;
   }
 
-  if (s_cachedThemeIndex != s_selectedTheme || s_cachedIconIndex != iconIndex) {
+  if (s_cachedIconThemeIndex != s_selectedTheme ||
+      s_cachedIconIndex != iconIndex) {
     const ThemeEntry* e = currentEntry();
     uint32_t offset = e->iconOffsets[iconIndex];
     uint32_t size = e->iconSizes[iconIndex];
@@ -271,7 +296,7 @@ const KDColor* ThemeManager::iconPixels(int iconIndex, int iconWidth,
         reinterpret_cast<const uint8_t*>(ThemeAreaStart + offset),
         reinterpret_cast<uint8_t*>(s_iconBuffer), size, dstSize);
 
-    s_cachedThemeIndex = s_selectedTheme;
+    s_cachedIconThemeIndex = s_selectedTheme;
     s_cachedIconIndex = iconIndex;
   }
 

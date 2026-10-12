@@ -34,6 +34,9 @@ class ColorPicker {
 
   static bool HasTableGrid();
 
+  // Light or dark, light being forced when a Salty-OS theme is active
+  static Theme GetCurrentTheme();
+
  private:
   /* GetCurrentTheme is defined in the .cpp so that the details of how the
    * theme is accessed are hidden. Currently for Epsilon (the only project which
@@ -41,8 +44,6 @@ class ColorPicker {
    * getter of LayoutPreferences, which is itself defined in the
    * GlobalPreferences concrete class. Accessing the GlobalPreferences theme
    * member should be quick. */
-  static Theme GetCurrentTheme();
-
   static KDColor Get(Theme theme, ThemeComponent component);
 };
 

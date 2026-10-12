@@ -16,7 +16,28 @@ class GlyphsView : public View, public CellWidget {
   KDFont::Size font() const { return m_textFormat.style.font; }
 
   virtual KDGlyph::Format glyphFormat() const {
-    return ToKDGlyphFormat(textFormat());
+    KDGlyph::Format format = ToKDGlyphFormat(textFormat());
+    if (m_hasCustomColors) {
+      format.style.glyphColor = m_customGlyphColor;
+      format.style.backgroundColor = m_customBackgroundColor;
+    }
+    return format;
+  }
+
+  /* Salty-OS: raw colors (not theme components), used when a Salty theme
+   * palette is active (home screen app names). Override the ThemeComponent
+   * colors until clearCustomColors() is called. */
+  void setCustomColors(KDColor glyphColor, KDColor backgroundColor) {
+    m_hasCustomColors = true;
+    m_customGlyphColor = glyphColor;
+    m_customBackgroundColor = backgroundColor;
+    markWholeFrameAsDirty();
+  }
+  void clearCustomColors() {
+    if (m_hasCustomColors) {
+      m_hasCustomColors = false;
+      markWholeFrameAsDirty();
+    }
   }
 
   void setGlyphFormat(const TextFormat& format);
@@ -74,6 +95,9 @@ class GlyphsView : public View, public CellWidget {
 
  private:
   TextFormat m_textFormat;
+  KDColor m_customGlyphColor;
+  KDColor m_customBackgroundColor;
+  bool m_hasCustomColors = false;
   bool m_isHighlighted = false;
 };
 

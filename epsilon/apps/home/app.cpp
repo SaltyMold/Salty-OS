@@ -28,4 +28,6 @@ App::App(Snapshot* snapshot)
     : Escher::App(snapshot, &m_controller),
       m_controller(&m_modalViewController, snapshot) {}
 
+void App::reloadAppCells() { m_controller.reloadAppCells(); }
+
 }  // namespace Home

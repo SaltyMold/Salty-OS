@@ -16,3 +16,7 @@ node_modules/
 ion/src/simulator/ios/GoogleAnalyticsServices/
 ion/src/device/epsilon-core
 CLAUDE.local.md
+themes/output/
+themes/test/
+zperso/
+

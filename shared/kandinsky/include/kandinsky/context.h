@@ -21,6 +21,14 @@ class KDContext {
   KDPoint alignAndDrawString(const char* text, KDPoint p, KDSize frame,
                              KDGlyph::Format format = {}, int maxLength = -1,
                              KDCoordinate lineSpacing = 0);
+  // Transparent text variants: draw text blended with existing background
+  KDPoint drawStringTransparent(const char* text, KDPoint p,
+                                KDGlyph::Style style = {}, int maxLength = -1);
+  KDPoint alignAndDrawStringTransparent(const char* text, KDPoint p,
+                                        KDSize frame,
+                                        KDGlyph::Format format = {},
+                                        int maxLength = -1,
+                                        KDCoordinate lineSpacing = 0);
 
   // Line. Not anti-aliased.
   void drawLine(KDPoint p1, KDPoint p2, KDColor c);

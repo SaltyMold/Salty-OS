@@ -2,7 +2,9 @@
 
 PATH_haussmann := ../haussmann
 APP_NAME := Epsilon
-APP_VERSION := 26.1.0
+# Salty-OS targets the kernel 26.3.0 (the userland header must match it).
+# Upstream epsilon sources used for this port: 26.1.0
+APP_VERSION := 26.3.0
 OUTPUT_ROOT := output
 DEBUG ?= 0
 PLATFORM ?= host

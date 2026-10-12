@@ -6,6 +6,7 @@ $(call create_module,apps,1, \
   apps_container_prompt_beta.cpp:+beta:-test \
   apps_container_prompt_none.cpp:-beta:-update:-test \
   apps_container_prompt_update.cpp:+update:-test \
+  apps_container_shortcuts.cpp:-test \
   apps_container_storage.cpp:-test \
   apps_window.cpp:-test \
   backlight_dimming_timer.cpp \
@@ -25,6 +26,8 @@ $(call create_module,apps,1, \
   title_bar_view.cpp:-test \
   apps_container_helper_tests.cpp:+test \
   init_tests.cpp:+test \
+  shortcuts_tests.cpp:+test \
+  theme_manager.cpp:-test \
 )
 
 PRIVATE_SFLAGS_apps += -I$(PATH_apps)
@@ -34,7 +37,7 @@ $(call depends_on_themed_image,apps,$(PATH_apps)/title_bar_view.cpp,$(PATH_apps)
 # Include the specific apps
 # FIXME Use flavors instead of EPSILON_APPS?
 EPSILON_APPS ?= calculation graph code statistics distributions inference solver sequence regression elements finance settings
-_SPECIAL_APPS = home on_boarding usb hardware_test
+_SPECIAL_APPS = home on_boarding usb hardware_test salty_debug
 
 ifeq ($(DEBUG),1)
 HARDWARE_CHECKUP ?= 1

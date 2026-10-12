@@ -1,7 +1,29 @@
-#include <ion/src/shared/init.h>
+#include "init.h"
 
-namespace Ion {
+#include <escher/init.h>
+#include <poincare/init.h>
 
-void Init() {}
+#include "apps_container_storage.h"
+#include "exam_mode_manager.h"
+#include "global_preferences.h"
+#include "shared/global_store.h"
+#include "theme_manager.h"
 
-}  // namespace Ion
+namespace Apps {
+
+void Init() {
+  Shared::GlobalStore::Init();
+  GlobalPreferences::Init();
+  ExamModeManager::Init();
+  Shared::GlobalContextAccessor::Init();
+  Poincare::Init(GlobalPreferences::SharedGlobalPreferences(),
+                 ExamModeManager::ExamModePtr(),
+                 &Shared::GlobalContextAccessor::SequenceContext());
+  Escher::Init(GlobalPreferences::SharedGlobalPreferences());
+
+  ThemeManager::init();
+
+  ::AppsContainerStorage::sharedAppsContainerStorage.init();
+}
+
+}  // namespace Apps

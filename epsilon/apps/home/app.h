@@ -22,6 +22,7 @@ class App : public Escher::App {
     const Descriptor* descriptor() const override;
   };
   static App* app() { return static_cast<App*>(Escher::App::app()); }
+  void reloadAppCells();
   Snapshot* snapshot() {
     return static_cast<Snapshot*>(Escher::App::snapshot());
   }

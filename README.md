@@ -1,23 +1,118 @@
-<img src="epsilon/docs/epsilon.svg?sanitize=true" alt="NumWorks Epsilon logo" height="70" >
+<p align="center"><img src="github_assets/SaltyOS.png" /></p>
 
-[![Build Status](https://github.com/numworks/epsilon/actions/workflows/ci.yml/badge.svg)](https://github.com/numworks/epsilon/actions/workflows/ci.yml)
+Salty-OS is a custom userland for the numworks calculator based on the latest published version of [epsilon](https://github.com/Numworks/epsilon) (26.1.0, branch `version-26`).
 
-Epsilon is a high-performance graphing calculator operating system. It includes eleven apps that cover the high school mathematics curriculum.
+<img src="github_assets/numworks.png" width=320 alt="Salty-OS">
 
-You can try Epsilon straight from your browser in the [online simulator](https://www.numworks.com/simulator/).
+## Table of Contents
+- [Explanations](#explanations)
+- [Features](#functionalities)
+- [How to install](#how-to-install)
+- [How to use](#how-to-use)
+- [How to build](#how-to-build)
 
-## Diving in
+## Explanations
 
-We highly recommend you start by reading the [documentation](epsilon/docs/README.md) for this project. You'll learn how to install the [SDK](epsilon/docs/build/README.md) and about the overall architecture of Epsilon.
+A userland is not an OS, it has more restrictions.
 
-On a simulator or your own calculator, you can build and run your own projects following these documentations:
-- A [custom firmware](epsilon/docs/build/README.md)
-- An [external app](epsilon/external_apps/README.md)
+NumWorks calculators boot slot A by default, then you can access Slot B with a launcher (ex: [ABLaucher](https://github.com/SaltyMold/ABLauncher-Numworks)).
 
-## Contributing
+If the userland crashes or if you reset it, the calculator falls back to booting slot A, but slot B isn't wiped in the process, so the custom userland is still there and can be re-launched afterward (at least on latest versions of epsilon).
 
-If you run into an issue or want to suggest a change, we would be very happy if you would create an issue [here](https://github.com/numworks/epsilon/issues).
+This has been tested on the `n0120` with epsilon `26.3.0` so far. If you try it on another model, please open an issue to report whether it worked or not.
 
-## Copyright
+<img src="github_assets/slots.png" width=320 alt="Salty-OS">
 
-All rights reserved. NumWorks is a registered trademark.
+The pythons scripts are in ram, so the layout of the external flash can't affect them.
+The bootloader is in another flash, the internal flash.
+
+See more at https://nwagyu.org/reference/firmware/
+
+## Functionalities
+
+The userland is build with a custom onboarding and external apps allowed.
+
+### Current
+
+- Multiple themes simultaneously.
+- A custom image wallpaper per theme.
+- Custom icons per theme.
+- Customizable icon form per theme.
+- Custom color palette per theme.
+- Toggle display of external apps.
+
+Everything customizable via a website.
+
+### Upcoming
+
+Open a pull request if you want to add a feature.
+
+## How to install
+
+### Update the calculator twice
+
+- Go to the [Numworks updater](https://my.numworks.com/devices/upgrade).
+- Connect your calculator.
+- Click update.
+- Do it a second time to make sure slot A is used.
+
+### Userland
+
+- Go to https://saltymold.github.io/Salty-OS-Installer/
+- Go to the "SaltyOS" section.
+- Connect your calculator.
+- Click install.
+
+### Launcher
+
+- Go to https://saltymold.github.io/Salty-OS-Installer/
+- Go to the "Launcher" section.
+- Connect your calculator.
+- Click install.
+
+### Themes
+
+- Go to https://saltymold.github.io/Salty-OS-Installer/
+- Go to the "Themes" section.
+- Connect your calculator.
+- Create your themes.
+- Click install.
+
+## How to use
+
+Every custom feature of the os has its own keybind.
+It is always both parantheses and the keybind.
+
+| Key   | Action        |
+|-------|---------------|
+| Both parantheses + shift | Previous theme    |
+| Both parantheses + alpha | Next theme    |
+| Both parantheses + xnt | Toggle external apps    |
+| Both parantheses + backspace | Salty-OS debug screen (themes, palettes, icons, versions...) |
+
+## How to build
+
+- Clone the repo.
+```sh
+git clone https://github.com/SaltyMold/Salty-OS
+cd Salty-OS
+```
+
+- Activate the virtual environment.
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+- Install the dependencies.
+```sh
+# Use tools/setup.sh or adapt it to your system.
+```
+
+- Build the userland for n0120 for exemple.
+```sh
+make -j$(nproc) PLATFORM=n0120 userland.onboarding.allow3rdparty.B.dfu
+# Without onboarding
+# With 3rd party apps allowed
+# For slot B
+```

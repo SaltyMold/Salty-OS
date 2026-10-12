@@ -3,6 +3,7 @@
 #include <escher/theme/color_picker.h>
 #include <escher/theme/dark_theme.h>
 #include <escher/theme/light_theme.h>
+#include <escher/theme/salty_palette.h>
 #include <omg/unreachable.h>
 
 namespace Escher {
@@ -73,11 +74,20 @@ bool ColorPicker::HasTableGrid() {
   }
 }
 
-Theme ColorPicker::GetCurrentTheme() { return SharedPreferences->theme(); }
+Theme ColorPicker::GetCurrentTheme() {
+  // A Salty-OS theme is a light-like theme: it overrides the user preference
+  if (SaltyPalette::IsActive()) {
+    return Theme::Light;
+  }
+  return SharedPreferences->theme();
+}
 
 KDColor ColorPicker::Get(Theme theme, ThemeComponent component) {
   switch (theme) {
     case Theme::Light:
+      if (SaltyPalette::IsActive()) {
+        return SaltyPalette::Theme().get(component);
+      }
       return k_lightTheme.get(component);
     case Theme::Dark:
       return k_darkTheme.get(component);

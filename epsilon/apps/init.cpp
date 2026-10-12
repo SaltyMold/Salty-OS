@@ -7,10 +7,13 @@
 #include "exam_mode_manager.h"
 #include "global_preferences.h"
 #include "shared/global_store.h"
+#include "theme_manager.h"
 
 namespace Apps {
 
 void Init() {
+  ThemeManager::init();
+  ThemeManager::applyPalette();
   Shared::GlobalStore::Init();
   GlobalPreferences::Init();
   ExamModeManager::Init();

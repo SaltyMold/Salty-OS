@@ -13,6 +13,7 @@
 #include "on_boarding/startup_prompt_controller.h"
 #include "shared/global_store.h"
 #include "shared/record_restrictive_extensions_helper.h"
+#include "theme_manager.h"
 
 extern "C" {
 #include <assert.h>
@@ -30,6 +31,8 @@ AppsContainer::AppsContainer()
     : Container(),
       m_firstUSBEnumeration(true),
       m_dfuBetweenEvents(false),
+      m_externalAppsHidden(false),
+      m_activeShortcuts(),
       m_window(&m_focusManager),
       m_examPopUpController(),
       m_promptController(k_promptMessages, k_promptColors,
@@ -48,6 +51,9 @@ AppsContainer::AppsContainer()
 }
 
 int AppsContainer::numberOfExternalApps() {
+  if (m_externalAppsHidden) {
+    return 0;
+  }
   return Ion::ExternalApps::numberOfApps(
       ExamModeManager::ExamMode().isActive());
 }
@@ -62,6 +68,10 @@ Ion::ExternalApps::App AppsContainer::externalAppAtIndex(int index) {
   }
   assert(false);
   return Ion::ExternalApps::App(nullptr);
+}
+
+App::Snapshot* AppsContainer::saltyDebugAppSnapshot() {
+  return &m_saltyDebugSnapshot;
 }
 
 App::Snapshot* AppsContainer::hardwareTestAppSnapshot() {
@@ -150,6 +160,11 @@ void AppsContainer::didSuspend() {
 
 bool AppsContainer::dispatchEvent(Ion::Events::Event event) {
   bool alphaLockWantsRedraw = updateAlphaLock();
+
+  handleShortcuts();
+
+  /*------------------------------------------------------------------------*/
+
   if (event == Ion::Events::USBEnumeration || event == Ion::Events::USBPlug ||
       event == Ion::Events::BatteryCharging) {
     Ion::LED::updateColorWithPlugAndCharge();
@@ -268,6 +283,8 @@ void AppsContainer::switchToExternalApp(Ion::ExternalApps::App app) {
   if (appStart) {
     appStart();
   }
+  /* NOTE: the theme caches live in the external apps RAM range */
+  ThemeManager::invalidateCaches();
   /* NOTE: init shared objects once we exit external app */
   Internal::TreeStack::SharedTreeStack.init();
   Pool::sharedPool.init();
@@ -312,6 +329,9 @@ void AppsContainer::run() {
   Ion::Power::selectStandbyMode(false);
   Ion::Events::setSpinner(true);
   Ion::Display::setScreenshotCallback(ShowCursor);
+
+  Ion::CircuitBreaker::unsetCheckpoint(
+      Ion::CircuitBreaker::CheckpointType::Home);
 
   /* Setup the home checkpoint so that the exception checkpoint will be
    * reactivated on a home interrupt. This way, the main exception checkpoint

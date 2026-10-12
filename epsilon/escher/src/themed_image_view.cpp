@@ -37,7 +37,7 @@ KDSize ThemedImageView::minimalSizeForOptimalDisplay() const {
 }
 
 const Image* ThemedImageView::currentImage() const {
-  switch (SharedPreferences->theme()) {
+  switch (ColorPicker::GetCurrentTheme()) {
     case Theme::Light:
       assert(m_themedImage.light());
       return m_themedImage.light();

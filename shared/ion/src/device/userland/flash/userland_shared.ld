@@ -107,6 +107,10 @@ SECTIONS {
      * COMMON blocks. This can be disabled with -fno-common if needed. */
     *(COMMON)
     _external_apps_RAM_start = .;
+    /* Pure caches (theme wallpaper/icons), rebuilt after an external app exit.
+     * Linking them here gives their RAM back to external apps. */
+    . = ALIGN(4);
+    KEEP(*(.bss.$theme_cache))
     KEEP(*(.bss.$app_buffer))
     _poincare_pool_start = .;
     KEEP(*(.bss.$poincare_pool))

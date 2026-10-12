@@ -17,7 +17,9 @@
 #include "home/app.h"
 #include "on_boarding/app.h"
 #include "shared/prompt_controller.h"
+#include "shortcuts.h"
 #include "suspend_timer.h"
+#include "salty_debug/app.h"
 #include "usb/app.h"
 
 class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
@@ -36,6 +38,8 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
 #endif
   Escher::App::Snapshot* onBoardingAppSnapshot();
   Escher::App::Snapshot* usbConnectedAppSnapshot();
+  Escher::App::Snapshot* saltyDebugAppSnapshot();
+  bool externalAppsHidden() const { return m_externalAppsHidden; }
   Home::App::Snapshot* homeAppSnapshot() { return &m_homeSnapshot; }
   void setExamMode(Poincare::ExamMode targetExamMode,
                    Poincare::ExamMode previousMode);
@@ -73,6 +77,11 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   Escher::Timer* containerTimerAtIndex(int i) override;
   void listenToExternalEvents() override;
   bool processEvent(Ion::Events::Event event);
+  // Salty-OS keybinds, see shortcuts.h
+  void handleShortcuts();
+  bool changeTheme(int offset);
+  void toggleExternalApps();
+  void toggleDebugApp();
   void resetShiftAlphaStatus();
   bool updateAlphaLock();
   void handleRunException();
@@ -84,6 +93,8 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   static const int k_promptNumberOfMessages;
   bool m_firstUSBEnumeration;
   bool m_dfuBetweenEvents;
+  bool m_externalAppsHidden;
+  Shortcuts::ActiveSet m_activeShortcuts;
   FocusManager m_focusManager;
   AppsWindow m_window;
   EmptyBatteryWindow m_emptyBatteryWindow;
@@ -100,6 +111,7 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   HardwareCheckup::App::Snapshot m_hardwareCheckupSnapshot;
 #endif
   USB::App::Snapshot m_usbConnectedSnapshot;
+  SaltyDebug::App::Snapshot m_saltyDebugSnapshot;
 #if EPSILON_GETOPT
   // Used to launch a given app on a simulator
   Escher::App::Snapshot* m_initialAppSnapshot;

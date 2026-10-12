@@ -9,6 +9,9 @@
 
 #include "app_cell.h"
 
+#include <omg/memory.h>
+
+
 namespace Home {
 
 class Controller : public Escher::ViewController,
@@ -21,6 +24,12 @@ class Controller : public Escher::ViewController,
   Escher::View* view() override { return &m_view; }
 
   bool handleEvent(Ion::Events::Event event) override;
+  void reloadAppCells() {
+    for (int i = 0; i < k_numberOfReusableCells; i++) {
+      m_reusableCells[i].reloadCell();
+    }
+    m_view.selectableTableView()->reloadData(false, false);
+  }
 
   int numberOfRows() const override {
     return ((numberOfIcons() - 1) / k_numberOfColumns) + 1;
@@ -74,10 +83,7 @@ class Controller : public Escher::ViewController,
     ContentView(Controller* controller,
                 Escher::SelectableTableViewDataSource* selectionDataSource);
     Escher::SelectableTableView* selectableTableView();
-    void drawRect(KDContext* ctx, KDRect rect) const override {
-      ctx->fillRect(bounds(), Escher::ColorPicker::Resolve(
-                                  Escher::ThemeComponent::DefaultBackground));
-    }
+    void drawRect(KDContext* ctx, KDRect rect) const override;
     void reload() { markWholeFrameAsDirty(); }
     void reloadBottomRow(SimpleTableViewDataSource* dataSource,
                          int lastIconColumn);
@@ -88,13 +94,13 @@ class Controller : public Escher::ViewController,
     void layoutSubviews(bool force = false) override;
     Escher::SelectableTableView m_selectableTableView;
   };
-  constexpr static KDMargins k_margins = {4, 4, 0, 0};
+  constexpr static KDMargins k_margins = {-1, 0, 0, 0};
   constexpr static KDCoordinate k_bottomMargin = 14;
   constexpr static KDCoordinate k_indicatorMargin = 61;
   constexpr static int k_numberOfColumns = 3;
   constexpr static int k_numberOfReusableCells = 6;
   constexpr static int k_cellHeight = 104;
-  constexpr static int k_cellWidth = 104;
+  constexpr static int k_cellWidth = 107; // 107 * 3 - 1 (margin) = 320
   ContentView m_view;
   AppCell m_reusableCells[k_numberOfReusableCells];
 };

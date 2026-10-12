@@ -1,3 +1,5 @@
+#include <escher/theme/color_picker.h>
+#include <escher/theme/salty_palette.h>
 #include "controller.h"
 
 #include <apps/apps_container.h>
@@ -8,12 +10,59 @@
 
 #include "app.h"
 
+#include "../theme_manager.h"
+#include <string.h>
+
 extern "C" {
 #include <assert.h>
 }
 
 using namespace Escher;
+
+namespace {
+KDColor wallpaperColor() {
+  return Escher::SaltyPalette::IsActive()
+             ? Escher::SaltyPalette::WallpaperColor()
+             : Escher::ColorPicker::Resolve(
+                   Escher::ThemeComponent::DefaultBackground);
+}
+}  // namespace
 using namespace Poincare;
+
+namespace {
+
+void fillWallpaperBackground(KDContext* ctx, KDRect rect) {
+  if (!ThemeManager::hasWallpaper()) {
+    // No Theme Area flashed, or the selected theme has no wallpaper.
+    ctx->fillRect(rect, wallpaperColor());
+    return;
+  }
+
+  int wallpaperWidth = ThemeManager::wallpaperWidth();
+  int lineWidth = rect.width() < wallpaperWidth ? rect.width() : wallpaperWidth;
+
+  KDColor lineBuffer[320];
+  for (int y = 0; y < rect.height(); y++) {
+    int localY = 0;
+    const KDColor* chunk = ThemeManager::wallpaperChunkContaining(y, &localY);
+    if (chunk == nullptr) {
+      ctx->fillRect(KDRect(0, y, rect.width(), 1), wallpaperColor());
+      continue;
+    }
+    const KDColor* sourceRow = chunk + localY * wallpaperWidth;
+    memcpy(lineBuffer, sourceRow, lineWidth * sizeof(KDColor));
+    ctx->fillRectWithPixels(KDRect(0, y, lineWidth, 1), lineBuffer, nullptr);
+    if (lineWidth < rect.width()) {
+      // Wallpaper narrower than the screen (e.g. it doesn't cover the
+      // scrollbar column): paint the leftover strip on the right with the
+      // flat fallback color instead of leaving it unpainted.
+      ctx->fillRect(KDRect(lineWidth, y, rect.width() - lineWidth, 1),
+                    wallpaperColor());
+    }
+  }
+}
+
+}  // namespace
 
 namespace Home {
 
@@ -56,6 +105,10 @@ void Controller::ContentView::layoutSubviews(bool force) {
   KDRect frame =
       KDRect(KDPointZero, bounds().width(), bounds().height() - k_bottomMargin);
   setChildFrame(&m_selectableTableView, frame, force);
+}
+
+void Controller::ContentView::drawRect(KDContext* ctx, KDRect rect) const {
+  fillWallpaperBackground(ctx, bounds());
 }
 
 Controller::Controller(Responder* parentResponder,

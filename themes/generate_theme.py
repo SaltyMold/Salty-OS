@@ -84,7 +84,8 @@ THEME_COUNT_MAX = 256
 THEME_ICON_COUNT = 12
 THEME_NAME_LENGTH = 16
 THEME_COLOR_COUNT = 64
-THEME_AREA_SIZE = 1.5 * 1024 * 1024
+THEME_AREA_SIZE = int(1.5 * 1024 * 1024)
+
 
 # struct ThemeAreaHeader { uint32_t magic, version, themeCount; }
 HEADER_FORMAT = "<III"

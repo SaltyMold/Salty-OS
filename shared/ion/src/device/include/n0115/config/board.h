@@ -1,5 +1,5 @@
-#ifndef ION_DEVICE_N0115_SHARED_DRIVERS_CONFIG_BOARD_H
-#define ION_DEVICE_N0115_SHARED_DRIVERS_CONFIG_BOARD_H
+#ifndef ION_DEVICE_N0120_SHARED_DRIVERS_CONFIG_BOARD_H
+#define ION_DEVICE_N0120_SHARED_DRIVERS_CONFIG_BOARD_H
 
 #include <stdint.h>
 
@@ -9,7 +9,8 @@
  * Comments and blank lines are ignored.
  * Macros such as "#if" may be used, as the preprocessor will be run before
  * this file is converted to .ld.
- * Calls to "static_assert" are replaced with LD "ASSERT". */
+ * Calls to "static_assert" are replaced with LD "ASSERT".
+ * Formatting must be deactivated */
 
 namespace Ion {
 namespace Device {
@@ -18,26 +19,25 @@ namespace Config {
 
 // clang-format off
 
-/* The bootloader, kernel and userland starts should be aligned to the beginning of a sector (to flash them easily).
- * The bootloader should occupy the whole internal flash
- * The memory layouts are the following:
- * - internal flash: 4*16k
+/* The bootloader, kernel and userland starts should be aligned to the beginning
+ * of a sector (to flash them easily). The bootloader should occupy the whole
+ * internal flash. The memory layouts are the following:
+ * - internal flash: 4*128K
  * - external flash: 8*4k + 32K + 127 * 64K
  */
 
 /* Internal flash */
-constexpr uint32_t ITCMInterface = 0x00200000;
-constexpr uint32_t AXIMInterface = 0x08000000;
+constexpr uint32_t InternalFlashOrigin = 0x08000000;
+constexpr uint32_t InternalFlashLength = 0x80000; // 512KiB
 
-constexpr uint32_t STBootloaderAddress = 0x00100000;
+constexpr uint32_t STBootloaderAddress = 0x1FF00000;
 
-constexpr uint32_t InternalFlashOrigin = AXIMInterface;
-constexpr uint32_t InternalFlashLength = 0x10000; // 64KiB
-
-constexpr uint32_t TrampolineLength = 0x2000; // 8KiB
-constexpr uint32_t BootloaderLength = InternalFlashLength - TrampolineLength;
-constexpr uint32_t BootloaderOrigin = ITCMInterface;
-constexpr uint32_t TrampolineOrigin = BootloaderOrigin + BootloaderLength;
+constexpr uint32_t BootloaderOrigin = InternalFlashOrigin;
+constexpr uint32_t PseudoOTPLength = 512;
+constexpr uint32_t TrampolineLength = 0x400; // 1KiB
+constexpr uint32_t BootloaderLength = InternalFlashLength - PseudoOTPLength - TrampolineLength;
+constexpr uint32_t PseudoOTPOrigin = BootloaderOrigin + BootloaderLength;
+constexpr uint32_t TrampolineOrigin = PseudoOTPOrigin + PseudoOTPLength;
 
 /* External flash
  *
@@ -62,7 +62,7 @@ constexpr uint32_t TrampolineOrigin = BootloaderOrigin + BootloaderLength;
  */
 
 constexpr uint32_t ExternalFlashOrigin = 0x90000000;
-constexpr uint32_t ExternalFlashLength = 0x800000; // 8MiB
+constexpr uint32_t ExternalFlashLength = 0x800000;              // 8MiB
 constexpr uint32_t StandardExternalFlashSectorLength = 0x10000; // 64KiB
 
 constexpr uint32_t SlotAOffset = 0;
@@ -111,10 +111,10 @@ constexpr uint32_t ExternalAppsSectorUnit = 0x10000;
  * should protect it anyway).
  */
 
-constexpr uint32_t SRAMOrigin = 0x20000000;
+constexpr uint32_t SRAMOrigin = 0x24000000;
 constexpr uint32_t SRAMLength = 0x40000; // 256KiB
 
-constexpr uint32_t KernelStackLength = 0x400; // 1KiB
+constexpr uint32_t KernelStackLength = 0x400;   // 1KiB
 constexpr uint32_t KernelDataBSSLength = 0xC00; // 3KiB
 constexpr uint32_t KernelSRAMLength = KernelStackLength + KernelDataBSSLength;
 constexpr uint32_t KernelSRAMOrigin = SRAMOrigin + SRAMLength - KernelSRAMLength;
@@ -133,7 +133,10 @@ constexpr uint32_t SignedBinaryOffset = 0;
 
 constexpr uint32_t BenchLength = 0x20000; // 128KiB
 
-constexpr uint32_t BackupSRAMOrigin = 0x40024000;
+constexpr uint32_t SRAM4Origin = 0x38000000;
+constexpr uint32_t SRAM4Length = 0x4000; // 16KiB
+
+constexpr uint32_t BackupSRAMOrigin = 0x38800000;
 constexpr uint32_t BackupSRAMLength = 0x1000; // 4kiB
 
 /* Signature */
@@ -149,18 +152,16 @@ constexpr int NumberOfMPUSectors = 8;
 
 // clang-format on
 
-// 256KiB at the end of ExtApp B
-// constexpr uint32_t ThemeAreaSize = 0x40000; // 256KiB
-// constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x800000 - 0x40000 - 0x10000 = 0x907B0000
-// constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;
+
+/*--------------------------------------------*/
 
 // 2MB at the end of ExtApp A
-constexpr uint32_t ThemeAreaSize = 0x200000; // 2MiB
-constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength / 2 - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x400000 - 0x200000 - 0x10000 = 0x901F0000
+constexpr uint32_t ThemeAreaSize = 0x180000; // 1.5MiB
+constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength / 2 - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x400000 - 0x180000 - 0x10000 = 0x90270000
 constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;
 
 constexpr uint32_t ThemeAreaHeaderMagic = 0x87654321;
-constexpr uint32_t ThemeAreaHeaderVersion = 3;
+constexpr uint32_t ThemeAreaHeaderVersion = 4;
 
 constexpr uint32_t ThemeCount = 256;
 constexpr uint32_t ThemeIconCount = 12;

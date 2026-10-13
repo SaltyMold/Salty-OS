@@ -9,5 +9,5 @@
 
 // Version of Epsilon this userland is based on
 #ifndef SALTY_OS_EPSILON_BASE_VERSION
-#define SALTY_OS_EPSILON_BASE_VERSION "25.2.2"
+#define SALTY_OS_EPSILON_BASE_VERSION "26.4.0"
 #endif

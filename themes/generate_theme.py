@@ -17,7 +17,7 @@ in: shared/ion/src/device/include/n0120/config/board.h
       uint8_t  isIcons;
       uint8_t  defaultCircleLevel;
       uint8_t  isAppNameBackgroundHover;
-      uint8_t  reserved[3];
+      uint8_t  reserved[4];
       uint32_t wallpaperOffset;
       uint32_t wallpaperSize;
       uint32_t paletteOffset;
@@ -79,12 +79,12 @@ except ImportError:  # pragma: no cover - fallback for minimal environments
 # way to parse the C++ header automatically here.
 # --------------------------------------------------------------------------
 MAGIC = 0x87654321
-VERSION = 3
-THEME_COUNT_MAX = 4
+VERSION = 4
+THEME_COUNT_MAX = 256
 THEME_ICON_COUNT = 12
 THEME_NAME_LENGTH = 16
 THEME_COLOR_COUNT = 64
-THEME_AREA_SIZE = 2 * 1024 * 1024
+THEME_AREA_SIZE = 1.5 * 1024 * 1024
 
 # struct ThemeAreaHeader { uint32_t magic, version, themeCount; }
 HEADER_FORMAT = "<III"
@@ -638,7 +638,7 @@ def render_summary(theme_dirs: list[Path], reports: list[ThemeReport],
             lines.append("")
 
     rule()
-    lines.append(f"Flash with:  python3 ../device/dfu.py -D <output.bin> -s 0x901F0000")
+    lines.append(f"Flash with:  python3 ../device/dfu.py -D <output.bin> -s 0x90270000")
     rule()
 
     return "\n".join(lines) + "\n"
@@ -674,4 +674,4 @@ if __name__ == "__main__":
     main()
 
 
-# python3 ../device/dfu.py -D output/theme_area.bin -s 0x901F0000
+# python3 ../device/dfu.py -D output/theme_area.bin -s 0x90270000

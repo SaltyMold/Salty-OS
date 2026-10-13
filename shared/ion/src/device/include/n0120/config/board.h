@@ -155,18 +155,13 @@ constexpr int NumberOfMPUSectors = 8;
 
 /*--------------------------------------------*/
 
-// 256KiB at the end of ExtApp B
-// constexpr uint32_t ThemeAreaSize = 0x40000; // 256KiB
-// constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x800000 - 0x40000 - 0x10000 = 0x907B0000
-// constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;
-
 // 2MB at the end of ExtApp A
-constexpr uint32_t ThemeAreaSize = 0x200000; // 2MiB
-constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength / 2 - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x400000 - 0x200000 - 0x10000 = 0x901F0000
+constexpr uint32_t ThemeAreaSize = 0x180000; // 1.5MiB
+constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength / 2 - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x400000 - 0x180000 - 0x10000 = 0x90270000
 constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;
 
 constexpr uint32_t ThemeAreaHeaderMagic = 0x87654321;
-constexpr uint32_t ThemeAreaHeaderVersion = 3;
+constexpr uint32_t ThemeAreaHeaderVersion = 4;
 
 constexpr uint32_t ThemeCount = 256;
 constexpr uint32_t ThemeIconCount = 12;

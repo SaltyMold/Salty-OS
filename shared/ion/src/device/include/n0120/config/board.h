@@ -155,7 +155,7 @@ constexpr int NumberOfMPUSectors = 8;
 
 /*--------------------------------------------*/
 
-// 2MB at the end of ExtApp A
+// 1.5MB at the end of ExtApp A
 constexpr uint32_t ThemeAreaSize = 0x180000; // 1.5MiB
 constexpr uint32_t ThemeAreaStart = ExternalFlashOrigin + ExternalFlashLength / 2 - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x400000 - 0x180000 - 0x10000 = 0x90270000
 constexpr uint32_t ThemeAreaEnd = ThemeAreaStart + ThemeAreaSize;

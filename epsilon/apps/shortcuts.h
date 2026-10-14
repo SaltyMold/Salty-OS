@@ -40,8 +40,8 @@
 #ifndef SALTY_SHORTCUT_KEY_TOGGLE_EXTERNAL_APPS
 #define SALTY_SHORTCUT_KEY_TOGGLE_EXTERNAL_APPS Ion::Keyboard::Key::XNT
 #endif
-#ifndef SALTY_SHORTCUT_KEY_OPEN_DEBUG
-#define SALTY_SHORTCUT_KEY_OPEN_DEBUG Ion::Keyboard::Key::Backspace
+#ifndef SALTY_SHORTCUT_KEY_OPEN_SETTINGS
+#define SALTY_SHORTCUT_KEY_OPEN_SETTINGS Ion::Keyboard::Key::Backspace
 #endif
 
 namespace Shortcuts {
@@ -50,7 +50,7 @@ enum class Action : uint8_t {
   PreviousTheme,
   NextTheme,
   ToggleExternalApps,
-  OpenDebug,
+  OpenSettings,
   NumberOfActions,
 };
 
@@ -70,8 +70,8 @@ constexpr Ion::Keyboard::Key KeyForAction(Action action) {
       return SALTY_SHORTCUT_KEY_NEXT_THEME;
     case Action::ToggleExternalApps:
       return SALTY_SHORTCUT_KEY_TOGGLE_EXTERNAL_APPS;
-    case Action::OpenDebug:
-      return SALTY_SHORTCUT_KEY_OPEN_DEBUG;
+    case Action::OpenSettings:
+      return SALTY_SHORTCUT_KEY_OPEN_SETTINGS;
     default:
       return Ion::Keyboard::Key::None;
   }
@@ -80,7 +80,7 @@ constexpr Ion::Keyboard::Key KeyForAction(Action action) {
 /* An action that fires once per press (and not at every event while the keys
  * are held) must be handled with ActiveSet::isNewlyActive(). */
 constexpr bool FiresOncePerPress(Action action) {
-  return action == Action::ToggleExternalApps || action == Action::OpenDebug;
+  return action == Action::ToggleExternalApps || action == Action::OpenSettings;
 }
 
 inline bool IsPrefixHeld(Ion::Keyboard::State keyboardState) {

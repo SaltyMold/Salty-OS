@@ -40,6 +40,8 @@ The userland is build with a custom onboarding and external apps allowed.
 - Customizable icon form per theme.
 - Custom color palette per theme.
 - Toggle display of external apps.
+- Salty-OS settings app (About and Themes), its information comes from the repository (Makefile, git, `themes/` folder) and from the Theme Area.
+- French by default, and no Python script preinstalled.
 
 Everything customizable via a website.
 
@@ -88,7 +90,7 @@ It is always both parantheses and the keybind.
 | Both parantheses + shift | Previous theme    |
 | Both parantheses + alpha | Next theme    |
 | Both parantheses + xnt | Toggle external apps    |
-| Both parantheses + backspace | Salty-OS debug screen (themes, palettes, icons, versions...) |
+| Both parantheses + backspace | Salty-OS settings (About: versions and build, Themes: one folder per theme with all its details) |
 
 ## How to build
 

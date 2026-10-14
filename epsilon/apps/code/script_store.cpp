@@ -6,12 +6,9 @@ bool ScriptStore::ScriptNameIsFree(const char* baseName) {
   return ScriptBaseNamed(baseName).isNull();
 }
 
-void ScriptStore::InitTemplates() {
-  AddScriptFromTemplate(ScriptTemplate::Squares());
-  AddScriptFromTemplate(ScriptTemplate::Parabola());
-  AddScriptFromTemplate(ScriptTemplate::Mandelbrot());
-  AddScriptFromTemplate(ScriptTemplate::Polynomial());
-}
+/* Salty-OS: no Python script is created by default, the Python app starts
+ * empty. The templates (ScriptTemplate) are kept as they are used by tests. */
+void ScriptStore::InitTemplates() {}
 
 void ScriptStore::DeleteAllScripts() {
   for (int i = NumberOfScripts() - 1; i >= 0; i--) {

@@ -14,8 +14,8 @@ void AppsContainer::handleShortcuts() {
     toggleExternalApps();
   }
 
-  if (active.isNewlyActive(Shortcuts::Action::OpenDebug, m_activeShortcuts)) {
-    toggleDebugApp();
+  if (active.isNewlyActive(Shortcuts::Action::OpenSettings, m_activeShortcuts)) {
+    toggleSettingsApp();
   }
 
   /* Previous theme has priority. If there is no previous theme, the next one
@@ -49,10 +49,10 @@ void AppsContainer::toggleExternalApps() {
   }
 }
 
-/* Opens the Salty-OS debug screen, or goes back to the home screen if it is
+/* Opens the Salty-OS settings, or goes back to the home screen if it is
  * already displayed. Not available during the onboarding, the hardware tests
  * or in exam mode. */
-void AppsContainer::toggleDebugApp() {
+void AppsContainer::toggleSettingsApp() {
   if (activeApp() == nullptr || ExamModeManager::ExamMode().isActive()) {
     return;
   }
@@ -61,6 +61,7 @@ void AppsContainer::toggleDebugApp() {
       current == hardwareTestAppSnapshot()) {
     return;
   }
-  switchToBuiltinApp(current == saltyDebugAppSnapshot() ? homeAppSnapshot()
-                                                        : saltyDebugAppSnapshot());
+  switchToBuiltinApp(current == saltySettingsAppSnapshot()
+                         ? homeAppSnapshot()
+                         : saltySettingsAppSnapshot());
 }

@@ -260,8 +260,11 @@ void ThemeManager::applyPalette() {
   // Raw uint32s written by encode_palette() in generate_theme.py: one
   // 0x00RRGGBB value per color, already in the exact format KDColor::RGB24
   // expects, so no bit-shuffling needed here.
-  const uint32_t* rawColors =
-      reinterpret_cast<const uint32_t*>(ThemeAreaStart + e->paletteOffset);
+  /* The palette can start at any address (right after a wallpaper blob), so it
+   * is read byte by byte: an unaligned uint32_t access faults on the device. */
+  const volatile uint8_t* rawColors =
+      reinterpret_cast<const volatile uint8_t*>(ThemeAreaStart +
+                                                e->paletteOffset);
   size_t count = e->paletteSize / sizeof(uint32_t);
   size_t n = count < Escher::SaltyPalette::numberOfSlots()
                  ? count
@@ -269,7 +272,11 @@ void ThemeManager::applyPalette() {
 
   KDColor colors[Escher::SaltyPalette::numberOfSlots()];
   for (size_t i = 0; i < n; i++) {
-    colors[i] = KDColor::RGB24(rawColors[i]);
+    const volatile uint8_t* c = rawColors + i * sizeof(uint32_t);
+    colors[i] = KDColor::RGB24(static_cast<uint32_t>(c[0]) |
+                               (static_cast<uint32_t>(c[1]) << 8) |
+                               (static_cast<uint32_t>(c[2]) << 16) |
+                               (static_cast<uint32_t>(c[3]) << 24));
   }
   Escher::SaltyPalette::Apply(colors, n);
 }

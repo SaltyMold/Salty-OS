@@ -37,7 +37,7 @@ $(call depends_on_themed_image,apps,$(PATH_apps)/title_bar_view.cpp,$(PATH_apps)
 # Include the specific apps
 # FIXME Use flavors instead of EPSILON_APPS?
 EPSILON_APPS ?= calculation graph code statistics distributions inference solver sequence regression elements finance settings
-_SPECIAL_APPS = home on_boarding usb hardware_test salty_debug
+_SPECIAL_APPS = home on_boarding usb hardware_test salty_settings
 
 ifeq ($(DEBUG),1)
 HARDWARE_CHECKUP ?= 1
@@ -84,4 +84,4 @@ SOURCES_apps := $(subst .png,.cpp,$(SOURCES_apps))
 
 $(call assert_defined,PYTHON_QSTRDEFS)
 $(call assert_defined,KANDINSKY_fonts_dependencies)
-$(call all_objects_for,$(SOURCES_apps)): $(PYTHON_QSTRDEFS) $(OUTPUT_DIRECTORY)/$(PATH_apps)/i18n.h $(KANDINSKY_fonts_dependencies)
+$(call all_objects_for,$(SOURCES_apps)): $(PYTHON_QSTRDEFS) $(OUTPUT_DIRECTORY)/$(PATH_apps)/i18n.h $(OUTPUT_DIRECTORY)/$(PATH_apps)/salty_info.h $(KANDINSKY_fonts_dependencies)

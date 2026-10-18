@@ -4,10 +4,8 @@
 
 namespace OnBoarding {
 
-/* Leaves the splash screen once it has been displayed for about one second.
- *
- * The timer belongs to the App::Snapshot (and not to the App) because its
- * fire method switches to another app, which destroys the on boarding App. */
+/* Replaces the splash screen by the tutorial once it has been displayed for
+ * about one second. The timer belongs to the App::Snapshot. */
 class SplashTimer : public Escher::Timer {
  public:
   SplashTimer() : Timer(k_numberOfTicks) {}

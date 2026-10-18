@@ -2,24 +2,19 @@
 
 #include <apps/apps_container.h>
 
+#include "app.h"
+
 namespace OnBoarding {
 
 bool SplashTimer::fire() {
   /* A timer fires periodically, but the splash screen only has to be left
-   * once. This also prevents displaying the prompt several times. */
+   * once. */
   if (m_didFire) {
     return false;
   }
   m_didFire = true;
-
-  AppsContainer* appsContainer = AppsContainer::sharedAppsContainer();
-  if (appsContainer->promptController()) {
-    Escher::App::app()->displayModalViewController(
-        appsContainer->promptController(), KDGlyph::k_alignCenter,
-        KDGlyph::k_alignCenter);
-  } else {
-    appsContainer->switchToBuiltinApp(appsContainer->homeAppSnapshot());
-  }
+  // The logo is followed by the tutorial, which leaves the app when it is over
+  static_cast<App*>(Escher::App::app())->showTutorial();
   return true;
 }
 

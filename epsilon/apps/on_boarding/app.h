@@ -22,6 +22,9 @@ class App : public Escher::App {
     SplashTimer m_splashTimer;
   };
 
+  // Called once the splash screen has been displayed long enough
+  void showTutorial() { m_splashController.showTutorial(); }
+
   void willBecomeInactive() override;
   void didBecomeActive(Escher::Window* window) override;
   int numberOfTimers() override { return 1; }

@@ -266,6 +266,11 @@ void AppsContainer::switchToBuiltinApp(App::Snapshot* snapshot) {
   return Container::switchToBuiltinApp(snapshot);
 }
 
+void AppsContainer::showTitleBar(I18n::Message title) {
+  m_window.setTitle(title);
+  m_window.hideTitleBarView(false);
+}
+
 typedef void (*ExternalAppMain)();
 
 void AppsContainer::switchToExternalApp(Ion::ExternalApps::App app) {

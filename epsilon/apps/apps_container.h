@@ -59,6 +59,10 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   void redrawWindow(bool force = false);
   void setDFUBetweenEvents(bool active) { m_dfuBetweenEvents = active; }
 
+  /* Shows the title bar (hidden by the splash screen of the on boarding app)
+   * with the given title. It is hidden again when switching to another app. */
+  void showTitleBar(I18n::Message title);
+
   // Ion::Storage::StorageDelegate
   bool storageCanChangeForRecordName(
       const Ion::Storage::Record::Name recordName) const override;

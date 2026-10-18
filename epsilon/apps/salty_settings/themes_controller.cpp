@@ -47,7 +47,10 @@ bool ThemesController::handleEvent(Ion::Events::Event event) {
   return false;
 }
 
-int ThemesController::numberOfRows() const { return ThemeManager::themeCount(); }
+int ThemesController::numberOfRows() const {
+  int count = ThemeManager::themeCount();
+  return count > 0 ? count : 1;
+}
 
 KDCoordinate ThemesController::nonMemoizedRowHeight(int row) {
   ThemeCell tempCell;

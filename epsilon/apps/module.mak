@@ -32,8 +32,6 @@ $(call create_module,apps,1, \
 
 PRIVATE_SFLAGS_apps += -I$(PATH_apps)
 
-$(call depends_on_themed_image,apps,$(PATH_apps)/title_bar_view.cpp,$(PATH_apps)/icons/light/exam_light_icon.png,$(PATH_apps)/icons/dark/exam_dark_icon.png,:-test)
-
 # Include the specific apps
 # FIXME Use flavors instead of EPSILON_APPS?
 EPSILON_APPS ?= calculation graph code statistics distributions inference solver sequence regression elements finance settings

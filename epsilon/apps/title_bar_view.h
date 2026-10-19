@@ -9,6 +9,16 @@
 #include "battery_view.h"
 #include "shift_alpha_lock_view.h"
 
+class ExamIconView : public Escher::View {
+ public:
+  void drawRect(KDContext* ctx, KDRect rect) const override;
+  KDSize minimalSizeForOptimalDisplay() const override {
+    return KDSize(k_width, k_height);
+  }
+  constexpr static KDCoordinate k_width = 18;
+  constexpr static KDCoordinate k_height = 9;
+};
+
 class TitleBarView : public Escher::View {
  public:
   TitleBarView();
@@ -30,8 +40,6 @@ class TitleBarView : public Escher::View {
  private:
   constexpr static size_t k_preferenceTextSize = sizeof("tech/rad");
   constexpr static KDCoordinate k_alphaRightMargin = 5;
-  constexpr static KDCoordinate k_examIconWidth = 18;
-  constexpr static KDCoordinate k_examIconHeight = 9;
   constexpr static KDCoordinate k_examIconMargin = 93;
   constexpr static KDCoordinate k_examTextWidth =
       KDFont::GlyphWidth(KDFont::Size::Large) * 3;
@@ -56,7 +64,7 @@ class TitleBarView : public Escher::View {
   BatteryView m_batteryView;
   ShiftAlphaLockView m_shiftAlphaLockView;
   Escher::BufferTextView<k_preferenceTextSize> m_preferenceView;
-  Escher::ThemedImageView m_examModeIconView;
+  ExamIconView m_examModeIconView;
   Escher::MessageTextView m_examModeTextView;
   Escher::SolidColorView m_separatorView{
       Escher::ThemeComponent::SeparatorTitleBar};

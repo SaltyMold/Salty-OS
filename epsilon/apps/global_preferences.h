@@ -187,6 +187,10 @@ class GlobalPreferences : public Escher::LayoutPreferences::Interface,
   void setComplexFormat(Poincare::ComplexFormat complexFormat) {
     s_data->m_calculationPreferences.complexFormat = complexFormat;
   }
+  bool casEnabled() const { return s_data->m_combinedPreferences.casEnabled; }
+  void setCasEnabled(bool casEnabled) {
+    s_data->m_combinedPreferences.casEnabled = casEnabled;
+  }
   uint8_t numberOfSignificantDigits() const {
     return s_data->m_calculationPreferences.numberOfSignificantDigits;
   }
@@ -218,6 +222,7 @@ class GlobalPreferences : public Escher::LayoutPreferences::Interface,
   constexpr static bool k_defaultShowPopUp = true;                         //
   constexpr static KDFont::Size k_defaultFont = KDFont::Size::Large;       //
   constexpr static EditionMode k_defaultEditionMode = EditionMode::Edition2D;
+  constexpr static bool k_defaultCasEnabled = true;                        //
 
   /* GlobalPreferences is a singleton, hence the private constructor. The unique
    * instance can be accessed through the
@@ -239,16 +244,17 @@ class GlobalPreferences : public Escher::LayoutPreferences::Interface,
                 "I18n::NumberOfCountries is not superior to 0");
 
   CODE_GUARD(
-      combined_preferences, 1870460707,  //
+      combined_preferences, 2083887634,  //
       struct __attribute__((packed)) CombinedPreferences {
         bool showPopUp : 1;
         KDFont::Size font : 1;
         EditionMode editionMode : 1;
-        uint8_t padding : OMG::BitHelper::numberOfBitsIn<uint8_t>() - 3;
+        bool casEnabled : 1;
+        uint8_t padding : OMG::BitHelper::numberOfBitsIn<uint8_t>() - 4;
         bool operator==(const CombinedPreferences&) const = default;
       };)
   constexpr static CombinedPreferences k_defaultCombinedPreferences = {
-      k_defaultShowPopUp, k_defaultFont, k_defaultEditionMode, 0};
+      k_defaultShowPopUp, k_defaultFont, k_defaultEditionMode, k_defaultCasEnabled, 0};
 
   /* Instead of storing [GlobalPreferences] to the Storage, we use a smaller
    * struct [GlobalPreferencesData], this is because [m_version] field need to

@@ -113,11 +113,13 @@ bool neverDisplayExactExpressionOfApproximation(
 
 }  // namespace
 
-bool CAS::Enabled() { return false; }
+bool CAS::Enabled() {
+  return SharedPreferences->casEnabled();
+}
 
 bool CAS::NeverDisplayReductionOfInput(const Internal::Tree* input,
                                        const SymbolContext& symbolContext) {
-  if (!input) {
+  if (!input || Enabled()) {
     return false;
   }
   return input->hasDescendantSatisfying([](const Tree* t) {

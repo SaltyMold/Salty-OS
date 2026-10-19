@@ -26,6 +26,9 @@ constexpr MessageTree s_modelFloatDisplayModeChildren[4] = {
 constexpr MessageTree s_modelComplexFormatChildren[3] = {
     MessageTree(I18n::Message::Real), MessageTree(I18n::Message::Algebraic),
     MessageTree(I18n::Message::Exponential)};
+constexpr MessageTree s_modelCASChildren[2] = {
+    MessageTree(I18n::Message::Enabled),
+    MessageTree(I18n::Message::Disabled)};
 constexpr MessageTree
     s_modelScreenTimeoutChildren[ScreenTimeoutController::k_totalNumberOfCell] =
         {MessageTree(I18n::Message::ThirtySeconds),
@@ -277,6 +280,9 @@ void MainController::fillCellForRow(HighlightCell* cell, int row) {
     case I18n::Message::ComplexFormat:
       childIndex = (int)SharedGlobalPrefs().complexFormat();
       break;
+    case I18n::Message::CAS:
+      childIndex = SharedGlobalPrefs().casEnabled() ? 0 : 1;  // 0 = Enabled, 1 = Disabled
+      break;
     case I18n::Message::ScreenTimeout:
       childIndex = ScreenTimeoutController::toRowLabel(
           SharedGlobalPrefs().dimmingTime());
@@ -323,6 +329,7 @@ ViewController* MainController::subControllerForCell(
     case I18n::Message::AngleUnit:
     case I18n::Message::EditionMode:
     case I18n::Message::ComplexFormat:
+    case I18n::Message::CAS:
     case I18n::Message::FontSizes:
       return &m_preferencesController;
     case I18n::Message::DisplayMode:

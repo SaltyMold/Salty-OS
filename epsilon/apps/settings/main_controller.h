@@ -26,6 +26,7 @@ extern const MessageTree s_modelAngleChildren[3];
 extern const MessageTree s_modelEditionModeChildren[2];
 extern const MessageTree s_modelFloatDisplayModeChildren[4];
 extern const MessageTree s_modelComplexFormatChildren[3];
+extern const MessageTree s_modelCASChildren[2];
 extern const MessageTree
     s_modelScreenTimeoutChildren[ScreenTimeoutController::k_totalNumberOfCell];
 extern const MessageTree s_modelAccessibilityChildren[2];

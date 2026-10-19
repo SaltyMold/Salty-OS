@@ -73,6 +73,12 @@ Layout PreferencesController::layoutForPreferences(I18n::Message message) {
       return "a+bi"_l;
     case I18n::Message::Exponential:
       return "re"_l ^ KSuperscriptL("iθ"_l);
+    
+    // CAS
+    case I18n::Message::Enabled:
+      return "2(x-2) = 2x-4"_l;
+    case I18n::Message::Disabled:
+      return "2(x-2) = undef"_l;
 
     // Font size
     case I18n::Message::LargeFont:
@@ -127,6 +133,8 @@ void PreferencesController::setPreferenceWithValueIndex(I18n::Message message,
   } else if (message == I18n::Message::ComplexFormat) {
     GlobalPreferences::SharedGlobalPreferences()->setComplexFormat(
         (ComplexFormat)valueIndex);
+  } else if (message == I18n::Message::CAS) {
+    GlobalPreferences::SharedGlobalPreferences()->setCasEnabled(valueIndex == 0);
   } else if (message == I18n::Message::FontSizes) {
     GlobalPreferences::SharedGlobalPreferences()->setFont(
         valueIndex == 0 ? KDFont::Size::Large : KDFont::Size::Small);
@@ -151,6 +159,9 @@ int PreferencesController::valueIndexForPreference(
   }
   if (message == I18n::Message::ComplexFormat) {
     return (int)SharedGlobalPrefs().complexFormat();
+  }
+  if (message == I18n::Message::CAS) {
+    return SharedGlobalPrefs().casEnabled() ? 0 : 1;
   }
   if (message == I18n::Message::FontSizes) {
     return SharedGlobalPrefs().font() == KDFont::Size::Large ? 0 : 1;

@@ -127,6 +127,7 @@ class Preferences {
     virtual ParabolaParameter parabolaParameter() const = 0;
     virtual MethodForQuartiles methodForQuartiles() const = 0;
     bool operator==(const Interface&) const = default;
+    virtual bool casEnabled() const { return false; }
   };
 
   static void Init(Interface* preferences) {

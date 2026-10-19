@@ -32,8 +32,7 @@ $(addprefix expression/, \
   binary.cpp \
   bounds.cpp \
   builtin.cpp \
-  cas_disabled.cpp:-cas \
-  cas_enabled.cpp:+cas \
+  cas.cpp \
   continuity.cpp \
   decimal.cpp \
   degree.cpp \

@@ -114,7 +114,7 @@ source .venv/bin/activate
 - Build the userland for n0120 for exemple.
 ```sh
 make -j$(nproc) PLATFORM=n0120 EMBED_EXTRA_DATA=1 userland.onboarding.allow3rdparty.B.dfu
-# Without onboarding
+# With onboarding
 # With 3rd party apps allowed
 # For slot B
 # With embedded extra data

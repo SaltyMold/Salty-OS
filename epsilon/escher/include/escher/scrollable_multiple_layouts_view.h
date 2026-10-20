@@ -29,6 +29,11 @@ class AbstractScrollableMultipleLayoutsView
   void setComparisonSign(bool isEqual, bool isVisible) {
     contentCell()->setComparisonSign(isEqual, isVisible);
   }
+  /* Replace the "=" or "≈" text of the comparison sign. Must be called after
+   * setComparisonSign, which resets the text. */
+  void setComparisonSignText(const char* text) {
+    contentCell()->comparisonSign()->setText(text);
+  }
   SubviewPosition selectedSubviewPosition() {
     return contentCell()->selectedSubviewPosition();
   }

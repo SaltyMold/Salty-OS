@@ -311,8 +311,7 @@ void HistoryViewCell::setNewCalculation(Calculation* calculation, bool expanded,
    * has been updated. We must set which subviews are displayed before
    * setLayouts to mark the right rectangle as dirty. */
   m_scrollableOutputView.setToggleableCenter(
-      m_calculationDisplayOutput ==
-      Calculation::DisplayOutput::ExactAndApproximateToggle);
+      Calculation::IsToggleable(m_calculationDisplayOutput));
 
   if (outputLayouts.approximate.isUninitialized()) {
     // The scrollable view expects the right layout to be defined, use exact
@@ -326,6 +325,12 @@ void HistoryViewCell::setNewCalculation(Calculation* calculation, bool expanded,
   m_scrollableOutputView.setComparisonSign(
       calculation->equalSign() == Calculation::EqualSign::Equal,
       calculation->equalSign() != Calculation::EqualSign::Hidden);
+  if (m_calculationDisplayOutput ==
+      Calculation::DisplayOutput::ConditionsToggle) {
+    /* The center layout is the conditions (a≠0), not an exact output: replace
+     * the "=" or "≈" sign. */
+    m_scrollableOutputView.setComparisonSignText(k_conditionsSign);
+  }
   // Scroll to approximate output
   m_scrollableOutputView.setSelectedSubviewPosition(
       ScrollableTwoLayoutsView::SubviewPosition::Right);
@@ -418,8 +423,7 @@ bool HistoryViewCell::updateExpanded(bool expanded) {
   OMG::Troolean calculationExpanded = OMG::BoolToTroolean(
       m_calculationDisplayOutput ==
           Calculation::DisplayOutput::ExactAndApproximate ||
-      (expanded && m_calculationDisplayOutput ==
-                       Calculation::DisplayOutput::ExactAndApproximateToggle));
+      (expanded && Calculation::IsToggleable(m_calculationDisplayOutput)));
   if (m_calculationExpanded == calculationExpanded) {
     return false;
   }

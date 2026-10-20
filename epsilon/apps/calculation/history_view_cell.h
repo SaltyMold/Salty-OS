@@ -29,6 +29,8 @@ class HistoryViewCell : public Escher::Bordered,
                         public Escher::Responder {
  public:
   constexpr static KDCoordinate k_margin = Escher::Metric::CommonSmallMargin;
+  /* Sign displayed between the conditions (a≠0) and the output (a^2) */
+  constexpr static const char* k_conditionsSign = ":";
   constexpr static KDCoordinate k_inputOutputViewsVerticalMargin = k_margin;
   constexpr static KDCoordinate k_inputViewHorizontalMargin =
       Escher::AbstractScrollableMultipleLayoutsView::k_horizontalMargin;

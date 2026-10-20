@@ -206,6 +206,8 @@ const char* DisplayOutputToString(DisplayOutput displayOutput) {
       return "ExactAndApproximateToggle";
     case DisplayOutput::ExactHidden:
       return "ExactHidden";
+    case DisplayOutput::ConditionsToggle:
+      return "ConditionsToggle";
     default:
       OMG_UNREACHABLE;
   }

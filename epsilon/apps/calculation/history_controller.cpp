@@ -206,8 +206,7 @@ KDCoordinate HistoryController::nonMemoizedRowHeight(int row) {
 
 bool HistoryController::calculationAtIndexToggles(int index) const {
   return index >= 0 && index < m_calculationStore->numberOfCalculations() &&
-         calculationAtIndex(index)->displayOutput() ==
-             Calculation::DisplayOutput::ExactAndApproximateToggle;
+         Calculation::IsToggleable(calculationAtIndex(index)->displayOutput());
 }
 
 void HistoryController::setSelectedSubviewType(SubviewType subviewType,

@@ -3,6 +3,7 @@
 #include <poincare/cas.h>
 #include <poincare/exception_checkpoint.h>
 #include <poincare/helpers/expression_equal_sign.h>
+#include <poincare/src/expression/dependency.h>
 #include <poincare/src/expression/projection.h>
 #include <shared/global_store.h>
 #include <string.h>
@@ -14,6 +15,32 @@ using namespace Poincare;
 using namespace Shared;
 
 namespace Calculation {
+
+/* With CAS, some outputs have dependencies. For instance a^2*a^5/a^5 gives
+ * dep(a^2,{nonNull(a)}). When all the dependencies are nonNull(x), the output
+ * can be displayed as a^2 along with the condition a≠0. */
+static bool HasOnlyNonNullDependencies(const UserExpression& e) {
+  const Internal::Tree* tree = e.tree();
+  if (!tree->isDep()) {
+    return false;
+  }
+  const Internal::Tree* dependencies = Internal::Dependency::Dependencies(tree);
+  int numberOfDependencies = dependencies->numberOfChildren();
+  if (numberOfDependencies == 0) {
+    return false;
+  }
+  for (int i = 0; i < numberOfDependencies; i++) {
+    if (!dependencies->child(i)->isNonNull()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Return the main expression, without its nonNull dependencies
+static UserExpression WithoutConditions(const UserExpression& e) {
+  return HasOnlyNonNullDependencies(e) ? e.cloneChildAtIndex(0) : e;
+}
 
 bool Calculation::operator==(const Calculation& c) {
   /* Some calculations can make appear trigonometric functions in their exact
@@ -62,10 +89,16 @@ Layout Calculation::createInputLayout() {
   return Layout();
 }
 
-Layout Calculation::createExactOutputLayout(bool* couldNotCreateExactLayout) {
+Layout Calculation::createExactOutputLayout(bool* couldNotCreateExactLayout,
+                                            bool withoutConditions) {
   ExceptionCheckpoint ecp;
   if (ExceptionRun(ecp)) {
     UserExpression e = exactOutput();
+    if (!e.isUninitialized() &&
+        (withoutConditions ||
+         m_displayOutput == DisplayOutput::ConditionsToggle)) {
+      e = WithoutConditions(e);
+    }
     if (!e.isUninitialized()) {
       return e.createLayout(Preferences::PrintFloatMode::Decimal,
                             PrintFloat::k_maxNumberOfSignificantDigits,
@@ -79,10 +112,16 @@ Layout Calculation::createExactOutputLayout(bool* couldNotCreateExactLayout) {
 }
 
 Layout Calculation::createApproximateOutputLayout(
-    bool* couldNotCreateApproximateLayout, bool forEditing) {
+    bool* couldNotCreateApproximateLayout, bool forEditing,
+    bool withoutConditions) {
   ExceptionCheckpoint ecp;
   if (ExceptionRun(ecp)) {
     UserExpression e = approximateOutput();
+    if (!e.isUninitialized() &&
+        (withoutConditions ||
+         m_displayOutput == DisplayOutput::ConditionsToggle)) {
+      e = WithoutConditions(e);
+    }
     if (!e.isUninitialized()) {
       return e.createLayout(
           m_calculationPreferences.displayMode,
@@ -97,6 +136,47 @@ Layout Calculation::createApproximateOutputLayout(
   return Layout();
 }
 
+Layout Calculation::createConditionsLayout() {
+  ExceptionCheckpoint ecp;
+  if (ExceptionRun(ecp)) {
+    UserExpression output = exactOutput();
+    if (!output.isUninitialized() && HasOnlyNonNullDependencies(output)) {
+      const Internal::Tree* dependencies =
+          Internal::Dependency::Dependencies(output.tree());
+      // nonNull(a), nonNull(b) -> a≠0 and b≠0
+      UserExpression conditions;
+      for (int i = 0; i < dependencies->numberOfChildren(); i++) {
+        UserExpression condition = UserExpression::Create(
+            KNotEqual(KA, 0_e), {.KA = dependencies->child(i)->child(0)});
+        conditions = conditions.isUninitialized()
+                         ? condition
+                         : UserExpression::Create(
+                               KLogicalAnd(KA, KB),
+                               {.KA = conditions.tree(), .KB = condition.tree()});
+      }
+      return conditions.createLayout(
+          Preferences::PrintFloatMode::Decimal,
+          PrintFloat::k_maxNumberOfSignificantDigits,
+          GlobalContextAccessor::Context(), OMG::Base::Decimal,
+          App::k_useTenPower, false, false,
+          PrintFloat::DecimalModeThreshold::Small);
+    }
+  }
+  return Layout();
+}
+
+bool Calculation::shouldDisplayConditions() {
+  if (!HasOnlyNonNullDependencies(exactOutput())) {
+    return false;
+  }
+  bool couldNotCreateLayout = false;
+  Layout exact = createExactOutputLayout(&couldNotCreateLayout, true);
+  Layout approximate =
+      createApproximateOutputLayout(&couldNotCreateLayout, false, true);
+  return !couldNotCreateLayout && !exact.isUninitialized() &&
+         !approximate.isUninitialized() && exact.isIdenticalTo(approximate);
+}
+
 KDCoordinate Calculation::height(bool expanded) {
   KDCoordinate h = expanded ? m_expandedHeight : m_height;
   assert(h >= 0);
@@ -105,6 +185,10 @@ KDCoordinate Calculation::height(bool expanded) {
 
 void Calculation::computeDisplayOutput() {
   if (m_displayOutput != DisplayOutput::Unknown) {
+    return;
+  }
+  if (!m_reductionFailure && shouldDisplayConditions()) {
+    m_displayOutput = DisplayOutput::ConditionsToggle;
     return;
   }
   m_displayOutput =
@@ -160,6 +244,25 @@ Calculation::OutputLayouts Calculation::createOutputLayouts(
     bool canChangeDisplayOutput, KDCoordinate maxVisibleWidth,
     KDFont::Size font) {
   assert(m_displayOutput != DisplayOutput::Unknown);
+
+  if (m_displayOutput == DisplayOutput::ConditionsToggle) {
+    /* The conditions (a≠0) are displayed in the center layout and the output
+     * without its dependencies (a^2) in the right layout. */
+    bool couldNotCreateOutputLayout = false;
+    Layout output = createApproximateOutputLayout(&couldNotCreateOutputLayout);
+    Layout conditions = createConditionsLayout();
+    if (couldNotCreateOutputLayout) {
+      ExceptionCheckpoint::Raise();
+    }
+    if (conditions.isUninitialized()) {
+      if (!canChangeDisplayOutput) {
+        ExceptionCheckpoint::Raise();
+      }
+      forceDisplayOutput(DisplayOutput::ApproximateOnly);
+      return {Layout(), output};
+    }
+    return {conditions, output};
+  }
 
   // Create the exact output layout
   Layout exactOutput = Layout();
@@ -308,6 +411,10 @@ void Calculation::computeEqualSign(const OutputLayouts& outputLayouts) {
   } else if (m_displayOutput == DisplayOutput::ApproximateOnly) {
     m_equalSign = EqualSign::Approximation;
   } else if (m_displayOutput == DisplayOutput::ApproximateIsIdenticalToExact) {
+    m_equalSign = EqualSign::Equal;
+  } else if (m_displayOutput == DisplayOutput::ConditionsToggle) {
+    /* The center layout is the conditions, not an exact output: there is
+     * nothing to compare. The sign is replaced when displayed. */
     m_equalSign = EqualSign::Equal;
   } else if (outputLayouts.exact.isUninitialized()) {
     /* Exact layout may have failed to be computed in createOutputLayouts. */

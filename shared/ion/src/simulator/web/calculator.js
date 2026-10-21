@@ -154,6 +154,48 @@ function Calculator(emModule) {
     );
     window.addEventListener('keyup', physicalKeyHandler(emModule._IonSimulatorKeyboardKeyUp), true);
 
+    var heldPrefixCodes = {};
+
+    function sendPrefixKey(which, down) {
+      if (typeof emModule._IonSimulatorShortcutPrefixKey === 'function') {
+        emModule._IonSimulatorShortcutPrefixKey(which, down ? 1 : 0);
+      }
+    }
+
+    function prefixKeyHandler(isDown) {
+      return function (ev) {
+        var which;
+        if (isDown) {
+          if (ev.key === '(') {
+            which = 0;
+          } else if (ev.key === ')') {
+            which = 1;
+          } else {
+            return;
+          }
+          heldPrefixCodes[ev.code] = which;
+        } else {
+          which = heldPrefixCodes[ev.code];
+          if (typeof which === 'undefined') {
+            return;
+          }
+          delete heldPrefixCodes[ev.code];
+        }
+        sendPrefixKey(which, isDown);
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+      };
+    }
+    window.addEventListener('keydown', prefixKeyHandler(true), true);
+    window.addEventListener('keyup', prefixKeyHandler(false), true);
+
+    window.addEventListener('blur', function () {
+      for (var code in heldPrefixCodes) {
+        sendPrefixKey(heldPrefixCodes[code], false);
+      }
+      heldPrefixCodes = {};
+    });
+
     /* Post-load hook: lets the embedder run code once Epsilon is loaded and the
      * _IonSimulator* exports are available (e.g. the standalone simulator uses
      * it to inject a .nws state file). */

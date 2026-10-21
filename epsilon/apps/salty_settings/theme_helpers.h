@@ -41,7 +41,7 @@ inline void ThemeName(int theme, char* out /* k_maxThemeNameSize */) {
  * right after the wallpaper blob, at any address. Dereferencing a uint32_t* on
  * such an address is a hard fault on the calculator, so everything inside the
  * assets is read byte by byte. */
-inline uint32_t ReadUnaligned32(uint32_t address) {
+inline uint32_t ReadUnaligned32(uintptr_t address) {
   const volatile uint8_t* p = reinterpret_cast<const volatile uint8_t*>(address);
   return static_cast<uint32_t>(p[0]) | (static_cast<uint32_t>(p[1]) << 8) |
          (static_cast<uint32_t>(p[2]) << 16) |
@@ -60,7 +60,7 @@ inline bool ReadWallpaperHeader(const ThemeEntry* e, WallpaperHeader* out) {
   if (e == nullptr || !e->isWallpaper || e->wallpaperOffset == 0) {
     return false;
   }
-  const uint32_t base = Ion::Device::Board::Config::ThemeAreaStart +
+  const uintptr_t base = Ion::Device::Board::Config::ThemeAreaStart +
                         e->wallpaperOffset;
   out->width = ReadUnaligned32(base);
   out->height = ReadUnaligned32(base + 4);

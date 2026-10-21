@@ -45,6 +45,7 @@ $(addprefix simulator/shared/, \
   keyboard.cpp \
   main.cpp \
   random.cpp \
+  theme_area.cpp \
   timing.cpp \
   window.cpp \
   window_headed.cpp:-test \

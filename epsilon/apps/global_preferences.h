@@ -187,7 +187,7 @@ class GlobalPreferences : public Escher::LayoutPreferences::Interface,
   void setComplexFormat(Poincare::ComplexFormat complexFormat) {
     s_data->m_calculationPreferences.complexFormat = complexFormat;
   }
-  bool casEnabled() const { return s_data->m_combinedPreferences.casEnabled; }
+  bool casEnabled() const override { return s_data->m_combinedPreferences.casEnabled; }
   void setCasEnabled(bool casEnabled) {
     s_data->m_combinedPreferences.casEnabled = casEnabled;
   }

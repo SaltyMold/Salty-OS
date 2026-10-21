@@ -161,6 +161,7 @@ void AppsContainer::didSuspend() {
 bool AppsContainer::dispatchEvent(Ion::Events::Event event) {
   bool alphaLockWantsRedraw = updateAlphaLock();
 
+  applyPendingThemeArea();
   handleShortcuts();
 
   /*------------------------------------------------------------------------*/

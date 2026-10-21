@@ -111,6 +111,17 @@ class ThemeManager {
 
   static void refreshTheme(AppsWindow* window);
 
+  /* Base address of the Theme Area: the fixed external flash address on the
+   * calculator, the buffer received from the page on the simulators (0 if
+   * nothing was received yet). All the code reading the Theme Area must go
+   * through it instead of using ThemeAreaStart directly. */
+  static uintptr_t areaBase();
+
+  /* Simulators only (always false on the calculator): applies the Theme Area
+   * received through IonSimulatorLoadThemeArea. Must be called from the event
+   * loop. The caller is in charge of refreshing the display. */
+  static bool applyPendingThemeArea();
+
  private:
   static const Ion::Device::Board::Config::ThemeEntry* currentEntry();
 

@@ -60,7 +60,7 @@ void ThemeDetailController::describe(RowPicker* p) const {
 
   p->section(M::SaltySettingsSectionPalette);
   if (HasPalette(e)) {
-    const uint32_t paletteAddress = ThemeAreaStart + e->paletteOffset;
+    const uintptr_t paletteAddress = ThemeManager::areaBase() + e->paletteOffset;
     const uint32_t colorCount = e->paletteSize / sizeof(uint32_t);
     const uint32_t slots = Escher::SaltyPalette::numberOfSlots();
     p->row(M::SaltySettingsColors).dec(colorCount).str(" / ").dec(slots);

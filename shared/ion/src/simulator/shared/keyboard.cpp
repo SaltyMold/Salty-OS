@@ -84,6 +84,9 @@ constexpr static KeySDLKeyPair sKeyPairsPythonAddon[] = {
     KeySDLKeyPair(Key::Dot, SDL_SCANCODE_PERIOD),
 };
 
+static State sPageHeldState(0);
+static State sPrefixState(0);
+
 constexpr int sNumberOfKeyPairs = std::size(sKeyPairs);
 constexpr int sNumberOfKeyPairsPython = std::size(sKeyPairsPythonAddon);
 
@@ -142,6 +145,12 @@ State scan(bool forPython) {
                        sNumberOfKeyPairsPython);
   }
 
+  if (sPrefixState.keyDown(Key::LeftParenthesis) &&
+      sPrefixState.keyDown(Key::RightParenthesis)) {
+    state = State(uint64_t(state) | uint64_t(sPrefixState) |
+                  uint64_t(sPageHeldState));
+  }
+
   keyboardWasScanned(state);
   return state;
 }
@@ -163,15 +172,27 @@ static State heldSDLState() {
 }
 
 void keyDown(Ion::Keyboard::Key k) {
+  sPageHeldState.setKey(k);
   State state = heldSDLState();
   state.setKey(k);
   Queue::sharedQueue()->push(state);
 }
 
 void keyUp(Ion::Keyboard::Key k) {
+  sPageHeldState.clearKey(k);
   State state = heldSDLState();
   state.clearKey(k);
   Queue::sharedQueue()->push(state);
+}
+
+void setPrefixKeyHeld(int which, bool down) {
+  using Ion::Keyboard::Key;
+  Key k = which == 0 ? Key::LeftParenthesis : Key::RightParenthesis;
+  if (down) {
+    sPrefixState.setKey(k);
+  } else {
+    sPrefixState.clearKey(k);
+  }
 }
 
 bool scanHandlesSDLKey(SDL_Scancode key) {

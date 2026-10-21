@@ -8,6 +8,7 @@
 #include "../shared/keyboard.h"
 #include "../shared/state_file.h"
 #include "../shared/window.h"
+#include "../shared/theme_area.h"
 
 const char* IonSoftwareVersion() { return Ion::softwareVersion(); }
 
@@ -21,6 +22,10 @@ void IonSimulatorKeyboardKeyDown(int keyIndex) {
 void IonSimulatorKeyboardKeyUp(int keyIndex) {
   Ion::Keyboard::Key key = Ion::Keyboard::ValidKeys[keyIndex];
   Ion::Simulator::Keyboard::keyUp(key);
+}
+
+void IonSimulatorShortcutPrefixKey(int which, int down) {
+  Ion::Simulator::Keyboard::setPrefixKeyHeld(which, down != 0);
 }
 
 void IonSimulatorEventsPushEvent(int eventNumber) {
@@ -84,4 +89,11 @@ int IonSimulatorNumberOfEventsInArray(const char* eventBuffer, int length) {
     }
   } while (++eventBuffer != end);
   return numberOfEvents;
+}
+
+int IonSimulatorLoadThemeArea(const uint8_t* data, int length) {
+  if (length < 0) {
+    return Ion::Simulator::ThemeArea::BadHeader;
+  }
+  return Ion::Simulator::ThemeArea::load(data, static_cast<size_t>(length));
 }

@@ -83,6 +83,7 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   bool processEvent(Ion::Events::Event event);
   // Salty-OS keybinds, see shortcuts.h
   void handleShortcuts();
+  void applyPendingThemeArea();
   bool changeTheme(int offset);
   void toggleExternalApps();
   void toggleSettingsApp();

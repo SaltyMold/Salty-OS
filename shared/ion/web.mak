@@ -24,6 +24,8 @@ _ion_web_exported_functions = $(subst $( ),$(,),$(strip $(patsubst %,_%, \
   main \
   IonSimulatorKeyboardKeyDown \
   IonSimulatorKeyboardKeyUp \
+  IonSimulatorShortcutPrefixKey \
+  IonSimulatorLoadThemeArea \
   IonSimulatorEventsPushEvent \
   IonSimulatorEventsPushEventArray \
   IonSimulatorNumberOfEventsInArray \

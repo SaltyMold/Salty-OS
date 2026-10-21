@@ -65,11 +65,11 @@ void AboutController::describe(RowPicker* p) const {
   const bool valid = ThemeManager::isValid();
   p->row(M::SaltySettingsStatus)
       .message(valid ? M::SaltySettingsValid : M::SaltySettingsInvalid);
-  p->row(M::SaltySettingsAddress).str("0x").hex(ThemeAreaStart, 8);
+  p->row(M::SaltySettingsAddress).str("0x").hex(static_cast<uint32_t>(ThemeManager::areaBase()), 8);
   p->row(M::SaltySettingsCapacity).size(ThemeAreaSize);
   if (valid) {
     const uint32_t format =
-        reinterpret_cast<const uint32_t*>(ThemeAreaStart)[1];
+        reinterpret_cast<const uint32_t*>(ThemeManager::areaBase())[1];
     Line formatLine = p->row(M::SaltySettingsFormat);
     formatLine.str("v").dec(format);
     if (format != ThemeAreaHeaderVersion) {

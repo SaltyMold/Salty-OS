@@ -7,20 +7,47 @@
 #include "apps/apps_container.h"
 #include "apps/home/app.h"
 
+#if !PLATFORM_DEVICE
+#include "../../shared/ion/src/simulator/shared/theme_area.h"
+#endif
+
 using namespace Ion::Device::Board::Config;
+
+#if !PLATFORM_DEVICE
+namespace SimArea = Ion::Simulator::ThemeArea;
+static_assert(SimArea::k_capacity == ThemeAreaSize, "theme_area.h out of sync");
+static_assert(SimArea::k_magic == ThemeAreaHeaderMagic, "theme_area.h out of sync");
+static_assert(SimArea::k_version == ThemeAreaHeaderVersion, "theme_area.h out of sync");
+static_assert(SimArea::k_maxThemes == ThemeCount, "theme_area.h out of sync");
+static_assert(SimArea::k_numberOfIcons == ThemeIconCount, "theme_area.h out of sync");
+static_assert(sizeof(ThemeAreaHeader) == SimArea::k_headerSize, "theme_area.h out of sync");
+static_assert(sizeof(ThemeEntry) == SimArea::k_entrySize, "theme_area.h out of sync");
+static_assert(offsetof(ThemeEntry, wallpaperOffset) == 24, "theme_area.cpp out of sync");
+static_assert(offsetof(ThemeEntry, paletteOffset) == 32, "theme_area.cpp out of sync");
+static_assert(offsetof(ThemeEntry, iconOffsets) == 40, "theme_area.cpp out of sync");
+static_assert(offsetof(ThemeEntry, iconSizes) == 88, "theme_area.cpp out of sync");
+#endif
 
 const ThemeAreaHeader* ThemeManager::s_header = nullptr;
 bool ThemeManager::s_valid = false;
 int ThemeManager::s_selectedTheme = 0;
 
 void ThemeManager::init() {
-  const ThemeAreaHeader* h =
-      reinterpret_cast<const ThemeAreaHeader*>(ThemeAreaStart);
+  s_valid = false;
+  s_header = nullptr;
+  s_selectedTheme = 0;
 
+  const uintptr_t base = areaBase();
+  if (base == 0) {
+    /* Simulators: no Theme Area received yet. Nothing is mapped at the flash
+     * address there, dereferencing it would trap in WebAssembly. */
+    return;
+  }
+
+  const ThemeAreaHeader* h = reinterpret_cast<const ThemeAreaHeader*>(base);
   if (h->magic != ThemeAreaHeaderMagic ||
       h->version != ThemeAreaHeaderVersion ||
       h->themeCount > ThemeCount) {
-    s_valid = false;
     return;
   }
 
@@ -29,7 +56,32 @@ void ThemeManager::init() {
   // Boot on the virtual "Default" theme (index 0): applyPalette() called
   // right after init() will then be a no-op, leaving Escher's builtin
   // palette/icons untouched until the user explicitly picks a real theme.
-  s_selectedTheme = 0;
+}
+
+uintptr_t ThemeManager::areaBase() {
+#if PLATFORM_DEVICE
+  return ThemeAreaStart;
+#else
+  return reinterpret_cast<uintptr_t>(Ion::Simulator::ThemeArea::data());
+#endif
+}
+
+bool ThemeManager::applyPendingThemeArea() {
+#if PLATFORM_DEVICE
+  return false;
+#else
+  if (!Ion::Simulator::ThemeArea::commitPending()) {
+    return false;
+  }
+  // Keep the selected theme if it still exists in the new Theme Area
+  const int previousTheme = s_selectedTheme;
+  init();
+  if (s_valid && previousTheme < themeCount()) {
+    s_selectedTheme = previousTheme;
+  }
+  invalidateCaches();
+  return true;
+#endif
 }
 
 const ThemeEntry* ThemeManager::entry(int index) {
@@ -37,7 +89,7 @@ const ThemeEntry* ThemeManager::entry(int index) {
     return nullptr;
   }
   const uint8_t* base =
-      reinterpret_cast<const uint8_t*>(ThemeAreaStart) + sizeof(ThemeAreaHeader);
+      reinterpret_cast<const uint8_t*>(areaBase()) + sizeof(ThemeAreaHeader);
   return reinterpret_cast<const ThemeEntry*>(base) + index;
 }
 
@@ -80,7 +132,7 @@ constexpr int k_maxChunkWidth = 320;
 constexpr int k_maxChunkHeight = 16;
 
 const WallpaperBlobHeader* wallpaperBlobHeader(const ThemeEntry* e) {
-  return reinterpret_cast<const WallpaperBlobHeader*>(ThemeAreaStart +
+  return reinterpret_cast<const WallpaperBlobHeader*>(ThemeManager::areaBase() +
                                                         e->wallpaperOffset);
 }
 
@@ -263,7 +315,7 @@ void ThemeManager::applyPalette() {
   /* The palette can start at any address (right after a wallpaper blob), so it
    * is read byte by byte: an unaligned uint32_t access faults on the device. */
   const volatile uint8_t* rawColors =
-      reinterpret_cast<const volatile uint8_t*>(ThemeAreaStart +
+      reinterpret_cast<const volatile uint8_t*>(areaBase() +
                                                 e->paletteOffset);
   size_t count = e->paletteSize / sizeof(uint32_t);
   size_t n = count < Escher::SaltyPalette::numberOfSlots()
@@ -312,7 +364,7 @@ const KDColor* ThemeManager::iconPixels(int iconIndex, int iconWidth,
     int dstSize = iconWidth * iconHeight * (int)sizeof(KDColor);
 
     OMG::Memory::Decompress(
-        reinterpret_cast<const uint8_t*>(ThemeAreaStart + offset),
+        reinterpret_cast<const uint8_t*>(areaBase() + offset),
         reinterpret_cast<uint8_t*>(s_iconBuffer), size, dstSize);
 
     s_cachedIconThemeIndex = s_selectedTheme;

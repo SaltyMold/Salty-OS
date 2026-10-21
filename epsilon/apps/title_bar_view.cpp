@@ -111,10 +111,12 @@ void TitleBarView::layoutSubviews(bool force) {
         KDRect(k_examIconMargin, (bounds().height() - ExamIconView::k_height) / 2,
                ExamIconView::k_width, ExamIconView::k_height),
         force);
-    setChildFrame(&m_examModeTextView,
-                  KDRect(k_examIconMargin - k_examTextWidth, k_verticalShift,
-                         k_examTextWidth, bounds().height() - k_verticalShift),
-                  force);
+    if (ExamModeManager::ExamMode().ruleset() != ExamMode::Ruleset::Standard) { // TODO: fix examModeTextView overlap preferenceText with non standard exam mode
+      setChildFrame(&m_examModeTextView,
+                    KDRect(k_examIconMargin - k_examTextWidth, k_verticalShift,
+                          k_examTextWidth, bounds().height() - k_verticalShift),
+                    force);
+    }
     I18n::Message examModeMessage;
     switch (ExamModeManager::ExamMode().ruleset()) {
       case ExamMode::Ruleset::English:
@@ -169,6 +171,10 @@ void TitleBarView::layoutSubviews(bool force) {
 
 void TitleBarView::refreshPreferences() {
   char buffer[k_preferenceTextSize];
+  // Display Sim/ if symbolic computing is enabled
+  const bool casEnabled =
+      SharedGlobalPrefs().casEnabled();
+  I18n::Message casMessage = casEnabled ? I18n::Message::Sym : I18n::Message::Default;
   // Display Sci/ or Eng/ if the print float mode is not decimal
   const Preferences::PrintFloatMode printFloatMode =
       SharedGlobalPrefs().displayMode();
@@ -195,7 +201,8 @@ void TitleBarView::refreshPreferences() {
       angleMessage = I18n::Message::Gon;
       break;
   }
-  Poincare::Print::CustomPrintf(buffer, k_preferenceTextSize, "%s%s",
+  Poincare::Print::CustomPrintf(buffer, k_preferenceTextSize, "%s%s%s",
+                                I18n::translate(casMessage),
                                 I18n::translate(floatModeMessage),
                                 I18n::translate(angleMessage));
   m_preferenceView.setText(buffer);

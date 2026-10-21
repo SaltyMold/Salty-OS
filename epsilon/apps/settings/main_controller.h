@@ -68,7 +68,7 @@ class MainController : public Escher::SelectableListViewController<
   constexpr static int k_popUpCellType = 2;
   constexpr static int k_resetCellType = 3;
   // Model index
-  constexpr static int k_indexOfExamModeCell = 10;
+  constexpr static int k_indexOfExamModeCell = 11;
   // Max number of visible cells
   constexpr static int k_numberOfSimpleChevronCells =
       Escher::Metric::MinimalNumberOfScrollableRowsToFillDisplayHeight(

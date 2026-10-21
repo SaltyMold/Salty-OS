@@ -25,7 +25,7 @@ class GlobalPreferences : public Escher::LayoutPreferences::Interface,
   friend class GlobalPreferencesTestBuilder;
 
  public:
-  constexpr static I18n::Country k_defaultCountry = I18n::Country::WW;
+  constexpr static I18n::Country k_defaultCountry = I18n::Country::FR;
 
   constexpr static const CountryPreferences& defaultCountryPreferences() {
     return I18n::CountryPreferencesArray[static_cast<uint8_t>(

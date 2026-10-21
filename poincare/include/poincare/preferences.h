@@ -113,7 +113,7 @@ class Preferences {
   constexpr static ParabolaParameter k_defaultParabolaParameter =
       ParabolaParameter::Default;
   constexpr static MethodForQuartiles k_defaultMethodForQuartiles =
-      MethodForQuartiles::MedianOfSublist;
+      MethodForQuartiles::CumulatedFrequency;
 
   /* These country-dependent preferences are needed inside Poincare.
    * This [Interface] allows the storage of those preferences to be outside

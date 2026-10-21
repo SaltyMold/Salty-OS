@@ -21,7 +21,9 @@ If the userland crashes or if you reset it, the calculator falls back to booting
 
 This has been tested on the `n0120` with epsilon `26.3.0` so far. If you try it on another model, please open an issue to report whether it worked or not.
 
-<img src="github_assets/slots.png" width=320 alt="Salty-OS">
+<img src="github_assets/slots.png" width=320 alt="slots-default"><br>
+<img src="github_assets/slots_salty_os.png" width=320 alt="slots-salty-os">
+
 
 The pythons scripts are in ram, so the layout of the external flash can't affect them.
 The bootloader is in another flash, the internal flash.

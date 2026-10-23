@@ -19,11 +19,15 @@ NumWorks calculators boot slot A by default, then you can access Slot B with a l
 
 If the userland crashes or if you reset it, the calculator falls back to booting slot A, but slot B isn't wiped in the process, so the custom userland is still there and can be re-launched afterward (at least on latest versions of epsilon).
 
-This has been tested on the `n0120` with epsilon `26.3.0` so far. If you try it on another model, please open an issue to report whether it worked or not.
+Here are some example of the layout of the calculator flash:
+- On classic epsilon
+<img src="github_assets/slots.png" width=400 alt="slots-default">
 
-<img src="github_assets/slots.png" width=320 alt="slots-default"><br>
-<img src="github_assets/slots_salty_os.png" width=320 alt="slots-salty-os">
+- With SaltyOS on slot B for locked calculator
+<img src="github_assets/slots_salty_os.png" width=400 alt="slots-salty-os">
 
+- With SaltyOS on slot A for unlocked calculator
+<img src="github_assets/slots_salty_os_unlocked.png" width=400 alt="slots-salty-os">
 
 The pythons scripts are in ram, so the layout of the external flash can't affect them.
 The bootloader is in another flash, the internal flash.
@@ -33,6 +37,7 @@ See more at https://nwagyu.org/reference/firmware/
 ## Functionalities
 
 The userland is build with a custom onboarding and external apps allowed.
+It supports locked n0110, n0115, n0120 and also unlocked n0110 (It has not been tested on unlocked n0115 or n0120, but it could work.) with Epsilon kernel 26.4.0.
 
 ### Current
 
@@ -43,6 +48,7 @@ The userland is build with a custom onboarding and external apps allowed.
 - Custom color palette per theme.
 - Toggle display of external apps.
 - Salty-OS settings app (About and Themes), its information comes from the repository (Makefile, git, `themes/` folder) and from the Theme Area.
+- Symbolic calculation
 - French by default, and no Python script preinstalled.
 
 Everything customizable via a website.
@@ -52,6 +58,10 @@ Everything customizable via a website.
 Open a pull request if you want to add a feature.
 
 ## How to install
+
+If you're unsure what to choose, choose locked calculator.
+
+<details><summary><b>Locked calculator</b></summary>
 
 ### Update the calculator twice
 
@@ -81,6 +91,34 @@ Open a pull request if you want to add a feature.
 - Connect your calculator.
 - Create your themes.
 - Click install.
+</details>
+
+<details><summary><b>Unlocked calculator</b></summary>
+
+### Flash Epsilon kernel
+
+- Go to the [Upsilon installer](https://getupsilon.web.app/install).
+- Connect your calculator.
+- Choose "Custom binpack".
+- Download epsilon kernel 26.4.0 from the official website with [this guide](https://nwagyu.org/reference/others/downloading-epsilon.html) or from the [archive](https://git.gabizar.top/GabiZar/Epsilon-Archive/releases/tag/26.4.0)
+- Flash it at address `0x90000000` for slot A and `0x90400000` for slot B
+
+### Userland
+
+- Go to the [Upsilon installer](https://getupsilon.web.app/install).
+- Connect your calculator.
+- Choose "Custom binpack".
+- Download SaltyOS from the [latest release](https://github.com/SaltyMold/Salty-OS/releases/latest)
+- Flash it at address `0x90020000` for slot A and `0x90420000` for slot B
+
+### Themes
+
+- Go to the [Upsilon installer](https://getupsilon.web.app/install).
+- Connect your calculator.
+- Choose "Custom binpack".
+- Create your themes with the python script `themes/generate_theme.py` of this repo.
+- Flash `theme_area.bin` at `0x90670000` for slot A and at `0x90270000` for slot B.
+</details>
 
 ## How to use
 

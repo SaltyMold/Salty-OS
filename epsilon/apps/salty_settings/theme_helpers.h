@@ -60,7 +60,7 @@ inline bool ReadWallpaperHeader(const ThemeEntry* e, WallpaperHeader* out) {
   if (e == nullptr || !e->isWallpaper || e->wallpaperOffset == 0) {
     return false;
   }
-  const uintptr_t base = Ion::Device::Board::Config::ThemeAreaStart +
+  const uintptr_t base = ThemeManager::areaBase() +
                         e->wallpaperOffset;
   out->width = ReadUnaligned32(base);
   out->height = ReadUnaligned32(base + 4);

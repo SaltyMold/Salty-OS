@@ -11,6 +11,16 @@
 #include "../../shared/ion/src/simulator/shared/theme_area.h"
 #endif
 
+#if PLATFORM_DEVICE
+namespace Ion {
+namespace Device {
+namespace Board {
+bool isRunningSlotA();  // defined in ion/src/device/userland/drivers/board_dual_slots.cpp
+}
+}
+}
+#endif
+
 using namespace Ion::Device::Board::Config;
 
 #if !PLATFORM_DEVICE
@@ -60,7 +70,7 @@ void ThemeManager::init() {
 
 uintptr_t ThemeManager::areaBase() {
 #if PLATFORM_DEVICE
-  return ThemeAreaStart;
+  return Ion::Device::Board::isRunningSlotA() ? ThemeAreaStartSlotA: ThemeAreaStartSlotB;
 #else
   return reinterpret_cast<uintptr_t>(Ion::Simulator::ThemeArea::data());
 #endif

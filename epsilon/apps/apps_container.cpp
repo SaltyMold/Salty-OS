@@ -161,7 +161,6 @@ void AppsContainer::didSuspend() {
 bool AppsContainer::dispatchEvent(Ion::Events::Event event) {
   bool alphaLockWantsRedraw = updateAlphaLock();
 
-  applyPendingThemeArea();
   handleShortcuts();
 
   /*------------------------------------------------------------------------*/
@@ -481,6 +480,7 @@ Timer* AppsContainer::containerTimerAtIndex(int i) {
 }
 
 void AppsContainer::listenToExternalEvents() {
+  applyPendingThemeArea();
   if (m_dfuBetweenEvents && Ion::USB::isPlugged()) {
     openDFU(false);
     /* The USB stack will leave the peripheral in the soft-disconnected state.

@@ -55,6 +55,9 @@
            * IonSimulatorEventsPushEventArray export, so this stays compatible with
            * already-deployed wasm builds. */
           onLoaded: function () {
+            if (window.parent !== window) {
+              window.parent.postMessage({ type: 'salty:ready' }, '*');
+            }
             var nwsBase64 = new URLSearchParams(window.location.search).get('nws');
             if (!nwsBase64) {
               return;
@@ -132,7 +135,39 @@ document.getElementById("action-share").addEventListener("click", function(e) {
 if (window.location.protocol === "file:") {
   document.getElementById("action-share").style.display = "none";
 }
+
+if (new URLSearchParams(location.search).has('embed')) {
+  document.body.classList.add('embed');
+}
+
+var SALTY_ALLOWED_ORIGINS = [];
+
+window.addEventListener('message', function (ev) {
+  if (SALTY_ALLOWED_ORIGINS.length &&
+      SALTY_ALLOWED_ORIGINS.indexOf(ev.origin) < 0) {
+    return;
+  }
+  var msg = ev.data;
+  if (!msg || typeof msg.type !== 'string') {
+    return;
+  }
+  var code = -100;
+  if (msg.type === 'salty:loadThemeArea' &&
+      ModuleAsync._IonSimulatorLoadThemeArea) {
+    var bytes = new Uint8Array(msg.data);
+    var ptr = ModuleAsync._malloc(bytes.length);
+    ModuleAsync.HEAPU8.set(bytes, ptr);
+    code = ModuleAsync._IonSimulatorLoadThemeArea(ptr, bytes.length);
+    ModuleAsync._free(ptr);
+  } else if (msg.type === 'salty:selectTheme' &&
+             ModuleAsync._IonSimulatorSelectTheme) {
+    code = ModuleAsync._IonSimulatorSelectTheme(msg.index);
+  } else {
+    return;
+  }
+  ev.source.postMessage({ type: msg.type + ':done', id: msg.id, code: code },
+                        ev.origin);
+});
     </script>
-    <script async src="https://www.numworks.com/simulator/update.js"></script>
   </body>
 </html>

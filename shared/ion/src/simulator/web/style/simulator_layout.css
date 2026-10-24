@@ -86,3 +86,8 @@ body.fullscreen a.action svg.action-fullscreen-expand {
 body.fullscreen a.action svg.action-fullscreen-exit {
   display: block;
 }
+
+body.embed { background: transparent; }
+body.embed .actions { display: none; }
+body.embed .calculator-container { margin-top: 0; }
+body.embed .calculator-container img { max-height: 100vh; }

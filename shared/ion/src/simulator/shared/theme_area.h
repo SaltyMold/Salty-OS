@@ -32,6 +32,9 @@ bool commitPending();
 const uint8_t* data();
 size_t size();
 
+void requestSelection(int index);
+int takeRequestedSelection();
+
 }  // namespace ThemeArea
 }  // namespace Simulator
 }  // namespace Ion

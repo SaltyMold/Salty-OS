@@ -16,6 +16,7 @@ void IonSimulatorEventsPushEventArray(const char* eventBufferAsChar, int length,
                                       int fromIndex, int toIndex);
 int IonSimulatorNumberOfEventsInArray(const char* eventBuffer, int length);
 int IonSimulatorLoadThemeArea(const uint8_t* data, int length);
+int IonSimulatorSelectTheme(int index);
 
 #ifdef __cplusplus
 }

@@ -97,3 +97,11 @@ int IonSimulatorLoadThemeArea(const uint8_t* data, int length) {
   }
   return Ion::Simulator::ThemeArea::load(data, static_cast<size_t>(length));
 }
+
+int IonSimulatorSelectTheme(int index) {
+  if (index < 0) {
+    return -1;
+  }
+  Ion::Simulator::ThemeArea::requestSelection(index);
+  return 0;
+}

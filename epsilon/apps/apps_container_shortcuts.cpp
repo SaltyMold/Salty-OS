@@ -5,6 +5,7 @@
 
 #if !PLATFORM_DEVICE
 #include <ion/timing.h>
+#include "../../shared/ion/src/simulator/shared/theme_area.h"
 #endif
 
 /* Salty-OS keybinds handling. The keys themselves are assigned in
@@ -70,17 +71,25 @@ bool AppsContainer::changeTheme(int offset) {
 }
 
 void AppsContainer::applyPendingThemeArea() {
-  if (!ThemeManager::applyPendingThemeArea()) {
+#if !PLATFORM_DEVICE
+  const bool areaChanged = ThemeManager::applyPendingThemeArea();
+  const int requested = Ion::Simulator::ThemeArea::takeRequestedSelection();
+  bool selectionChanged = false;
+  if (requested >= 0 && requested < ThemeManager::themeCount() &&
+      requested != ThemeManager::selectedTheme()) {
+    ThemeManager::selectTheme(requested);
+    selectionChanged = true;
+  }
+  if (!areaChanged && !selectionChanged) {
     return;
   }
-  /* The Salty-OS settings app displays the list of themes: leave it so that
-   * it never shows (or opens) a theme that does not exist anymore. */
-  if (activeApp() != nullptr &&
+  if (areaChanged && activeApp() != nullptr &&
       activeApp()->snapshot() == saltySettingsAppSnapshot()) {
     switchToBuiltinApp(homeAppSnapshot());
   }
   resetShiftAlphaStatus();
   ThemeManager::refreshTheme(&m_window);
+#endif
 }
 
 void AppsContainer::toggleExternalApps() {

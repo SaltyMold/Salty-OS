@@ -18,6 +18,8 @@ static size_t s_stagingSize = 0;
 static uint8_t* s_area = nullptr;
 static size_t s_areaSize = 0;
 
+static int s_requestedSelection = -1;
+
 static uint32_t read32(const uint8_t* p) {
   return static_cast<uint32_t>(p[0]) | (static_cast<uint32_t>(p[1]) << 8) |
          (static_cast<uint32_t>(p[2]) << 16) |
@@ -104,6 +106,14 @@ bool commitPending() {
 
 const uint8_t* data() { return s_area; }
 size_t size() { return s_areaSize; }
+
+void requestSelection(int index) { s_requestedSelection = index; }
+
+int takeRequestedSelection() {
+  int index = s_requestedSelection;
+  s_requestedSelection = -1;
+  return index;
+}
 
 }  // namespace ThemeArea
 }  // namespace Simulator

@@ -1,40 +1,50 @@
-<p align="center"><img src="github_assets/SaltyOS.png" /></p>
+<img src="github_assets/banner.png" alt="Salty-OS">
 
-Salty-OS is a custom userland for the numworks calculator based on the latest published version of [epsilon](https://github.com/Numworks/epsilon) (26.1.0, branch `version-26`).
-
-<img src="github_assets/numworks.png" width=320 alt="Salty-OS">
+<p align="center">
+  <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="CC BY-NC-SA 4.0" src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-525252.svg?labelColor=292929&logo=creative%20commons&style=for-the-badge" /></a>
+  <a href="https://github.com/SaltyMold/Salty-OS/releases"><img alt="Latest Release" src="https://img.shields.io/github/v/release/SaltyMold/Salty-OS?label=Release&labelColor=292929&color=green&logo=github&style=for-the-badge" /></a>
+  <br/>
+  <a href="https://discord.gg/hpeW5Jud6p"><img alt="Membres Discord" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2FhpeW5Jud6p%3Fwith_counts%3Dtrue&query=%24.approximate_member_count&logo=discord&logoColor=white&color=blue&labelColor=292929&label=Membres&style=for-the-badge" /></a>
+  <a href="https://github.com/SaltyMold/Salty-OS"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/SaltyMold/Salty-OS?label=Stars&labelColor=292929&color=yellow&logo=github&style=for-the-badge" /></a>
+</p>
 
 ## Table of Contents
-- [Explanations](#explanations)
-- [Features](#functionalities)
+- [About](#about)
+- [Features](#features)
 - [How to install](#how-to-install)
 - [How to use](#how-to-use)
 - [How to build](#how-to-build)
 
-## Explanations
+## About
 
-A userland is not an OS, it has more restrictions.
-
+Salty-OS is a custom userland for the numworks calculator based on the latest published version of [epsilon](https://github.com/Numworks/epsilon) (26.1.0, branch `version-26`).
 NumWorks calculators boot slot A by default, then you can access Slot B with a launcher (ex: [ABLaucher](https://github.com/SaltyMold/ABLauncher-Numworks)).
-
-If the userland crashes or if you reset it, the calculator falls back to booting slot A, but slot B isn't wiped in the process, so the custom userland is still there and can be re-launched afterward (at least on latest versions of epsilon).
+If the userland crashes or if you reset it, the calculator falls back to booting slot A, but slot B isn't wiped in the process, so the custom userland is still there and can be re-launched afterward.
 
 Here are some example of the layout of the calculator flash:
-- On classic epsilon
-<img src="github_assets/slots.png" width=400 alt="slots-default">
-
-- With SaltyOS on slot B for locked calculator
-<img src="github_assets/slots_salty_os.png" width=400 alt="slots-salty-os">
-
-- With SaltyOS on slot A for unlocked calculator
-<img src="github_assets/slots_salty_os_unlocked.png" width=400 alt="slots-salty-os">
+<table>
+  <thead>
+    <tr>
+      <th>Classic Epsilon</th>
+      <th>SaltyOS on Slot B (locked calculator)</th>
+      <th>SaltyOS on Slot A (unlocked calculator)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><img src="github_assets/slots.png" width="400" alt="Classic Epsilon flash layout"></td>
+      <td><img src="github_assets/slots_salty_os.png" width="400" alt="SaltyOS on Slot B"></td>
+      <td><img src="github_assets/slots_salty_os_unlocked.png" width="400" alt="SaltyOS on Slot A"></td>
+    </tr>
+  </tbody>
+</table>
 
 The pythons scripts are in ram, so the layout of the external flash can't affect them.
 The bootloader is in another flash, the internal flash.
 
 See more at https://nwagyu.org/reference/firmware/
 
-## Functionalities
+## Features
 
 The userland is build with a custom onboarding and external apps allowed.
 It supports locked n0110, n0115, n0120 and also unlocked n0110 (It has not been tested on unlocked n0115 or n0120, but it could work.) with Epsilon kernel 26.4.0.
@@ -63,34 +73,18 @@ If you're unsure what to choose, choose locked calculator.
 
 <details><summary><b>Locked calculator</b></summary>
 
-### Update the calculator twice
-
-- Go to the [Numworks updater](https://my.numworks.com/devices/upgrade).
-- Connect your calculator.
-- Click update.
-- Do it a second time to make sure slot A is used.
-
 ### Userland
 
-- Go to https://saltymold.github.io/Salty-OS-Installer/
-- Go to the "SaltyOS" section.
-- Connect your calculator.
-- Click install.
+- Go on the [Salty-OS Website](https://salty-os.gabizar.top/install).
+- Go to the [Install section](https://salty-os.gabizar.top/install).
+- Follow the steps to install the userland on your calculator.
 
-### Launcher
+### Custom themes
 
-- Go to https://saltymold.github.io/Salty-OS-Installer/
-- Go to the "Launcher" section.
-- Connect your calculator.
-- Click install.
+- Go on the [Salty-OS Website](https://salty-os.gabizar.top/install).
+- Go to the [Themes section](https://salty-os.gabizar.top/themes).
+- Create your own theme or choose one of the existing themes from the community.
 
-### Themes
-
-- Go to https://saltymold.github.io/Salty-OS-Installer/
-- Go to the "Themes" section.
-- Connect your calculator.
-- Create your themes.
-- Click install.
 </details>
 
 <details><summary><b>Unlocked calculator</b></summary>
@@ -127,10 +121,10 @@ It is always both parantheses and the keybind.
 
 | Key   | Action        |
 |-------|---------------|
-| Both parantheses + shift | Previous theme    |
-| Both parantheses + alpha | Next theme    |
-| Both parantheses + xnt | Toggle external apps    |
-| Both parantheses + backspace | Salty-OS settings (About: versions and build, Themes: one folder per theme with all its details) |
+| Shift | Previous theme    |
+| Alpha | Next theme    |
+| Xnt | Toggle external apps    |
+| Backspace | Salty-OS settings |
 
 ## How to build
 

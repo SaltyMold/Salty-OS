@@ -94,7 +94,7 @@ If you're unsure what to choose, choose locked calculator.
 - Go to the [Upsilon installer](https://getupsilon.web.app/install).
 - Connect your calculator.
 - Choose "Custom binpack".
-- Download epsilon kernel 26.4.0 from the official website with [this guide](https://nwagyu.org/reference/others/downloading-epsilon.html) or from the [archive](https://git.gabizar.top/GabiZar/Epsilon-Archive/releases/tag/26.4.0)
+- Download epsilon kernel 26.4.0 from the official website with [this guide](https://nwagyu.org/reference/others/downloading-epsilon.html) or from the [archive](https://git.gabizar.top/GabiZar/Epsilon-Archive/releases/)
 - Flash it at address `0x90000000` for slot A and `0x90400000` for slot B
 
 ### Userland

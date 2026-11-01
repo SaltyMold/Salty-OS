@@ -1,0 +1,58 @@
+{
+  "name": "Omega",
+  "variables": {
+    "defaultCircleLevel": 0,
+    "isAppNameBackgroundHover": 1
+  },
+  "colors": {
+    "_note": "Based on Upsilon's Omega Dark. Only the colors that differ from Epsilon are listed.",
+    "_title_bar": "Upsilon Toolbar / Battery",
+    "YellowDark": "c03535",
+    "YellowLightBattery": "ffffff",
+    "LowBattery": "992321",
+    "_pages": "Upsilon Background (Hard, Apps, AppsSecondary) / List / Button",
+    "Background": "000000",
+    "WallScreen": "0f0f0f",
+    "WallScreenDark": "1a1a1a",
+    "Select": "1f1f1f",
+    "SelectDark": "2e2e2e",
+    "GrayWhite": "1f1f1f",
+    "GrayBright": "262626",
+    "GrayMiddle": "262626",
+    "GrayDarkMiddle": "525252",
+    "_text": "Upsilon PrimaryText / SecondaryText / ApproximateSignText",
+    "PrimaryText": "ffffff",
+    "GrayDark": "949494",
+    "GrayVeryDark": "a6a6a6",
+    "GrayDarkest": "b5b5b5",
+    "_accent": "Upsilon Control",
+    "Accent": "00857f",
+    "_headers": "Upsilon Toolbox header / Tab",
+    "PopUpTitleBackground": "3b3b3b",
+    "PurpleDark": "3b3b3b",
+    "PurpleBright": "8a8a8a",
+    "_home": "Upsilon Home",
+    "TextColor": "ffffff",
+    "TextColorHover": "ffffff",
+    "WallpaperColor": "000000",
+    "Python": {
+      "Text": "ffffff",
+      "Comment": "999988",
+      "Number": "1abc9c",
+      "Keyword": "c03535",
+      "Operator": "e67e22",
+      "String": "3498db",
+      "GutterBackground": "1f1f1f"
+    },
+    "Graph": {
+      "Curve": "00857f",
+      "AxisMain": "949494",
+      "AxisLight": "0a0a0a",
+      "IntersectionArea": "949494",
+      "IndicatorSecondary": "ffffff",
+      "MagnifyIndicator": "ffffff",
+      "PolarGridLabels": "949494"
+    },
+    "InputBackground": "1f1f1f"
+  }
+}

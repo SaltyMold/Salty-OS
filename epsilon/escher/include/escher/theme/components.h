@@ -12,6 +12,7 @@ namespace Escher {
   X(WallScreenDark)                \
   X(DefaultBackground)             \
   X(DefaultCellBackground)         \
+  X(InputBackground)               \
   X(BackgroundPopup)               \
   X(BackgroundBoxTitle)            \
   X(BackgroundButtonRow)           \

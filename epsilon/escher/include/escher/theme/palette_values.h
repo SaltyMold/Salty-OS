@@ -64,6 +64,10 @@ namespace Escher {
   X(WallpaperColor) \
   X(White) \
   X(Black) \
+  X(Background) \
+  X(InputBackground) \
+  X(PrimaryText) \
+  X(Accent) \
   /* Calculation */ \
   X(CalculationBorderEven) \
   X(CalculationBorderOdd) \

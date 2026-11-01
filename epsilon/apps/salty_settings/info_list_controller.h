@@ -18,8 +18,10 @@ namespace SaltySettings {
  * the About page of the Settings app. Subclasses only describe their rows. */
 constexpr static int k_infoLabelSize = 33;  // OneLineBufferTextView<Large>
 constexpr static int k_infoValueSize = 46;  // OneLineBufferTextView<Small>
-// The longest list is the detail of a theme (about 75 rows)
-constexpr static int k_maxInfoRows = 80;
+/* The longest list is the detail of a theme: 4 sections, about 25 rows of
+ * information and one row per color of its palette (77 colors, see
+ * themes/themes/epsilon.json), so about 105 rows. */
+constexpr static int k_maxInfoRows = 112;
 
 struct InfoRow {
   bool isSection;

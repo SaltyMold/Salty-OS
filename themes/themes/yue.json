@@ -1,0 +1,29 @@
+{
+  "name": "Yue",
+  "variables": {
+    "defaultCircleLevel": 3,
+    "isAppNameBackgroundHover": 1
+  },
+  "colors": {
+    "YellowDark": "ffec5b",
+    "YellowLightBattery": "fffbb8",
+    "YellowLight": "ffffea",
+    "PurpleBright": "d4c8a8",
+    "PurpleDark": "afa075",
+    "GrayWhite": "fffdf5",
+    "GrayBright": "fff4d9",
+    "GrayMiddle": "fbecc8",
+    "GrayDarkMiddle": "efd9a3",
+    "GrayDark": "e0c47e",
+    "GrayVeryDark": "cfb059",
+    "GrayDarkest": "5c4d28",
+    "Select": "fff0cb",
+    "SelectDark": "ffe5a8",
+    "WallScreen": "fff8e0",
+    "WallScreenDark": "ffebb5",
+    "PopUpTitleBackground": "ffd970",
+    "LowBattery": "ff8c40",
+    "TextColor": "5d606c",
+    "TextColorHover": "5d606c"
+  }
+}

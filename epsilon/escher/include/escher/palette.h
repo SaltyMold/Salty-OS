@@ -58,6 +58,10 @@ class Palette {
   constexpr static KDColor WallpaperColor = KDColor::RGB24(0xffffff);
   constexpr static KDColor White = KDColor::RGB24(0xffffff);
   constexpr static KDColor Black = KDColor::RGB24(0x000000);
+  constexpr static KDColor Background = KDColor::RGB24(0xffffff);
+  constexpr static KDColor InputBackground = KDColor::RGB24(0xffffff);
+  constexpr static KDColor PrimaryText = KDColor::RGB24(0x000000);
+  constexpr static KDColor Accent = KDColor::RGB24(0xffb734);
 
   // Calculation
   constexpr static KDColor CalculationBorderEven = KDColor::RGB24(0xffffff);

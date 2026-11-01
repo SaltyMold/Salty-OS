@@ -5,6 +5,7 @@
 namespace Escher {
 
 bool SaltyPalette::s_active = false;
+bool SaltyPalette::s_dark = false;
 PaletteValues SaltyPalette::s_values;
 ThemeContainer SaltyPalette::s_theme;
 
@@ -43,6 +44,12 @@ bool SaltyPalette::Set(const char* name, KDColor color) {
 
 void SaltyPalette::End() {
   s_theme = MakeLightTheme(s_values);
+  // Perceived brightness of the background (ITU-R BT.601), 0 to 255
+  const KDColor background = s_values.Background;
+  s_dark = (background.red() * 299 + background.green() * 587 +
+            background.blue() * 114) /
+               1000 <
+           128;
   s_active = true;
 }
 

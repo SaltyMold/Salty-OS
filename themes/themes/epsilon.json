@@ -51,9 +51,14 @@
     "WallpaperColor": "ffffff",
     "White": "ffffff",
     "Black": "000000",
+    "_roles": "What a color is for, so that a dark theme can change the page without changing the text on the title bar.",
+    "Background": "@White",
+    "InputBackground": "@Background",
+    "PrimaryText": "@Black",
+    "Accent": "@YellowDark",
     "_apps": "Colors of one app only (group name + key = slot name, e.g. Calculation + BorderOdd = CalculationBorderOdd). A theme only lists the ones it changes: the others keep the default value, or follow the core color they are aliased to (\"@Name\").",
     "Calculation": {
-      "BorderEven": "@White",
+      "BorderEven": "@Background",
       "BorderOdd": "@WallScreen",
       "BorderSelected": "@Select"
     },

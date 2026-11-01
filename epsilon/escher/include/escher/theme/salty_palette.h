@@ -32,6 +32,10 @@ class SaltyPalette {
   static void Reset();
 
   static bool IsActive() { return s_active; }
+  /* A theme whose Background is dark gets Epsilon's behavior for dark themes:
+   * dark variants of the images, grid in tables, lighter blending, double
+   * selection borders. The colors themselves always come from the palette. */
+  static bool IsDark() { return s_active && s_dark; }
   static const ThemeContainer& Theme() { return s_theme; }
 
   // Every color of the active theme (the default values if none is active)
@@ -48,6 +52,7 @@ class SaltyPalette {
   /* No dynamic initializers on device (static constructors are not run): these
    * are only read once IsActive() is true, i.e. after End() filled them. */
   static bool s_active;
+  static bool s_dark;
   static PaletteValues s_values;
   static ThemeContainer s_theme;
 };

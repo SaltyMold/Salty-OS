@@ -13,7 +13,8 @@ KDColor ColorPicker::ResolveCustomColor(KDColor color) {
     case Theme::Light:
       return color;
     case Theme::Dark:
-      return Palette::Black;
+      return SaltyPalette::IsActive() ? SaltyPalette::Values().Background
+                                      : Palette::Black;
     default:
       OMG_UNREACHABLE
   }
@@ -24,7 +25,8 @@ KDColor ColorPicker::ResolveCustomColorForHighlight(KDColor color) {
     case Theme::Light:
       return color;
     case Theme::Dark:
-      return Palette::DARK_VioletDeep;
+      return SaltyPalette::IsActive() ? SaltyPalette::Values().Accent
+                                      : Palette::DARK_VioletDeep;
     default:
       OMG_UNREACHABLE
   }
@@ -35,7 +37,8 @@ KDColor ColorPicker::ResolveCustomColorForText(KDColor color) {
     case Theme::Light:
       return color;
     case Theme::Dark:
-      return Palette::DARK_VioletPale;
+      return SaltyPalette::IsActive() ? SaltyPalette::Values().PrimaryText
+                                      : Palette::DARK_VioletPale;
     default:
       OMG_UNREACHABLE
   }
@@ -75,19 +78,21 @@ bool ColorPicker::HasTableGrid() {
 }
 
 Theme ColorPicker::GetCurrentTheme() {
-  // A Salty-OS theme is a light-like theme: it overrides the user preference
+  // A Salty-OS theme overrides the user preference, light or dark depending on
+  // its background
   if (SaltyPalette::IsActive()) {
-    return Theme::Light;
+    return SaltyPalette::IsDark() ? Theme::Dark : Theme::Light;
   }
   return SharedPreferences->theme();
 }
 
 KDColor ColorPicker::Get(Theme theme, ThemeComponent component) {
+  // The colors of a Salty-OS theme are all in its palette, light or dark
+  if (SaltyPalette::IsActive()) {
+    return SaltyPalette::Theme().get(component);
+  }
   switch (theme) {
     case Theme::Light:
-      if (SaltyPalette::IsActive()) {
-        return SaltyPalette::Theme().get(component);
-      }
       return k_lightTheme.get(component);
     case Theme::Dark:
       return k_darkTheme.get(component);

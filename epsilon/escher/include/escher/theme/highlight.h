@@ -32,6 +32,7 @@ constexpr static ThemeComponent Highlight(ThemeComponent component,
     case ThemeComponent::TextPurple:
       return ThemeComponent::TextSelectPurple;
     case ThemeComponent::DefaultCellBackground:
+    case ThemeComponent::InputBackground:
     case ThemeComponent::ButtonBackground:
     case ThemeComponent::CellEven:
     case ThemeComponent::CellOdd:

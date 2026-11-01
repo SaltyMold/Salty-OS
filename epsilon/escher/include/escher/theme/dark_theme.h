@@ -11,6 +11,7 @@ constexpr static ThemeContainer k_darkTheme =
                    .WallScreenDark = Palette::Black,
                    .DefaultBackground = Palette::Black,
                    .DefaultCellBackground = Palette::Black,
+                   .InputBackground = Palette::Black,
                    .BackgroundPopup = Palette::DARK_VioletPale,
                    .BackgroundBoxTitle = Palette::DARK_VioletMiddle,
                    .BackgroundButtonRow = Palette::Black,

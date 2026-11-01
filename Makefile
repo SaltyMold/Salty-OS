@@ -76,15 +76,8 @@ include libaxx/Makefile
 endif
 include ion/Makefile
 include kandinsky/Makefile
-include poincare/Makefile
-include python/Makefile
-include escher/Makefile
-# Executable Makefiles
-include apps/Makefile
-include build/struct_layout/Makefile
-include quiz/Makefile # Quiz needs to be included at the end
 
-all_src = $(apps_src) $(escher_src) $(ion_src) $(kandinsky_src) $(liba_src) $(libaxx_src) $(poincare_src) $(python_src) $(runner_src) $(ion_device_flasher_src) $(ion_device_bench_src) $(tests_src)
+all_src = $(ion_src) $(kandinsky_src) $(liba_src) $(libaxx_src) $(ion_device_flasher_src) $(ion_device_bench_src)
 all_objs = $(call object_for,$(all_src))
 .SECONDARY: $(all_objs)
 

@@ -23,9 +23,10 @@ void shutdownPeripherals(bool keepLEDAwake = false);
 void initInterruptionPriorities();
 void setDefaultGPIO();
 
-bool isInReflashableSector(uint32_t address);
-void switchExecutableSlot(uint32_t address);
-void enableExternalApps();
+/* No signature verification: the clearance level never changes. These two
+ * entry points are kept because the userland still calls them (SVC 6 and 7). */
+void updateClearanceLevelForExternalApps();
+void updateClearanceLevelForUnauthenticatedUserland();
 
 bool addressInUserlandRAM(void * address);
 

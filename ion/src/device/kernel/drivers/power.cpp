@@ -8,7 +8,6 @@
 #include <kernel/drivers/keyboard.h>
 #include <kernel/drivers/led.h>
 #include <kernel/drivers/power.h>
-#include <kernel/warning_display.h>
 #include <regs/config/pwr.h>
 #include <regs/config/rcc.h>
 #include <regs/regs.h>
@@ -120,10 +119,6 @@ void suspend(bool checkIfOnOffKeyReleased) {
    * not be done before. */
   if (Ion::USB::isPlugged()) {
     Ion::USB::disable();
-  }
-
-  if (Authentication::clearanceLevel() == Ion::Authentication::ClearanceLevel::ThirdParty) {
-    WarningDisplay::unauthenticatedUserland();
   }
 
   /* Flush the keyboard queue to avoid handling artifacts state at wake-up.

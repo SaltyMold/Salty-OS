@@ -8,6 +8,20 @@ namespace Reset {
 
 using namespace Regs;
 
+/* RCC_CSR (STM32F7): bit 28 = SFTRSTF (software reset), bit 24 = RMVF. */
+static ResetType sLastResetType = ResetType::Hardware;
+
+void captureLastResetType() {
+  volatile uint32_t * rccCSR = reinterpret_cast<volatile uint32_t *>(0x40023874);
+  uint32_t csr = *rccCSR;
+  sLastResetType = (csr & (1 << 28)) ? ResetType::Software : ResetType::Hardware;
+  *rccCSR = csr | (1 << 24);  // clear the reset flags
+}
+
+ResetType lastResetType() {
+  return sLastResetType;
+}
+
 void core() {
   // Perform a full core reset
   Ion::Device::Cache::dsb(); // Complete all memory accesses

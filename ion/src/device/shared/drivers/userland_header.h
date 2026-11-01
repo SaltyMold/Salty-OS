@@ -19,6 +19,8 @@ public:
       || m_externalAppsFlashEnd == nullptr
       || m_externalAppsRAMStart == nullptr
       || m_externalAppsRAMEnd == nullptr
+      || m_deviceNameFlashStart == nullptr
+      || m_deviceNameFlashEnd == nullptr
       || m_header != Magic
       || m_footer != Magic) {
       return false;
@@ -36,6 +38,7 @@ public:
     assert(m_footer == Magic);
     return m_expectedEpsilonVersion;
   }
+  void * deviceNameAddressFlash() const { return m_deviceNameFlashStart; }
   void * externalAppsAddressFlash() const {
     return m_externalAppsFlashStart;
   }
@@ -54,6 +57,9 @@ private:
   void * m_externalAppsFlashEnd;
   void * m_externalAppsRAMStart;
   void * m_externalAppsRAMEnd;
+  /* 26.x layout: the userland header is 0x30 bytes long. */
+  void * m_deviceNameFlashStart;
+  void * m_deviceNameFlashEnd;
   uint32_t m_footer;
 };
 

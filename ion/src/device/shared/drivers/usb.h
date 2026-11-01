@@ -1,6 +1,7 @@
 #ifndef ION_DEVICE_SHARED_USB_H
 #define ION_DEVICE_SHARED_USB_H
 
+#include <ion/keyboard.h>
 #include <shared/drivers/kernel_header.h>
 #include <shared/drivers/usb.h>
 #include <shared/drivers/userland_header.h>
@@ -36,7 +37,7 @@ SlotInfo * slotInfo();
 
 void willExecuteDFU();
 void didExecuteDFU();
-bool shouldInterruptDFU();
+bool shouldInterruptDFU(Ion::Keyboard::State exitKeys, bool bubbleUpEvents);
 const char * stringDescriptor();
 
 }

@@ -41,14 +41,32 @@ EXTERNAL_FLASH_ORIGIN = 0x90000000;
 EXTERNAL_FLASH_LENGTH = 8M;
 STANDARD_EXTERNAL_FLASH_SECTOR_LENGTH = 64K;
 
-PERSITING_BYTES_VIRTUAL_ORIGIN = EXTERNAL_FLASH_ORIGIN + EXTERNAL_FLASH_LENGTH / 2 - STANDARD_EXTERNAL_FLASH_SECTOR_LENGTH;
+/* CUSTOM LAYOUT.
+ * The kernel region of each slot is 128 kB:
+ *   | kernel image (64 kB) | persisting bytes (64 kB) |
+ * The kernel code is ~18 kB, so the second 64 kB sector of the region is free.
+ * It holds the persisting bytes of the slot (one flash sector, erasable alone).
+ * The kernel image is only 64 kB: flashing it never erases the persisting bytes.
+ * The external apps can therefore use all the flash after the userland
+ * (about 6.6 MB when only slot A is used).
+ *
+ * | KERNEL A | PB A | USERLAND A | EXTERNAL APPS ................... |
+ *   0x90000000 0x90010000 0x90020000                      up to 0x90800000
+ *
+ * Slot B (optional): KERNEL B 0x90400000, PB B 0x90410000, USERLAND B 0x90420000.
+ * Persisting bytes sector layout: | device name (1 kB) | exam bytes (63 kB) |
+ * If you move the persisting bytes, also change PersistingBytes*StartAddress in
+ * drivers/config/board.h. */
 PERSITING_BYTES_LENGTH = STANDARD_EXTERNAL_FLASH_SECTOR_LENGTH;
-
 KERNEL_VIRTUAL_ORIGIN = EXTERNAL_FLASH_ORIGIN;
-KERNEL_LENGTH = 64K;
+KERNEL_IMAGE_LENGTH = 64K;
+KERNEL_LENGTH = 128K;
+/* Slot relative: add EPSILON_OFFSET for slot B (0x90410000) */
+PERSITING_BYTES_VIRTUAL_ORIGIN = KERNEL_VIRTUAL_ORIGIN + KERNEL_IMAGE_LENGTH;
 
 USERLAND_VIRTUAL_ORIGIN = KERNEL_VIRTUAL_ORIGIN + KERNEL_LENGTH;
-USERLAND_AND_EXTERNAL_APPS_LENGTH = EXTERNAL_FLASH_LENGTH / 2 - KERNEL_LENGTH - PERSITING_BYTES_LENGTH;
+/* Userland + external apps when a single slot is used: up to the end of the flash */
+USERLAND_AND_EXTERNAL_APPS_LENGTH = EXTERNAL_FLASH_LENGTH - KERNEL_LENGTH;
 
 SIGNED_PAYLOAD_LENGTH = 8;
 CANARY_LENGTH = 4;

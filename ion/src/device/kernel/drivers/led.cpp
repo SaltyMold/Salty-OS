@@ -1,5 +1,4 @@
 #include <kernel/drivers/led.h>
-#include <kernel/drivers/authentication.h>
 #include <drivers/config/led.h>
 #include <drivers/config/clocks.h>
 
@@ -9,11 +8,18 @@ namespace LED {
 
 using namespace Regs;
 
-extern KDColor sLedColor;
+static bool sLocked = false;
+
+void setLock(bool locked) {
+  sLocked = locked;
+}
+
+bool isLocked() {
+  return sLocked;
+}
 
 void setColorSecure(KDColor c) {
-  if (Authentication::clearanceLevel() != Ion::Authentication::ClearanceLevel::NumWorks) {
-    sLedColor = KDColorBlack;
+  if (sLocked) {
     return;
   }
   setColor(c);

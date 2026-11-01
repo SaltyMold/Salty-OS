@@ -75,6 +75,7 @@ ShiftAlphaStatus shiftAlphaStatus();
 void setShiftAlphaStatus(ShiftAlphaStatus s);
 void setSpinner(bool spinner);
 int repetitionFactor();
+int longPressCounter();
 int longPressFactor();
 
 // Plain

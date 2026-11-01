@@ -35,8 +35,23 @@ void didExecuteDFU() {
   Keyboard::activateAllRows();
 }
 
-bool shouldInterruptDFU() {
-  return Keyboard::columnIsActive(Keyboard::columnForKey(Ion::Keyboard::Key::Back));
+/* The userland chooses which keys leave the DFU mode (exitKeys).
+ * bubbleUpEvents: if false, the keyboard state seen by the scan is consumed so
+ * that it is not delivered to the userland once the DFU is over. */
+bool shouldInterruptDFU(Ion::Keyboard::State exitKeys, bool bubbleUpEvents) {
+  const Ion::Keyboard::Key back = Ion::Keyboard::Key::Back;
+  if (static_cast<uint64_t>(exitKeys) == static_cast<uint64_t>(Ion::Keyboard::State(back))) {
+    /* Usual case: only Back leaves the DFU. willExecuteDFU() activated its row,
+     * no need to scan the whole keyboard. */
+    return Keyboard::columnIsActive(Keyboard::columnForKey(back));
+  }
+  Ion::Keyboard::State state = Keyboard::scan();
+  // scan() activates all the rows: restore the DFU configuration (Back row only)
+  Keyboard::activateRow(Keyboard::rowForKey(back));
+  if (!bubbleUpEvents) {
+    Ion::Keyboard::popState();
+  }
+  return (static_cast<uint64_t>(state) & static_cast<uint64_t>(exitKeys)) != 0;
 }
 
 void SlotInfo::updateKernelHeader() {

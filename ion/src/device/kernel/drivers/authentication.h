@@ -8,8 +8,10 @@ namespace Ion {
 namespace Device {
 namespace Authentication {
 
+/* Custom kernel: there is no signature verification. The userland is always
+ * considered official, which is required for the exam mode to be effective
+ * (ExamMode::get() ignores the persisting bytes of a non-NumWorks userland). */
 Ion::Authentication::ClearanceLevel clearanceLevel();
-void downgradeClearanceLevelTo(Ion::Authentication::ClearanceLevel level);
 
 }
 }

@@ -34,13 +34,24 @@ constexpr static uint32_t SlotAStartAddress = ExternalFlash::Config::StartAddres
 constexpr static uint32_t SlotBStartAddress = ExternalFlash::Config::StartAddress + ExternalFlash::Config::TotalSize/2;
 
 // Kernel
-constexpr static uint32_t KernelSize = 0x10000; // 64kB
+constexpr static uint32_t KernelSize = 0x20000; // 128kB: userland header at slot + 0x20000
 
 // Userland
 constexpr static uint32_t UserlandOffset = KernelSize;
 
 // External apps
 constexpr static uint32_t ExternalAppsSectorUnit = 0x10000;
+
+/* The kernel region (KernelSize = 128kB) is: | kernel image (64kB) | persisting bytes (64kB) |
+ * Persisting bytes sector layout: | DeviceName (1kB) | ExamBytes (63kB) | */
+constexpr static uint32_t KernelImageSize = 0x10000;
+constexpr static uint32_t PersistingBytesSectorSize = 0x10000;
+constexpr static uint32_t PersistingBytesAStartAddress = ExternalFlash::Config::StartAddress + KernelImageSize;
+constexpr static uint32_t PersistingBytesBStartAddress = ExternalFlash::Config::StartAddress + ExternalFlash::Config::TotalSize / 2 + KernelImageSize;
+constexpr static uint32_t DeviceNameSectorSize = 0x400;
+static_assert(KernelImageSize + PersistingBytesSectorSize == KernelSize, "The persisting bytes must fill the end of the kernel region");
+static_assert(PersistingBytesAStartAddress % PersistingBytesSectorSize == 0, "PB A must be aligned on a 64kB sector");
+static_assert(PersistingBytesBStartAddress % PersistingBytesSectorSize == 0, "PB B must be aligned on a 64kB sector");
 
 }
 }

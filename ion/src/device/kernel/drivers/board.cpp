@@ -13,7 +13,6 @@
 #include <kernel/drivers/circuit_breaker.h>
 #include <kernel/drivers/keyboard.h>
 #include <kernel/drivers/timing.h>
-#include <kernel/warning_display.h>
 #include <regs/regs.h>
 #include <shared/drivers/config/board.h>
 #include <shared/drivers/usb.h>
@@ -102,9 +101,12 @@ void setClockStandardFrequency() {
   Device::Timing::setSysTickFrequency(Ion::Device::Clocks::Config::HCLKFrequency);
 }
 
-void enableExternalApps() {
-  WarningDisplay::externalAppsAvailable();
-  Authentication::downgradeClearanceLevelTo(Ion::Authentication::ClearanceLevel::NumWorksAndThirdPartyApps);
+void updateClearanceLevelForExternalApps() {
+  // Nothing to do: the clearance level is always NumWorks.
+}
+
+void updateClearanceLevelForUnauthenticatedUserland() {
+  // Nothing to do: there is no authentication.
 }
 
 bool addressInUserlandRAM(void * address) {

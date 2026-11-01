@@ -17,7 +17,7 @@ namespace Ion {
 namespace Device {
 namespace Battery {
 
-Ion::Battery::Charge level();
+Ion::Battery::Charge level(bool forceLevelUpdate);
 float voltage();
 
 void init();

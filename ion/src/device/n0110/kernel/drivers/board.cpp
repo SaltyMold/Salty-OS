@@ -4,7 +4,6 @@
 #include <drivers/reset.h>
 #include <kernel/drivers/authentication.h>
 #include <kernel/drivers/board.h>
-#include <kernel/warning_display.h>
 #include <regs/regs.h>
 #include <shared/drivers/config/board.h>
 #include <shared/drivers/config/external_flash.h>
@@ -322,35 +321,6 @@ void shutdownPeripheralsClocks(bool keepLEDAwake) {
 
 bool isRunningSlotA() {
   return reinterpret_cast<uint32_t>(&_isr_vector_table_start_flash) < ExternalFlash::Config::StartAddress + ExternalFlash::Config::TotalSize/2;
-}
-
-bool isInReflashableSector(uint32_t address) {
-  if (isRunningSlotA()) {
-    return address >= ExternalFlash::Config::StartAddress + ExternalFlash::Config::TotalSize/2 && address < ExternalFlash::Config::EndAddress;
-  }
-  return address >= ExternalFlash::Config::StartAddress && address < ExternalFlash::Config::StartAddress + ExternalFlash::Config::TotalSize/2;
-}
-
-void switchExecutableSlot(uint32_t leaveAddress) {
-  assert(Authentication::clearanceLevel() == Ion::Authentication::ClearanceLevel::NumWorks);
-  if (!isInReflashableSector(leaveAddress)) {
-    return Reset::core();
-  }
-  KernelHeader * currentInfo = kernelHeader();
-  UserlandHeader * otherInfo = reinterpret_cast<UserlandHeader *>(leaveAddress);
-
-  if (!otherInfo->isValid()) {
-    // Can't get any information on the kernel version required
-    return Reset::core();
-  }
-  int deltaVersion = currentInfo->epsilonVersionComparedTo(otherInfo->expectedEpsilonVersion());
-  if (deltaVersion != 0) {
-    WarningDisplay::upgradeRequired();
-    return Reset::core();
-  } else {
-    Authentication::downgradeClearanceLevelTo(Ion::Authentication::ClearanceLevel::ThirdParty);
-    WarningDisplay::unauthenticatedUserland(); // UNOFFICIAL SOFTWARE
-  }
 }
 
 }

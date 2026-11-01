@@ -1,9 +1,7 @@
-PERSITING_BYTES_ORIGIN = PERSITING_BYTES_VIRTUAL_ORIGIN + EPSILON_OFFSET;
 KERNEL_ORIGIN = KERNEL_VIRTUAL_ORIGIN + EPSILON_OFFSET;
 
 MEMORY {
-  PERSITING_BYTES (rx) : ORIGIN = PERSITING_BYTES_ORIGIN, LENGTH = PERSITING_BYTES_LENGTH
-  KERNEL (rx) : ORIGIN = KERNEL_ORIGIN, LENGTH = KERNEL_LENGTH
+  KERNEL (rx) : ORIGIN = KERNEL_ORIGIN, LENGTH = KERNEL_IMAGE_LENGTH
   SRAM_PROCESS_STACK (rw) : ORIGIN = KERNEL_SRAM_ORIGIN - USERLAND_STACK_LENGTH, LENGTH = USERLAND_STACK_LENGTH
   SRAM_STACK (rw) : ORIGIN = KERNEL_SRAM_ORIGIN, LENGTH = KERNEL_STACK_LENGTH
   SRAM_DATA_BSS (rw) : ORIGIN = KERNEL_SRAM_ORIGIN + KERNEL_STACK_LENGTH, LENGTH = KERNEL_SRAM_DATA_BSS_LENGTH
@@ -51,27 +49,15 @@ SECTIONS {
     _data_section_end_ram = .;
   } >SRAM_DATA_BSS AT> KERNEL
 
+  /* The kernel image is padded up to KERNEL_IMAGE_LENGTH (64 kB). The second
+   * 64 kB of the kernel region hold the persisting bytes and are NOT part of the
+   * image: flashing the kernel never erases them. */
   .fill :
   {
     FILL(0xFF);
     . = ORIGIN(KERNEL) + LENGTH(KERNEL) - 1;
     BYTE(0xFF)
   } > KERNEL
-
-  .persisting_bytes_buffer ORIGIN(PERSITING_BYTES) : {
-    _persisting_bytes_buffer_start = .;
-    FILL(0xFF);
-    /* FILL instruction requires at least one element in the section to fill
-     * it. We write the first byte of the persisting bytes to make sure the
-     * section is not empty. Also, 0xFF is a forbidden value for the persisting
-     * byte (since it is not distinguishable from unused persisting bytes. So
-     * we init the first two persisting bytes to be the current significant
-     * address. Warning : More bytes should be initialized if
-     * PersistingBytes::k_numberOfPersistingBytes is changed. */
-    SHORT(0)
-    . = ORIGIN(PERSITING_BYTES) + LENGTH(PERSITING_BYTES);
-    _persisting_bytes_buffer_end = .;
-  } >PERSITING_BYTES
 
   .bss : {
     /* The bss section contains data for all uninitialized variables

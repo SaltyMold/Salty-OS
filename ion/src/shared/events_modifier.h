@@ -11,6 +11,7 @@ bool isShiftActive();
 bool isAlphaActive();
 bool isLockActive();
 void updateModifiersFromEvent(Event e, Keyboard::State state);
+int longPressCounter();
 int longPressFactor();
 void resetLongPress();
 void resetRepetition();

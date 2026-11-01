@@ -19,11 +19,14 @@ bool isCharging();
 
 enum class Charge : uint8_t {
   EMPTY = 0,
-  LOW = 1,
-  SOMEWHERE_INBETWEEN = 2,
-  FULL = 3
+  LOW = 1,   // 20%
+  P40 = 2,   // 40%
+  P60 = 3,   // 60%
+  P80 = 4,   // 80%
+  FULL = 5   // 100%
 };
-Charge level();
+constexpr int numberOfChargeStates = 6;
+Charge level(bool forceLevelUpdate = false);
 
 float voltage();
 

@@ -6,7 +6,8 @@
 #include <string.h>
 
 void kernel_main() {
-  assert(Ion::Device::Authentication::clearanceLevel() == Ion::Authentication::ClearanceLevel::NumWorks);
+  // Remember why we booted (SVC_RESET_LAST_RESET_TYPE) before anything else.
+  Ion::Device::Reset::captureLastResetType();
 
   switch_to_unpriviledged();
 

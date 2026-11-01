@@ -9,7 +9,7 @@ namespace ThemeArea {
 
 constexpr uint32_t k_capacity = 0x180000;  // ThemeAreaSize (1,5 Mio)
 constexpr uint32_t k_magic = 0x87654321;   // ThemeAreaHeaderMagic
-constexpr uint32_t k_version = 4;          // ThemeAreaHeaderVersion
+constexpr uint32_t k_version = 5;          // ThemeAreaHeaderVersion
 constexpr uint32_t k_maxThemes = 256;      // ThemeCount
 constexpr uint32_t k_numberOfIcons = 12;   // ThemeIconCount
 constexpr uint32_t k_headerSize = 12;      // sizeof(ThemeAreaHeader)

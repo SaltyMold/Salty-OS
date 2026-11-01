@@ -65,6 +65,7 @@ constexpr uint32_t TrampolineOrigin = BootloaderOrigin + BootloaderLength;
 constexpr uint32_t ExternalFlashOrigin = 0x90000000;
 constexpr uint32_t ExternalFlashLength = 0x800000;              // 8MiB
 constexpr uint32_t StandardExternalFlashSectorLength = 0x10000; // 64KiB
+constexpr uint32_t ThemeAreaSize = 0x180000; // 1.5MiB
 
 constexpr uint32_t SlotAOffset = 0;
 constexpr uint32_t SlotAOrigin = ExternalFlashOrigin + SlotAOffset;
@@ -72,7 +73,11 @@ constexpr uint32_t SlotBOffset = ExternalFlashLength / 2;
 constexpr uint32_t SlotBOrigin = ExternalFlashOrigin + SlotBOffset;
 
 constexpr uint32_t PersistingBytesLength = StandardExternalFlashSectorLength;
+#if CUSTOM_KERNEL
+constexpr uint32_t PersistingBytesVirtualOrigin = ExternalFlashOrigin + StandardExternalFlashSectorLength;
+#else
 constexpr uint32_t PersistingBytesVirtualOrigin = ExternalFlashOrigin + ExternalFlashLength / 2 - PersistingBytesLength;
+#endif
 constexpr uint32_t DeviceNameSectorLength = 1024;
 
 constexpr uint32_t KernelLength = StandardExternalFlashSectorLength;
@@ -85,7 +90,13 @@ constexpr uint32_t ExtraDataLength = 0;
 #endif
 constexpr uint32_t ExtraDataVirtualOrigin = KernelVirtualOrigin + KernelLength;
 
+#if BIG_USERLAND
+constexpr uint32_t UserlandLength = ExternalFlashLength - KernelLength - ExtraDataLength - ThemeAreaSize;
+#elif CUSTOM_KERNEL
+constexpr uint32_t UserlandLength = ExternalFlashLength / 2 - KernelLength - ExtraDataLength;
+#else
 constexpr uint32_t UserlandLength = ExternalFlashLength / 2 - KernelLength - ExtraDataLength - PersistingBytesLength;
+#endif
 constexpr uint32_t UserlandVirtualOrigin = ExtraDataVirtualOrigin + ExtraDataLength;
 
 constexpr uint32_t ExternalAppsSectorUnit = 0x10000;
@@ -151,7 +162,6 @@ constexpr int NumberOfMPUSectors = 8;
 /*--------------------------------------------*/
 
 // 1.5MB at the end of ExtApp A for slot B or at the end of the flash for slot A
-constexpr uint32_t ThemeAreaSize = 0x180000; // 1.5MiB
 constexpr uint32_t ThemeAreaStartSlotA = ExternalFlashOrigin + ExternalFlashLength - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x800000 - 0x180000 - 0x10000 = 0x90670000
 constexpr uint32_t ThemeAreaStartSlotB = ExternalFlashOrigin + ExternalFlashLength / 2 - ThemeAreaSize - StandardExternalFlashSectorLength; // 0x90000000 + 0x400000 - 0x180000 - 0x10000 = 0x90270000
 constexpr uint32_t ThemeAreaEndSlotA = ThemeAreaStartSlotA + ThemeAreaSize;

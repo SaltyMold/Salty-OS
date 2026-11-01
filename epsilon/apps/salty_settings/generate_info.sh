@@ -4,8 +4,7 @@
 # folder) instead of being hardcoded in the C++ sources.
 #
 # usage: generate_info.sh <output.h> <os_version> <kernel_version> \
-#          <epsilon_source_version> <commit> <platform> <palette.txt> \
-#          <generate_theme.py>
+#          <epsilon_source_version> <commit> <platform> <generate_themes.py>
 set -eu
 
 out="$1"
@@ -14,8 +13,7 @@ kernel_version="$3"
 epsilon_source_version="$4"
 commit="$5"
 platform="$6"
-palette_file="$7"
-theme_generator="$8"
+theme_generator="$7"
 
 # Keeps a value usable inside a C string literal
 clean() {
@@ -40,14 +38,7 @@ mkdir -p "$(dirname "$out")"
   echo
   echo "namespace SaltyInfo {"
   echo
-  echo "// Slot order of a theme palette (first column of themes/epsilon/palette.txt)"
-  echo "constexpr const char* k_paletteSlotNames[] = {"
-  awk '!/^[[:space:]]*(#|$)/ { printf "    \"%s\",\n", $1 }' "$palette_file"
-  echo "};"
-  echo "constexpr int k_numberOfPaletteSlotNames ="
-  echo "    sizeof(k_paletteSlotNames) / sizeof(k_paletteSlotNames[0]);"
-  echo
-  echo "// Icon order of a theme (FIXED_ICON_FILES of themes/generate_theme.py)"
+  echo "// Icon order of a theme (FIXED_ICON_FILES of themes/generate_themes.py)"
   echo "constexpr const char* k_iconNames[] = {"
   awk '
     /^FIXED_ICON_FILES[[:space:]]*=/ { inlist = 1; next }

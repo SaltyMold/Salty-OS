@@ -67,6 +67,16 @@ void AboutController::describe(RowPicker* p) const {
       .message(valid ? M::SaltySettingsValid : M::SaltySettingsInvalid);
   p->row(M::SaltySettingsAddress).str("0x").hex(static_cast<uint32_t>(ThemeManager::areaBase()), 8);
   p->row(M::SaltySettingsCapacity).size(ThemeAreaSize);
+  if (ThemeManager::areaBase() != 0) {
+    /* What the firmware really reads at the start of the Theme Area, valid or
+     * not: a valid area reads 0x87654321, 4 and the number of themes. All
+     * 0xFFFFFFFF means nothing is written there. */
+    const volatile uint32_t* header =
+        reinterpret_cast<const volatile uint32_t*>(ThemeManager::areaBase());
+    p->row("Raw magic").str("0x").hex(header[0], 8);
+    p->row("Raw version").str("0x").hex(header[1], 8);
+    p->row("Raw count").str("0x").hex(header[2], 8);
+  }
   if (valid) {
     const uint32_t format =
         reinterpret_cast<const uint32_t*>(ThemeManager::areaBase())[1];

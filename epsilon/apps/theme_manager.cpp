@@ -121,7 +121,7 @@ const ThemeEntry* ThemeManager::currentEntry() {
 
 namespace {
 
-/* Matches the blob layout written by generate_theme.py's
+/* Matches the blob layout written by generate_themes.py's
  * png_to_lz4_wallpaper_blob():
  *   uint32 width, height, chunkRows, chunkCount;
  *   uint32 offsets[chunkCount];   // relative to the start of chunk data
@@ -137,7 +137,7 @@ struct WallpaperBlobHeader {
 
 // Must be big enough for the largest possible chunk: screen width x the
 // chunk height used at generation time (defaults to 16 rows in
-// generate_theme.py). Bump both if you ever generate taller chunks.
+// generate_themes.py). Bump both if you ever generate taller chunks.
 constexpr int k_maxChunkWidth = 320;
 constexpr int k_maxChunkHeight = 16;
 
@@ -264,7 +264,7 @@ const KDColor* ThemeManager::wallpaperChunkContaining(int globalY, int* localY) 
 }
 
 /* Icons -------------------------------------------------------------------
- * Icon blobs are a single flat LZ4 block (generate_theme.py's
+ * Icon blobs are a single flat LZ4 block (generate_themes.py's
  * png_to_lz4_image_blob()) with NO header at all: just RGB565 pixels,
  * compressed with the same lz4_compress() used for the wallpaper chunks.
  * Width/height are not stored in the blob - the firmware and the theme
@@ -272,7 +272,7 @@ const KDColor* ThemeManager::wallpaperChunkContaining(int globalY, int* localY) 
  * caller, e.g. AppCell's k_iconWidth / k_iconHeight). */
 
 int ThemeManager::iconIndexForApp(I18n::Message appName) {
-  // Order must match FIXED_ICON_FILES in generate_theme.py exactly.
+  // Order must match FIXED_ICON_FILES in generate_themes.py exactly.
   // Names confirmed against apps/*/app.h / app.cpp (Descriptor::name()).
   switch (appName) {
     case I18n::Message::CalculApp:
@@ -304,9 +304,36 @@ int ThemeManager::iconIndexForApp(I18n::Message appName) {
   }
 }
 
+namespace {
+
+// The assets are not aligned: an unaligned uint32_t access faults on the device
+uint32_t readUnaligned32(uintptr_t address) {
+  const volatile uint8_t* p = reinterpret_cast<const volatile uint8_t*>(address);
+  return static_cast<uint32_t>(p[0]) | (static_cast<uint32_t>(p[1]) << 8) |
+         (static_cast<uint32_t>(p[2]) << 16) |
+         (static_cast<uint32_t>(p[3]) << 24);
+}
+
+}  // namespace
+
+uint32_t ThemeManager::paletteColorCount(const ThemeEntry* e) {
+  if (e == nullptr || !e->isPalette || e->paletteOffset == 0 ||
+      e->paletteSize < k_paletteHeaderSize) {
+    return 0;
+  }
+  const uintptr_t palette = areaBase() + e->paletteOffset;
+  if (readUnaligned32(palette) != k_paletteMagic) {
+    return 0;
+  }
+  const uint32_t count = readUnaligned32(palette + 4);
+  if (count > (e->paletteSize - k_paletteHeaderSize) / k_paletteRecordSize) {
+    return 0;
+  }
+  return count;
+}
+
 bool ThemeManager::hasPalette() {
-  const ThemeEntry* e = currentEntry();
-  return e != nullptr && e->isPalette && e->paletteOffset != 0;
+  return paletteColorCount(currentEntry()) > 0;
 }
 
 void ThemeManager::applyPalette() {
@@ -319,28 +346,27 @@ void ThemeManager::applyPalette() {
     return;
   }
   const ThemeEntry* e = currentEntry();
-  // Raw uint32s written by encode_palette() in generate_theme.py: one
-  // 0x00RRGGBB value per color, already in the exact format KDColor::RGB24
-  // expects, so no bit-shuffling needed here.
-  /* The palette can start at any address (right after a wallpaper blob), so it
-   * is read byte by byte: an unaligned uint32_t access faults on the device. */
-  const volatile uint8_t* rawColors =
-      reinterpret_cast<const volatile uint8_t*>(areaBase() +
-                                                e->paletteOffset);
-  size_t count = e->paletteSize / sizeof(uint32_t);
-  size_t n = count < Escher::SaltyPalette::numberOfSlots()
-                 ? count
-                 : Escher::SaltyPalette::numberOfSlots();
+  const uintptr_t records =
+      areaBase() + e->paletteOffset + k_paletteHeaderSize;
+  const uint32_t count = paletteColorCount(e);
 
-  KDColor colors[Escher::SaltyPalette::numberOfSlots()];
-  for (size_t i = 0; i < n; i++) {
-    const volatile uint8_t* c = rawColors + i * sizeof(uint32_t);
-    colors[i] = KDColor::RGB24(static_cast<uint32_t>(c[0]) |
-                               (static_cast<uint32_t>(c[1]) << 8) |
-                               (static_cast<uint32_t>(c[2]) << 16) |
-                               (static_cast<uint32_t>(c[3]) << 24));
+  /* Colors are given by name, as the theme describes them: this build only
+   * knows what each name means, not which colors a theme has. A color of the
+   * theme this build has no name for is ignored, one the theme does not
+   * provide keeps its default value. */
+  Escher::SaltyPalette::Begin();
+  for (uint32_t i = 0; i < count; i++) {
+    const uintptr_t record = records + i * k_paletteRecordSize;
+    char name[k_paletteNameSize];
+    const volatile uint8_t* raw = reinterpret_cast<const volatile uint8_t*>(record);
+    for (size_t j = 0; j < k_paletteNameSize; j++) {
+      name[j] = static_cast<char>(raw[j]);
+    }
+    name[k_paletteNameSize - 1] = 0;
+    Escher::SaltyPalette::Set(
+        name, KDColor::RGB24(readUnaligned32(record + k_paletteNameSize)));
   }
-  Escher::SaltyPalette::Apply(colors, n);
+  Escher::SaltyPalette::End();
 }
 
 int ThemeManager::defaultCircleLevel() {

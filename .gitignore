@@ -17,10 +17,7 @@ ion/src/simulator/ios/GoogleAnalyticsServices/
 ion/src/device/epsilon-core
 CLAUDE.local.md
 zperso/
-themes/*
-!themes/epsilon/
-!themes/kawaii/
-!themes/omega/
-!themes/generate_theme.py
-.prettierignore
+themes/output/
+themes/themes/test/
+themes/themes/test.json
 release/

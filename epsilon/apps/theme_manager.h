@@ -56,7 +56,7 @@ class ThemeManager {
 
   // --- Icons of the CURRENTLY SELECTED theme --------------------------
   // Maps a builtin app's name to its theme icon slot (0..ThemeIconCount-1),
-  // matching the FIXED_ICON_FILES order in generate_theme.py. Returns -1 if
+  // matching the FIXED_ICON_FILES order in generate_themes.py. Returns -1 if
   // this app has no themed-icon slot (e.g. unknown/new app).
   static int iconIndexForApp(I18n::Message appName);
 
@@ -93,17 +93,29 @@ class ThemeManager {
   // can have isPalette == 0, e.g. a theme with only a wallpaper).
   static bool hasPalette();
 
-  // Reads the currently selected theme's palette blob (raw 0x00RRGGBB
-  // uint32s, see encode_palette() in generate_theme.py) and pushes it
-  // into Escher::Palette::ApplyPalette(). If the current theme has no
-  // palette (including the virtual "Default" theme), resets Escher's
-  // colors to their compiled-in defaults instead of leaving a previously
-  // applied theme's colors in place.
+  /* Reads the currently selected theme's palette blob and gives its colors,
+   * by name, to Escher::SaltyPalette. If the current theme has no palette
+   * (including the virtual "Default" theme), resets Escher's colors to their
+   * compiled-in defaults instead of leaving a previously applied theme's
+   * colors in place.
+   *
+   * The blob is self-describing (see encode_palette() in generate_themes.py),
+   * so what a theme contains is only decided by the Theme Area, never by the
+   * build: uint32 magic, uint32 count, then `count` records of
+   *   char name[32] (NUL-terminated), uint32 color (0x00RRGGBB),
+   * little-endian and unaligned (read byte by byte). */
+  static constexpr uint32_t k_paletteMagic = 0x324C4150;  // "PAL2"
+  static constexpr size_t k_paletteHeaderSize = 8;
+  static constexpr size_t k_paletteNameSize = 32;
+  static constexpr size_t k_paletteRecordSize = k_paletteNameSize + 4;
+  // Number of colors of a theme's palette, 0 if it has none or it is invalid
+  static uint32_t paletteColorCount(
+      const Ion::Device::Board::Config::ThemeEntry* e);
   static void applyPalette();
 
   // --- Variables of the CURRENTLY SELECTED theme ----------------------
   // Read directly from the ThemeEntry (see VARIABLE_DEFS in
-  // generate_theme.py); return the same default as an unflashed/invalid
+  // generate_themes.py); return the same default as an unflashed/invalid
   // Theme Area (0) when there is no current entry, so callers never need
   // to check isValid()/hasXxx() first.
   static int defaultCircleLevel();

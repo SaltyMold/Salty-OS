@@ -120,6 +120,11 @@ namespace Escher {
   X(PythonText)                    \
   X(PythonKeyword)                 \
   X(PythonGutterBackground)        \
+  X(PythonComment)                 \
+  X(PythonNumber)                  \
+  X(PythonOperator)                \
+  X(PythonString)                  \
+  X(PythonAutocomplete)            \
   X(MagnifyIndicator)
 
 /* Fixed components: color is the same in all themes.
@@ -135,12 +140,7 @@ namespace Escher {
   X(BasicBlue, BasicColor::Blue)                  \
   X(BasicYellow, BasicColor::Yellow)              \
   X(BasicOrange, BasicColor::Orange)              \
-  X(BasicPurple, BasicColor::Purple)              \
-  X(PythonComment, Palette::PYTHON_KhakiGray)     \
-  X(PythonNumber, Palette::PYTHON_DarkCyan)       \
-  X(PythonOperator, Palette::PYTHON_RaspberryRed) \
-  X(PythonString, Palette::PYTHON_DarkBlue)       \
-  X(PythonAutocomplete, Palette::PYTHON_GrayMiddle)
+  X(BasicPurple, BasicColor::Purple)
 
 enum class ThemeComponent : uint8_t {
 #define X(name) name,

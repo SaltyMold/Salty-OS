@@ -60,18 +60,20 @@ void ThemeDetailController::describe(RowPicker* p) const {
 
   p->section(M::SaltySettingsSectionPalette);
   if (HasPalette(e)) {
-    const uintptr_t paletteAddress = ThemeManager::areaBase() + e->paletteOffset;
-    const uint32_t colorCount = e->paletteSize / sizeof(uint32_t);
+    // The palette lists its colors by name: shown as the theme describes them
+    const uintptr_t records = ThemeManager::areaBase() + e->paletteOffset +
+                              ThemeManager::k_paletteHeaderSize;
+    const uint32_t colorCount = ThemeManager::paletteColorCount(e);
     const uint32_t slots = Escher::SaltyPalette::numberOfSlots();
     p->row(M::SaltySettingsColors).dec(colorCount).str(" / ").dec(slots);
     p->row(M::SaltySettingsOffset).str("0x").hex(e->paletteOffset);
-    const uint32_t shown = colorCount < slots ? colorCount : slots;
-    for (uint32_t i = 0; i < shown; i++) {
+    for (uint32_t i = 0; i < colorCount; i++) {
+      const uintptr_t record = records + i * ThemeManager::k_paletteRecordSize;
+      // Names are NUL-terminated in the Theme Area (see generate_themes.py)
+      const char* name = reinterpret_cast<const char*>(record);
       const uint32_t color =
-          ReadUnaligned32(paletteAddress + i * sizeof(uint32_t)) & 0xFFFFFF;
-      p->colorRow(SaltyInfo::k_paletteSlotNames[i], color)
-          .str("#")
-          .hex(color, 6);
+          ReadUnaligned32(record + ThemeManager::k_paletteNameSize) & 0xFFFFFF;
+      p->colorRow(name, color).str("#").hex(color, 6);
     }
   } else {
     p->row(M::SaltySettingsSectionPalette).message(M::SaltySettingsNone);

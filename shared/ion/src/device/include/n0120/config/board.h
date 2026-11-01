@@ -163,7 +163,7 @@ constexpr uint32_t ThemeAreaEndSlotA = ThemeAreaStartSlotA + ThemeAreaSize;
 constexpr uint32_t ThemeAreaEndSlotB = ThemeAreaStartSlotB + ThemeAreaSize;
 
 constexpr uint32_t ThemeAreaHeaderMagic = 0x87654321;
-constexpr uint32_t ThemeAreaHeaderVersion = 4;
+constexpr uint32_t ThemeAreaHeaderVersion = 5;
 
 constexpr uint32_t ThemeCount = 256;
 constexpr uint32_t ThemeIconCount = 12;

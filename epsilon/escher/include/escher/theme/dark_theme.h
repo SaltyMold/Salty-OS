@@ -119,6 +119,11 @@ constexpr static ThemeContainer k_darkTheme =
                    .PythonText = Palette::White,
                    .PythonKeyword = Palette::DARK_Red,
                    .PythonGutterBackground = Palette::DARK_AxisSecondary,
+                   .PythonComment = Palette::PYTHON_KhakiGray,
+                   .PythonNumber = Palette::PYTHON_DarkCyan,
+                   .PythonOperator = Palette::PYTHON_RaspberryRed,
+                   .PythonString = Palette::PYTHON_DarkBlue,
+                   .PythonAutocomplete = Palette::PYTHON_GrayMiddle,
                    .MagnifyIndicator = Palette::White};
 
 /*  The title bar color need to be the same as the theme main color, so that the

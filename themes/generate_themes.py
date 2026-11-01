@@ -1,5 +1,40 @@
 #!/usr/bin/env python3
-"""Generate a Theme Area binary from one or more theme folders.
+"""Generate a Theme Area binary from one or more themes, given by name.
+
+    python3 generate_themes.py epsilon
+    python3 generate_themes.py epsilon kawaii omega -o output/theme_area.bin
+    python3 generate_themes.py                      # every theme of themes/themes/
+    python3 generate_themes.py --list               # available theme names
+
+Layout of the themes folder (a theme is a JSON file + a folder of images, both
+named after the theme):
+
+    themes
+    ├── generate_themes.py
+    ├── themes_manager.py
+    └── themes
+        ├── epsilon
+        │   ├── calculation_icon.png        (see FIXED_ICON_FILES)
+        │   ├── ...
+        │   └── wallpaper.png               (optional)
+        └── epsilon.json
+
+The JSON is the very same format as the default theme that generates the
+palette of the OS (see themes_manager.py): the name, a few variables, and the
+colors, with the core colors first and then one group of colors per app
+(Calculation, Python, Graph, Elements...). A theme only lists the colors it
+changes, every other color comes from themes/themes/epsilon.json (an "@Name"
+default follows the color the theme gives to Name):
+
+    {
+      "name": "Ocean",                              (<= 15 characters)
+      "variables": {"defaultCircleLevel": 2, "isAppNameBackgroundHover": 1},
+      "colors": {
+        "YellowDark": "1f6feb",                     core color
+        "Python": {"Keyword": "d6336c"},            PythonKeyword, Python app only
+        "Graph": {"Curve": "e8590c"}                GraphCurve, Graph app only
+      }
+    }
 
 The binary layout matches the ThemeAreaHeader/ThemeEntry structures declared
 in: shared/ion/src/device/include/n0120/config/board.h
@@ -17,7 +52,7 @@ in: shared/ion/src/device/include/n0120/config/board.h
       uint8_t  isIcons;
       uint8_t  defaultCircleLevel;
       uint8_t  isAppNameBackgroundHover;
-      uint8_t  reserved[4];
+      uint8_t  reserved[3];
       uint32_t wallpaperOffset;
       uint32_t wallpaperSize;
       uint32_t paletteOffset;
@@ -29,9 +64,20 @@ in: shared/ion/src/device/include/n0120/config/board.h
 Binary layout produced by this script:
 
     [ThemeAreaHeader]            12 bytes, at ThemeAreaStart + 0
-    [ThemeEntry] * themeCount    132 bytes each, immediately after the header
+    [ThemeEntry] * themeCount    136 bytes each, immediately after the header
     [asset data]                 wallpapers / palettes / icons, back to back
-    [zero padding]                up to THEME_AREA_SIZE (256 KiB)
+    [zero padding]                up to THEME_AREA_SIZE (1.5 MiB)
+
+The palette of a theme is self-describing: it carries the NAME of each color
+(core colors, then the colors of each app, as in themes/themes/epsilon.json), so
+the firmware needs nothing from the build to apply it. Changing a theme, or
+the default theme, only needs a new Theme Area, never a rebuild. A color the
+firmware has no name for is ignored, a color the palette does not carry keeps
+the default value compiled in the firmware.
+
+    uint32 magic ("PAL2"), uint32 count, then count records of
+    { char name[32] (NUL-terminated), uint32 color (0x00RRGGBB) }
+    little-endian, back to back, without alignment.
 
 All offset fields inside a ThemeEntry (wallpaperOffset, paletteOffset,
 iconOffsets[i]) are ABSOLUTE byte offsets from the start of the Theme Area
@@ -40,17 +86,6 @@ iconOffsets[i]) are ABSOLUTE byte offsets from the start of the Theme Area
 which is always safe because byte 0 of the area is the header's magic field
 and can never be a real asset.
 
-Usage:
-    python generate_theme.py input output.bin
-    python generate_theme.py input/1 output.bin
-
-Each theme folder may contain:
-    - name.txt
-    - palette.txt        (up to 64 lines: "<name> 0x<RRGGBB>")
-    - variables.txt       (optional, "<name> <int>" lines, see VARIABLE_DEFS)
-    - wallpaper.png       (optional)
-    - <fixed icon names>.png (optional, up to 12, see FIXED_ICON_FILES)
-
 The generated .bin can be flashed directly in the Theme Area region.
 A human-readable `<output>.txt` report is written alongside it.
 """
@@ -58,11 +93,13 @@ A human-readable `<output>.txt` report is written alongside it.
 from __future__ import annotations
 
 import argparse
-import re
 import struct
+import sys
 from pathlib import Path
 
 import lz4.block
+
+import themes_manager as tm
 
 try:
     import png
@@ -79,12 +116,15 @@ except ImportError:  # pragma: no cover - fallback for minimal environments
 # way to parse the C++ header automatically here.
 # --------------------------------------------------------------------------
 MAGIC = 0x87654321
-VERSION = 4
+VERSION = 5
 THEME_COUNT_MAX = 256
 THEME_ICON_COUNT = 12
 THEME_NAME_LENGTH = 16
-THEME_COLOR_COUNT = 64
 THEME_AREA_SIZE = int(1.5 * 1024 * 1024)
+
+# Palette blob, see ThemeManager::paletteColorCount in apps/theme_manager.h
+PALETTE_MAGIC = 0x324C4150  # "PAL2"
+PALETTE_NAME_SIZE = 32
 
 
 # struct ThemeAreaHeader { uint32_t magic, version, themeCount; }
@@ -97,15 +137,14 @@ HEADER_SIZE = struct.calcsize(HEADER_FORMAT)  # 12
 #   uint32_t x4; uint32_t[12]; uint32_t[12];
 # }
 ENTRY_FORMAT = f"<{THEME_NAME_LENGTH}sBBBBBBBBIIII{THEME_ICON_COUNT}I{THEME_ICON_COUNT}I"
-ENTRY_SIZE = struct.calcsize(ENTRY_FORMAT)  # 136
+ENTRY_SIZE = struct.calcsize(ENTRY_FORMAT)  # 132
 
 WALLPAPER_FILE = "wallpaper.png"
-VARIABLES_FILE = "variables.txt"
 
-# Known theme variables: name -> (default, min, max). generate_theme.py
-# rejects any name in variables.txt that isn't listed here, and any value
-# out of range, so a typo fails loudly at generation time instead of being
-# silently ignored on-device.
+# Known theme variables: name -> (default, min, max). generate_themes.py
+# rejects any name in the "variables" of a theme that isn't listed here, and any
+# value out of range, so a typo fails loudly at generation time instead of
+# being silently ignored on-device.
 VARIABLE_DEFS: dict[str, dict[str, int]] = {
     "defaultCircleLevel": {"default": 0, "min": 0, "max": 7},
     "isAppNameBackgroundHover": {"default": 0, "min": 0, "max": 1},
@@ -143,11 +182,14 @@ class AssetInfo:
 
 
 class ThemeReport:
-    def __init__(self, name: str, dir_path: Path):
+    def __init__(self, name: str, json_path: Path, assets_dir: Path):
         self.name = name
-        self.dir_path = dir_path
+        self.json_path = json_path
+        self.assets_dir = assets_dir
         self.entry_offset = 0
         self.color_count = 0
+        # group name ("" = core) -> (colors the theme sets, colors of the group)
+        self.group_counts: dict[str, tuple[int, int]] = {}
         self.palette_asset: AssetInfo | None = None
         self.wallpaper_asset: AssetInfo | None = None
         self.icon_assets: list[AssetInfo] = []
@@ -169,70 +211,60 @@ class ThemeReport:
 # --------------------------------------------------------------------------
 # Palette
 # --------------------------------------------------------------------------
-def parse_palette_file(path: Path) -> list[int]:
-    if not path.exists():
-        raise FileNotFoundError(f"Missing palette file: {path}")
-
-    values: list[int] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        match = re.match(r"^\s*(\S+)\s+0x([0-9A-Fa-f]+)\s*$", line)
-        if not match:
-            raise ValueError(f"Invalid palette line: {line!r} in {path}")
-        color = int(match.group(2), 16)
-        if color < 0 or color > 0xFFFFFF:
-            raise ValueError(f"Palette value out of range: {line!r}")
-        values.append(color)
-
-    if not values:
-        raise ValueError(f"No palette values found in {path}")
-    if len(values) > THEME_COLOR_COUNT:
-        raise ValueError(
-            f"Too many palette entries in {path}: {len(values)} > {THEME_COLOR_COUNT}"
-        )
-
-    return values
+def encode_palette(names: list[str], colors: list[int]) -> bytes:
+    # Header, then one { name, color } record per color. The color is a uint32
+    # (0x00RRGGBB, little-endian). Records are not aligned: the firmware reads
+    # them byte by byte.
+    assert len(names) == len(colors)
+    blob = struct.pack("<II", PALETTE_MAGIC, len(colors))
+    for name, color in zip(names, colors):
+        raw = name.encode("ascii")
+        if len(raw) >= PALETTE_NAME_SIZE:
+            raise ValueError(f"color name {name!r} is too long ({PALETTE_NAME_SIZE - 1} max)")
+        blob += raw.ljust(PALETTE_NAME_SIZE, b"\x00") + struct.pack("<I", color)
+    return blob
 
 
-def encode_palette(colors: list[int]) -> bytes:
-    # One uint32 per color (0x00RRGGBB, little-endian). This wastes one byte
-    # per entry compared to tightly-packed RGB888 (3 bytes), but keeps every
-    # entry 4-byte aligned for cheap direct indexing on the Cortex-M4.
-    return b"".join(struct.pack("<I", color) for color in colors)
+def palette_group_counts(theme: tm.Theme, default: tm.Theme) -> dict[str, tuple[int, int]]:
+    """For each group of the default theme ("" = core colors): how many of its
+    colors this theme sets itself, and how many it has in total."""
+    provided = set(theme.color_map())
+    counts: dict[str, list[int]] = {}
+    for entry in default.colors:
+        pair = counts.setdefault(entry.group, [0, 0])
+        pair[1] += 1
+        if entry.name in provided:
+            pair[0] += 1
+    return {group: (own, total) for group, (own, total) in counts.items()}
 
 
 # --------------------------------------------------------------------------
 # Variables
 # --------------------------------------------------------------------------
-def parse_variables_file(path: Path) -> dict[str, int]:
-    """Parses "<name> <int>" lines against VARIABLE_DEFS. Missing file or
-    missing names fall back to their default; unknown names or out-of-range
-    values raise, so a typo in a theme's variables.txt fails at generation
-    time instead of silently doing nothing on-device."""
+def parse_variables(raw: dict, where: str) -> dict[str, int]:
+    """Checks the "variables" of a theme against VARIABLE_DEFS. Missing names
+    fall back to their default; unknown names or out-of-range values raise, so a
+    typo in a theme fails at generation time instead of silently doing nothing
+    on-device."""
     values = {name: spec["default"] for name, spec in VARIABLE_DEFS.items()}
-    if not path.exists():
-        return values
+    if not isinstance(raw, dict):
+        raise ValueError(f"{where}: \"variables\" must be an object")
 
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
+    for name, raw_value in raw.items():
+        if name.startswith("_"):
             continue
-        match = re.match(r"^\s*(\S+)\s+(-?\d+)\s*$", line)
-        if not match:
-            raise ValueError(f"Invalid variables line: {line!r} in {path}")
-        name, raw_value = match.group(1), int(match.group(2))
         if name not in VARIABLE_DEFS:
             raise ValueError(
-                f"Unknown variable {name!r} in {path} "
+                f"Unknown variable {name!r} in {where} "
                 f"(known: {', '.join(VARIABLE_DEFS)})"
             )
+        if isinstance(raw_value, bool) or not isinstance(raw_value, int):
+            raise ValueError(f"{name} must be an integer in {where}")
         spec = VARIABLE_DEFS[name]
         if not (spec["min"] <= raw_value <= spec["max"]):
             raise ValueError(
                 f"{name}={raw_value} out of range "
-                f"[{spec['min']}, {spec['max']}] in {path}"
+                f"[{spec['min']}, {spec['max']}] in {where}"
             )
         values[name] = raw_value
 
@@ -325,24 +357,29 @@ def png_to_lz4_image_blob(png_path: Path) -> tuple[bytes, int, tuple[int, int]]:
 # --------------------------------------------------------------------------
 # Theme discovery / assembly
 # --------------------------------------------------------------------------
-def sanitize_name(raw: str) -> str:
-    name = raw.strip().splitlines()[0].strip()
+def sanitize_name(raw: str, report: ThemeReport) -> str:
+    name = raw.strip().splitlines()[0].strip() if raw.strip() else ""
     if not name:
-        raise ValueError("Theme name is empty")
-    name = name[: THEME_NAME_LENGTH - 1]
+        raise ValueError(f"{report.json_path}: the theme name is empty")
+    if len(name) > THEME_NAME_LENGTH - 1:
+        report.warnings.append(
+            f"Name {name!r} is longer than {THEME_NAME_LENGTH - 1} characters, "
+            f"it is cut on the device."
+        )
+        name = name[: THEME_NAME_LENGTH - 1]
     return name
 
 
-def choose_wallpaper(theme_dir: Path) -> Path | None:
-    wallpaper_path = theme_dir / WALLPAPER_FILE
+def choose_wallpaper(assets_dir: Path) -> Path | None:
+    wallpaper_path = assets_dir / WALLPAPER_FILE
     return wallpaper_path if wallpaper_path.exists() else None
 
 
-def choose_icons(theme_dir: Path) -> tuple[list[Path], list[str]]:
+def choose_icons(assets_dir: Path) -> tuple[list[Path], list[str]]:
     found: list[Path] = []
     missing: list[str] = []
     for file_name in FIXED_ICON_FILES:
-        candidate = theme_dir / file_name
+        candidate = assets_dir / file_name
         if candidate.exists():
             found.append(candidate)
         else:
@@ -350,19 +387,28 @@ def choose_icons(theme_dir: Path) -> tuple[list[Path], list[str]]:
     return found, missing
 
 
-def build_theme(theme_dir: Path, asset_cursor: int,
-                 output_bytes: bytearray) -> tuple[bytes, ThemeReport, int]:
+def build_theme(theme_name: str, default: tm.Theme, asset_cursor: int,
+                output_bytes: bytearray) -> tuple[bytes, ThemeReport, int]:
     """Appends this theme's asset bytes to `output_bytes` (already positioned
     at `asset_cursor` inside the final Theme Area) and returns the packed
     ThemeEntry bytes, a ThemeReport for the summary, and the new cursor."""
 
-    name = sanitize_name((theme_dir / "name.txt").read_text(encoding="utf-8"))
+    json_path = tm.theme_json_path(theme_name)
+    assets_dir = tm.theme_assets_dir(theme_name)
+    theme = tm.load_theme(json_path)
+
+    report = ThemeReport(theme.name, json_path, assets_dir)
+    name = sanitize_name(theme.name, report)
+    report.name = name
     name_bytes = name.encode("ascii", errors="ignore")[: THEME_NAME_LENGTH - 1]
 
-    report = ThemeReport(name, theme_dir)
+    if not assets_dir.is_dir():
+        report.warnings.append(
+            f"No folder {assets_dir.relative_to(tm.ROOT)}: no wallpaper, no icons."
+        )
 
     # --- Wallpaper -------------------------------------------------------
-    wallpaper_path = choose_wallpaper(theme_dir)
+    wallpaper_path = choose_wallpaper(assets_dir)
     wallpaper_offset = 0
     wallpaper_size = 0
     is_wallpaper = 0
@@ -373,28 +419,25 @@ def build_theme(theme_dir: Path, asset_cursor: int,
         output_bytes.extend(blob)
         asset_cursor += wallpaper_size
         is_wallpaper = 1
-        report.wallpaper_asset = AssetInfo("wallpaper.png", wallpaper_offset,
+        report.wallpaper_asset = AssetInfo(WALLPAPER_FILE, wallpaper_offset,
                                             wallpaper_size, raw_size, dims)
     else:
-        report.warnings.append("No wallpaper.png found - theme will have no wallpaper.")
+        report.warnings.append(f"No {WALLPAPER_FILE} found - theme will have no wallpaper.")
 
-    # --- Palette -----------------------------------------------------------
-    colors = parse_palette_file(theme_dir / "palette.txt")
-    palette_data = encode_palette(colors)
+    # --- Palette: core colors + one group of colors per app ----------------
+    colors = tm.slot_values(theme, default)
+    palette_data = encode_palette([e.name for e in default.colors], colors)
     palette_offset = asset_cursor
     palette_size = len(palette_data)
     output_bytes.extend(palette_data)
     asset_cursor += palette_size
     is_palette = 1
     report.color_count = len(colors)
-    report.palette_asset = AssetInfo("palette.txt", palette_offset, palette_size)
-    if len(colors) < THEME_COLOR_COUNT:
-        report.warnings.append(
-            f"Palette has only {len(colors)}/{THEME_COLOR_COUNT} colors defined."
-        )
+    report.group_counts = palette_group_counts(theme, default)
+    report.palette_asset = AssetInfo(json_path.name, palette_offset, palette_size)
 
     # --- Icons -------------------------------------------------------------
-    icon_paths, missing_icons = choose_icons(theme_dir)
+    icon_paths, missing_icons = choose_icons(assets_dir)
     report.missing_icons = missing_icons
     icon_offsets = [0] * THEME_ICON_COUNT
     icon_sizes = [0] * THEME_ICON_COUNT
@@ -403,7 +446,7 @@ def build_theme(theme_dir: Path, asset_cursor: int,
 
     # icon_paths follows the fixed FIXED_ICON_FILES order (choose_icons keeps it),
     # so index in FIXED_ICON_FILES == index in ThemeEntry.iconOffsets/iconSizes.
-    fixed_index_by_path = {theme_dir / n: i for i, n in enumerate(FIXED_ICON_FILES)}
+    fixed_index_by_path = {assets_dir / n: i for i, n in enumerate(FIXED_ICON_FILES)}
     for icon_path in icon_paths:
         index = fixed_index_by_path[icon_path]
         blob, raw_size, dims = png_to_lz4_image_blob(icon_path)
@@ -428,7 +471,7 @@ def build_theme(theme_dir: Path, asset_cursor: int,
         )
 
     # --- Variables -----------------------------------------------------
-    variables = parse_variables_file(theme_dir / VARIABLES_FILE)
+    variables = parse_variables(theme.variables, str(json_path))
     report.variables = variables
 
     entry = struct.pack(
@@ -447,46 +490,15 @@ def build_theme(theme_dir: Path, asset_cursor: int,
     return entry, report, asset_cursor
 
 
-def resolve_theme_dir(theme_dir: Path) -> Path:
-    candidates: list[Path] = []
-    if theme_dir.is_absolute():
-        candidates.append(theme_dir)
-    else:
-        candidates.extend([
-            Path.cwd() / theme_dir,
-            Path(__file__).resolve().parent.parent / theme_dir,
-            Path(__file__).resolve().parents[2] / theme_dir,
-        ])
-
-    for candidate in candidates:
-        if candidate.exists() and candidate.is_dir():
-            return candidate
-
-    raise FileNotFoundError(f"Theme directory not found: {theme_dir}")
-
-
-def discover_theme_dirs(root: Path | None = None, explicit_dirs: list[Path] | None = None) -> list[Path]:
-    if explicit_dirs:
-        return [resolve_theme_dir(p) for p in explicit_dirs]
-
-    root = root or Path("input")
-    if (root / "name.txt").exists() or (root / "palette.txt").exists():
-        return [root]
-    dirs = [p for p in sorted(root.iterdir()) if p.is_dir()]
-    if not dirs:
-        raise FileNotFoundError(f"No theme directories found in {root}")
-    return dirs
-
-
 # --------------------------------------------------------------------------
 # Top-level generation
 # --------------------------------------------------------------------------
-def generate_theme_area(input_dir: Path, output_path: Path, explicit_dirs: list[Path] | None = None) -> None:
-    theme_dirs = discover_theme_dirs(input_dir, explicit_dirs)
-    if len(theme_dirs) > THEME_COUNT_MAX:
-        raise ValueError(f"Too many themes: {len(theme_dirs)} > {THEME_COUNT_MAX}")
+def generate_theme_area(theme_names: list[str], output_path: Path) -> None:
+    default = tm.load_default()
+    if len(theme_names) > THEME_COUNT_MAX:
+        raise ValueError(f"Too many themes: {len(theme_names)} > {THEME_COUNT_MAX}")
 
-    table_size = len(theme_dirs) * ENTRY_SIZE
+    table_size = len(theme_names) * ENTRY_SIZE
     asset_region_start = HEADER_SIZE + table_size
     asset_cursor = asset_region_start
 
@@ -494,8 +506,8 @@ def generate_theme_area(input_dir: Path, output_path: Path, explicit_dirs: list[
     entries: list[bytes] = []
     reports: list[ThemeReport] = []
 
-    for index, theme_dir in enumerate(theme_dirs):
-        entry, report, asset_cursor = build_theme(theme_dir, asset_cursor, payload)
+    for index, theme_name in enumerate(theme_names):
+        entry, report, asset_cursor = build_theme(theme_name, default, asset_cursor, payload)
         report.entry_offset = HEADER_SIZE + index * ENTRY_SIZE
         entries.append(entry)
         reports.append(report)
@@ -510,7 +522,7 @@ def generate_theme_area(input_dir: Path, output_path: Path, explicit_dirs: list[
 
     final = bytearray(THEME_AREA_SIZE)  # zero-filled
 
-    struct.pack_into(HEADER_FORMAT, final, 0, MAGIC, VERSION, len(theme_dirs))
+    struct.pack_into(HEADER_FORMAT, final, 0, MAGIC, VERSION, len(theme_names))
 
     for index, entry in enumerate(entries):
         start = HEADER_SIZE + index * ENTRY_SIZE
@@ -523,14 +535,19 @@ def generate_theme_area(input_dir: Path, output_path: Path, explicit_dirs: list[
 
     summary_path = _summary_path_for(output_path)
     summary_path.write_text(
-        render_summary(theme_dirs, reports, asset_region_start, len(payload), total_used),
+        render_summary(reports, len(default.colors), asset_region_start,
+                       len(payload), total_used),
         encoding="utf-8",
     )
 
     print(f"Wrote {len(final)} bytes to {output_path}")
     print(f"Wrote report to {summary_path}")
-    print(f"Themes: {len(theme_dirs)}  |  used {total_used}/{THEME_AREA_SIZE} bytes "
+    print(f"Themes: {', '.join(r.name for r in reports)}")
+    print(f"Themes: {len(theme_names)}  |  used {total_used}/{THEME_AREA_SIZE} bytes "
           f"({100 * total_used / THEME_AREA_SIZE:.1f}%)")
+    warning_count = sum(len(r.warnings) for r in reports)
+    if warning_count:
+        print(f"{warning_count} warning(s), see {summary_path}")
 
 
 def _summary_path_for(output_path: Path) -> Path:
@@ -548,7 +565,7 @@ def human_size(n: int) -> str:
     return f"{n} B ({n / 1024:.2f} KiB)"
 
 
-def render_summary(theme_dirs: list[Path], reports: list[ThemeReport],
+def render_summary(reports: list[ThemeReport], slot_count: int,
                     asset_region_start: int, payload_size: int, total_used: int) -> str:
     bar_width = 40
     lines: list[str] = []
@@ -561,11 +578,12 @@ def render_summary(theme_dirs: list[Path], reports: list[ThemeReport],
     rule()
     lines.append(f"magic              0x{MAGIC:08X}")
     lines.append(f"version            {VERSION}")
-    lines.append(f"theme_count        {len(theme_dirs)} / {THEME_COUNT_MAX}")
+    lines.append(f"theme_count        {len(reports)} / {THEME_COUNT_MAX}")
     lines.append(f"header_size        {HEADER_SIZE} bytes  (sizeof(ThemeAreaHeader))")
     lines.append(f"entry_size         {ENTRY_SIZE} bytes  (sizeof(ThemeEntry))")
-    lines.append(f"table_size         {len(theme_dirs) * ENTRY_SIZE} bytes "
-                 f"({len(theme_dirs)} x {ENTRY_SIZE})")
+    lines.append(f"table_size         {len(reports) * ENTRY_SIZE} bytes "
+                 f"({len(reports)} x {ENTRY_SIZE})")
+    lines.append(f"palette_slots      {slot_count}  (themes/themes/{tm.DEFAULT_THEME_NAME}.json)")
     lines.append(f"asset_region_start 0x{asset_region_start:06X}  "
                  f"(offset {asset_region_start} from ThemeAreaStart)")
     lines.append(f"payload_size       {human_size(payload_size)}")
@@ -582,7 +600,7 @@ def render_summary(theme_dirs: list[Path], reports: list[ThemeReport],
     for index, report in enumerate(reports):
         rule("-")
         lines.append(f"THEME {index}: \"{report.name}\"  "
-                     f"(source: {report.dir_path})")
+                     f"(source: {report.json_path.relative_to(tm.ROOT)})")
         lines.append(f"  entry offset       0x{report.entry_offset:06X} "
                      f"(+{report.entry_offset - HEADER_SIZE} in table)")
         lines.append(f"  total asset size   {human_size(report.total_size)}")
@@ -590,9 +608,12 @@ def render_summary(theme_dirs: list[Path], reports: list[ThemeReport],
 
         # Palette
         pal = report.palette_asset
-        lines.append(f"  Palette: {report.color_count}/{THEME_COLOR_COUNT} colors")
+        lines.append(f"  Palette: {report.color_count}/{slot_count} colors")
         if pal:
             lines.append(f"    offset 0x{pal.offset:06X}   size {human_size(pal.size)}")
+        lines.append("    colors set by the theme itself (the others come from the default theme):")
+        for group, (own, total) in report.group_counts.items():
+            lines.append(f"      {group or 'Core':<14} {own:>3} / {total}")
         lines.append("")
 
         # Wallpaper
@@ -639,40 +660,64 @@ def render_summary(theme_dirs: list[Path], reports: list[ThemeReport],
             lines.append("")
 
     rule()
-    lines.append(f"Flash with:  python3 ../device/dfu.py -D <output.bin> -s 0x90270000")
+    lines.append("Flash with:  python3 ../device/dfu.py -D <output.bin> -s 0x90270000")
     rule()
 
     return "\n".join(lines) + "\n"
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Generate a Theme Area binary from one or more theme folders."
+        description="Generate a Theme Area binary from themes given by name "
+                    "(themes/themes/<name>.json and themes/themes/<name>/)."
     )
     parser.add_argument(
-        "theme_dirs",
+        "themes",
         nargs="*",
-        type=Path,
-        help="Theme directory names to use instead of the default input/ folder. "
-             "Examples: kawaii omega or themes/kawaii themes/omega",
+        metavar="theme",
+        help="Names of the themes to put in the Theme Area, in this order "
+             "(example: epsilon kawaii). Every theme of themes/themes/ when "
+             "omitted.",
     )
     parser.add_argument(
         "-o",
         "--output",
         default=Path("output/theme_area.bin"),
         type=Path,
-        help="Path of the output binary",
+        help="Path of the output binary (default: output/theme_area.bin)",
+    )
+    parser.add_argument(
+        "-l",
+        "--list",
+        action="store_true",
+        help="List the available theme names and exit",
     )
     args = parser.parse_args()
 
-    if args.theme_dirs:
-        generate_theme_area(Path("input"), args.output, explicit_dirs=args.theme_dirs)
-    else:
-        generate_theme_area(Path("input"), args.output)
+    if args.list:
+        print("\n".join(tm.available_themes()))
+        return 0
+
+    names: list[str] = []
+    for raw in args.themes or tm.available_themes():
+        name = raw[:-5] if raw.endswith(".json") else raw
+        if name not in names:
+            names.append(name)
+
+    if not names:
+        print(f"ERROR: no theme found in {tm.THEMES_JSON_DIR}", file=sys.stderr)
+        return 2
+
+    try:
+        generate_theme_area(names, args.output)
+    except (tm.ThemeError, FileNotFoundError, ValueError) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 2
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
 
 
 # python3 ../device/dfu.py -D output/theme_area.bin -s 0x90270000

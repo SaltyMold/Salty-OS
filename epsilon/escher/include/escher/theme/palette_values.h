@@ -2,106 +2,119 @@
 
 #include <escher/palette.h>
 #include <kandinsky/color.h>
+#include <stddef.h>
 
 namespace Escher {
 
-/* Every Palette color read by the light theme, gathered in one struct so that a
- * light-like theme can be rebuilt at runtime from user-provided colors (see
- * SaltyPalette). The extra WallpaperColor / TextColor / TextColorHover entries
- * are Salty-OS specific (home screen wallpaper and app names). */
+/* Every color a Salty-OS theme can change, by name. This is the only list to
+ * edit by hand to add one (plus its default value in palette.h and in
+ * themes/themes/epsilon.json, see `python3 themes/themes_manager.py --check`).
+ *
+ * A flashed theme describes its palette with these very names (see
+ * generate_themes.py), the firmware looks each of them up when the theme is
+ * selected: changing, adding or removing colors in a theme, or reordering
+ * them, never needs a rebuild. The core colors come first, then one group of
+ * colors per app (group + key in the JSON = name here). The light theme is built
+ * from these values (see MakeLightTheme) and SaltyPalette fills them at runtime
+ * from the theme chosen by the user. */
+#define SALTY_PALETTE_SLOTS(X) \
+  /* Core colors */ \
+  X(YellowDark) \
+  X(YellowLightBattery) \
+  X(YellowLight) \
+  X(PurpleBright) \
+  X(PurpleDark) \
+  X(GrayWhite) \
+  X(GrayBright) \
+  X(GrayMiddle) \
+  X(GrayDarkMiddle) \
+  X(GrayDark) \
+  X(GrayVeryDark) \
+  X(GrayDarkest) \
+  X(Select) \
+  X(SelectDark) \
+  X(WallScreen) \
+  X(WallScreenDark) \
+  X(PopUpTitleBackground) \
+  X(LowBattery) \
+  X(Red) \
+  X(RedLight) \
+  X(Magenta) \
+  X(MagentaLight) \
+  X(Turquoise) \
+  X(TurquoiseLight) \
+  X(Pink) \
+  X(PinkLight) \
+  X(Blue) \
+  X(BlueLight) \
+  X(Orange) \
+  X(OrangeLight) \
+  X(Green) \
+  X(GreenLight) \
+  X(Brown) \
+  X(Purple) \
+  X(BlueishGray) \
+  X(Cyan) \
+  X(Violet) \
+  X(VioletLight) \
+  X(Mint) \
+  X(MintLight) \
+  X(TextColor) \
+  X(TextColorHover) \
+  X(WallpaperColor) \
+  X(White) \
+  X(Black) \
+  /* Calculation */ \
+  X(CalculationBorderEven) \
+  X(CalculationBorderOdd) \
+  X(CalculationBorderSelected) \
+  /* Python */ \
+  X(PythonText) \
+  X(PythonKeyword) \
+  X(PythonGutterBackground) \
+  X(PythonComment) \
+  X(PythonNumber) \
+  X(PythonOperator) \
+  X(PythonString) \
+  X(PythonAutocomplete) \
+  /* Graph */ \
+  X(GraphCurve) \
+  X(GraphCurveHatchedArea) \
+  X(GraphIntersectionArea) \
+  X(GraphTangent) \
+  X(GraphIndicator) \
+  X(GraphIndicatorSecondary) \
+  X(GraphPolarGridLabels) \
+  X(GraphPolarGridLight) \
+  X(GraphSpecialLabels) \
+  X(GraphInterestPoint) \
+  X(GraphAxisMain) \
+  X(GraphAxisLight) \
+  X(GraphAxisMedium) \
+  X(GraphAxisSecondary) \
+  X(GraphMagnifyIndicator) \
+  /* Elements */ \
+  X(ElementsConnector) \
+  X(ElementsBanner) \
+  X(ElementsBannerBorder)
+
 struct PaletteValues {
-  KDColor WallScreen;
-  KDColor WallScreenDark;
-  KDColor White;
-  KDColor Black;
-  KDColor BoxTitleBackground;
-  KDColor GrayWhite;
-  KDColor GrayMiddle;
-  KDColor Select;
-  KDColor SelectDark;
-  KDColor YellowDark;
-  KDColor PurpleBright;
-  KDColor GrayDarkMiddle;
-  KDColor GrayDark;
-  KDColor GrayVeryDark;
-  KDColor GrayBright;
-  KDColor PurpleDark;
-  KDColor Red;
-  KDColor GrayDarkest;
-  KDColor YellowLightBattery;
-  KDColor LowBattery;
-  KDColor Blue;
-  KDColor Green;
-  KDColor Magenta;
-  KDColor Turquoise;
-  KDColor Pink;
-  KDColor Orange;
-  KDColor Violet;
-  KDColor Mint;
-  KDColor RedLight;
-  KDColor BlueLight;
-  KDColor GreenLight;
-  KDColor YellowLight;
-  KDColor MagentaLight;
-  KDColor TurquoiseLight;
-  KDColor PinkLight;
-  KDColor OrangeLight;
-  KDColor VioletLight;
-  KDColor MintLight;
-  KDColor PYTHON_BlueishGray;
-  KDColor PYTHON_Red;
-  KDColor PYTHON_GrayLight;
-  // Salty-OS specific
-  KDColor TextColor;
-  KDColor TextColorHover;
-  KDColor WallpaperColor;
+#define X(name) KDColor name;
+  SALTY_PALETTE_SLOTS(X)
+#undef X
 };
 
+// What the OS uses when no flashed theme is selected, or for a color a theme does not provide
 constexpr PaletteValues k_defaultPaletteValues = {
-    .WallScreen = Palette::WallScreen,
-    .WallScreenDark = Palette::WallScreenDark,
-    .White = Palette::White,
-    .Black = Palette::Black,
-    .BoxTitleBackground = Palette::BoxTitleBackground,
-    .GrayWhite = Palette::GrayWhite,
-    .GrayMiddle = Palette::GrayMiddle,
-    .Select = Palette::Select,
-    .SelectDark = Palette::SelectDark,
-    .YellowDark = Palette::YellowDark,
-    .PurpleBright = Palette::PurpleBright,
-    .GrayDarkMiddle = Palette::GrayDarkMiddle,
-    .GrayDark = Palette::GrayDark,
-    .GrayVeryDark = Palette::GrayVeryDark,
-    .GrayBright = Palette::GrayBright,
-    .PurpleDark = Palette::PurpleDark,
-    .Red = Palette::Red,
-    .GrayDarkest = Palette::GrayDarkest,
-    .YellowLightBattery = Palette::YellowLightBattery,
-    .LowBattery = Palette::LowBattery,
-    .Blue = Palette::Blue,
-    .Green = Palette::Green,
-    .Magenta = Palette::Magenta,
-    .Turquoise = Palette::Turquoise,
-    .Pink = Palette::Pink,
-    .Orange = Palette::Orange,
-    .Violet = Palette::Violet,
-    .Mint = Palette::Mint,
-    .RedLight = Palette::RedLight,
-    .BlueLight = Palette::BlueLight,
-    .GreenLight = Palette::GreenLight,
-    .YellowLight = Palette::YellowLight,
-    .MagentaLight = Palette::MagentaLight,
-    .TurquoiseLight = Palette::TurquoiseLight,
-    .PinkLight = Palette::PinkLight,
-    .OrangeLight = Palette::OrangeLight,
-    .VioletLight = Palette::VioletLight,
-    .MintLight = Palette::MintLight,
-    .PYTHON_BlueishGray = Palette::PYTHON_BlueishGray,
-    .PYTHON_Red = Palette::PYTHON_Red,
-    .PYTHON_GrayLight = Palette::PYTHON_GrayLight,
-    .TextColor = Palette::White,
-    .TextColorHover = Palette::Black,
-    .WallpaperColor = Palette::White,
+#define X(name) .name = Palette::name,
+    SALTY_PALETTE_SLOTS(X)
+#undef X
 };
+
+constexpr size_t k_numberOfPaletteSlots = 0
+#define X(name) +1
+    SALTY_PALETTE_SLOTS(X)
+#undef X
+    ;
 
 }  // namespace Escher

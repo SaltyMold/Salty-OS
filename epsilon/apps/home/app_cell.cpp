@@ -121,7 +121,7 @@ void fillWholeCellWallpaper(KDContext* ctx, KDRect bounds, int globalX,
 //
 // - No wallpaper to blend into at all: always opaque, regardless of
 //   highlight state (nothing to show through anyway).
-// - Wallpaper present and the theme's variables.txt asks for an opaque
+// - Wallpaper present and the theme's variables ask for an opaque
 //   name background on highlight (isAppNameBackgroundHover): opaque ONLY
 //   for the currently highlighted cell (the solid YellowDark selection
 //   box). Every other, non-highlighted cell still blends into the real

@@ -8,10 +8,16 @@
   <a href="https://github.com/SaltyMold/Salty-OS"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/SaltyMold/Salty-OS?label=Stars&labelColor=292929&color=yellow&logo=github&style=for-the-badge" /></a>
 </p>
 
+> [!WARNING]  
+> The Salty-OS Website is not finished yet.
+> For now, you need to use the python scripts instead for themes and flashing.
+
+
 ## Table of Contents
 - [About](#about)
 - [Features](#features)
-- [How to install](#how-to-install)
+- [Install Salty-OS](#install-salty-os)
+- [Install themes](#install-themes)
 - [How to use](#how-to-use)
 - [How to build](#how-to-build)
 
@@ -67,7 +73,7 @@ Everything customizable via a website.
 
 Open a pull request if you want to add a feature.
 
-## How to install
+## Install Salty-OS
 
 If you're unsure what to choose, choose locked calculator.
 
@@ -78,12 +84,6 @@ If you're unsure what to choose, choose locked calculator.
 - Go on the [Salty-OS Website](https://salty-os.gabizar.top/install).
 - Go to the [Install section](https://salty-os.gabizar.top/install).
 - Follow the steps to install the userland on your calculator.
-
-### Custom themes
-
-- Go on the [Salty-OS Website](https://salty-os.gabizar.top/install).
-- Go to the [Themes section](https://salty-os.gabizar.top/themes).
-- Create your own theme or choose one of the existing themes from the community.
 
 </details>
 
@@ -105,14 +105,35 @@ If you're unsure what to choose, choose locked calculator.
 - Download SaltyOS from the [latest release](https://github.com/SaltyMold/Salty-OS/releases/latest)
 - Flash it at address `0x90020000` for slot A and `0x90420000` for slot B
 
-### Themes
-
-- Go to the [Upsilon installer](https://getupsilon.web.app/install).
-- Connect your calculator.
-- Choose "Custom binpack".
-- Create your themes with the python script `themes/generate_theme.py` of this repo.
-- Flash `theme_area.bin` at `0x90670000` for slot A and at `0x90270000` for slot B.
 </details>
+
+## Install themes
+
+### Website
+
+- Go on the [Salty-OS Website](https://salty-os.gabizar.top/install).
+- Go to the [Themes section](https://salty-os.gabizar.top/themes).
+- Create your own theme or choose one of the existing themes from the community.
+
+### Python
+
+- Create a json and a folder with the name of your theme in the `themes/themes` folder of this repo.
+```sh
+cp themes/themes/epsilon.json themes/themes/your_theme_name.json
+cp -r themes/themes/epsilon themes/themes/your_theme_name
+```
+
+- Edit the json and the icons/wallpaper in the folder.
+
+- Create your themes bin with the python script `themes/generate_themes.py` of this repo.
+```sh
+python3 themes/generate_themes.py epsilon your_theme_name
+```
+
+- Flash `theme_area.bin` at `0x90270000` for slot B and at `0x90670000` for slot A (only for unlocked calculators).
+```sh
+python3 tools/device/dfu.py -D themes/output/theme_area.bin -s 0x90270000
+```
 
 ## How to use
 
@@ -156,5 +177,5 @@ make -j$(nproc) PLATFORM=n0120 EMBED_EXTRA_DATA=1 userland.onboarding.allow3rdpa
 
 - Flash the userland to the calculator.
 ```sh
-python tools/device/dfu.py -D output/release/n0120/userland.onboarding.allow3rdparty.B.dfu -s 0x90420000
+python3 tools/device/dfu.py -D output/release/n0120/userland.onboarding.allow3rdparty.B.dfu -s 0x90420000
 ```

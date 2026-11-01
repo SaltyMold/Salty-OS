@@ -13,14 +13,12 @@ using Ion::Device::Board::Config::ThemeEntry;
 using Ion::Device::Board::Config::ThemeIconCount;
 using Ion::Device::Board::Config::ThemeNameLength;
 
-/* The names of the palette slots and of the icons come from the themes folder
- * of the repository (see generate_info.sh). If one of these checks fails, the
- * format of the themes changed: rebuild after updating themes/ and board.h. */
-static_assert(SaltyInfo::k_numberOfPaletteSlotNames ==
-                  Escher::SaltyPalette::numberOfSlots(),
-              "themes/epsilon/palette.txt and SaltyPalette do not match");
+/* The names of the icons come from the themes folder of the repository (see
+ * generate_info.sh). The names of the colors do not: a flashed palette carries
+ * them itself. If this check fails, the format of the themes changed: rebuild
+ * after updating themes/ and board.h. */
 static_assert(SaltyInfo::k_numberOfIconNames == ThemeIconCount,
-              "FIXED_ICON_FILES of generate_theme.py and board.h do not match");
+              "FIXED_ICON_FILES of generate_themes.py and board.h do not match");
 
 // Theme 0 is the virtual default theme, theme t > 0 is flashed entry t - 1
 constexpr static int k_maxThemeNameSize = ThemeNameLength + 1;
@@ -37,7 +35,7 @@ inline void ThemeName(int theme, char* out /* k_maxThemeNameSize */) {
 }
 
 /* The assets of the Theme Area are stored back to back, without any alignment
- * (see generate_theme.py): the palette of a theme that has a wallpaper starts
+ * (see generate_themes.py): the palette of a theme that has a wallpaper starts
  * right after the wallpaper blob, at any address. Dereferencing a uint32_t* on
  * such an address is a hard fault on the calculator, so everything inside the
  * assets is read byte by byte. */
@@ -90,7 +88,7 @@ inline uint32_t NumberOfIcons(const ThemeEntry* e) {
 }
 
 inline bool HasPalette(const ThemeEntry* e) {
-  return e->isPalette && e->paletteOffset != 0;
+  return ThemeManager::paletteColorCount(e) > 0;
 }
 
 }  // namespace SaltySettings

@@ -8,6 +8,7 @@
 #include <kernel/drivers/keyboard.h>
 #include <kernel/drivers/led.h>
 #include <kernel/drivers/power.h>
+#include <kernel/drivers/power_wake_policy.h>
 #include <regs/config/pwr.h>
 #include <regs/config/rcc.h>
 #include <regs/regs.h>
@@ -78,9 +79,11 @@ void suspend(bool checkIfOnOffKeyReleased) {
 
     /* A hardware event triggered a wake up, we determine if the device should
      * wake up. We wake up when:
-     * - only the power key was down
+     * - the power key is down and is the only key down (the action is the
+     *   press of the key: nothing happens when it is released)
      * - the unplugged device was plugged
-     * - the battery stopped charging */
+     * Any other event (unplug, end of charge, bounce on the release of the
+     * power key) sends the device back to sleep. See shouldWakeUp(). */
     CORTEX.SCR()->setSLEEPDEEP(false);
     if (!isLEDActive) {
       // When LED are off, the system STOPs which switchs off the PLL
@@ -95,9 +98,7 @@ void suspend(bool checkIfOnOffKeyReleased) {
 
     // Check plugging state
     USB::initGPIO();
-    /* Only check that no other keys are pressed in case the OnOff key has been
-     * relased since the wake up event. */
-    if ((scan & ~OnlyOnOffKeyDown) == Ion::Keyboard::State(0) || (!plugged && Ion::USB::isPlugged())) {
+    if (shouldWakeUp(static_cast<uint64_t>(scan), static_cast<uint64_t>(OnlyOnOffKeyDown), plugged, Ion::USB::isPlugged())) {
       // Wake up
       break;
     } else {
@@ -114,10 +115,15 @@ void suspend(bool checkIfOnOffKeyReleased) {
   Board::initPeripherals(false);
   // Update LED according to plug and charge state
   LED::updateColorWithPlugAndCharge();
-  /* If the USB has been unplugged while sleeping, the USB should have been
-   * soft disabled but as part of the USB peripheral was asleep, this could
-   * not be done before. */
+  /* The USB peripheral was asleep: put it back in the state that matches the
+   * cable, like the stock kernel does (soft disconnect = not plugged).
+   * - Plugged: connect. The host enumerates the calculator again and the
+   *   userland goes back to the data transfer mode by itself.
+   * - Unplugged: soft disconnect. This could not be done before, as part of
+   *   the USB peripheral was asleep. */
   if (Ion::USB::isPlugged()) {
+    Ion::USB::enable();
+  } else {
     Ion::USB::disable();
   }
 
@@ -125,6 +131,15 @@ void suspend(bool checkIfOnOffKeyReleased) {
    * The very next event is the OnOffEvent to notify the userland that a
    * switchOnOff has happened. */
   Keyboard::Queue::sharedQueue()->flush();
+  /* flush() forgot which keys are down, but the power key is usually still
+   * down: we woke up because of its press. The next scan (SVC scan of the
+   * userland, bounce on the key, poll timer) would then see it as a NEW press:
+   * the preemptive OnOff state would shut the device down as soon as the key
+   * is released. Resynchronize the memoized state with the keys that are really
+   * down, without queueing or preempting on it. */
+  Keyboard::scan();
+  Ion::Keyboard::popState();
+  Ion::Events::resetPendingKeyboardState();
   Keyboard::Queue::sharedQueue()->push(Ion::Keyboard::State(Ion::Keyboard::Key::OnOff));
 }
 

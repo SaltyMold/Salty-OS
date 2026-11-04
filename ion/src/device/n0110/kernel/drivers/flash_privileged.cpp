@@ -49,8 +49,8 @@ static FlashPolicy::Layout currentLayout() {
     l.externalAppsFirstSector = 1;
     l.externalAppsLastSector = 0;
   }
-  // Allowed area: after the kernel region (kernel image + persisting bytes), up to the end of the flash.
-  int firstAllowed = SectorAtAddress(slotStart + Board::Config::KernelSize);
+  // Allowed area: after the kernel image, up to the end of the flash.
+  int firstAllowed = SectorAtAddress(slotStart + Board::Config::KernelImageSize);
   int lastAllowed = TotalNumberOfSectors() - 1;
   FlashPolicy::clampExternalApps(l, firstAllowed, lastAllowed);
   return l;

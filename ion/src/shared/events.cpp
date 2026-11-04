@@ -104,6 +104,15 @@ Event sharedGetEvent(int * timeout) {
       keysSeenTransitionningFromUpToDown = state & sKeysSeenUp;
       sKeysSeenUp = ~state;
 
+      /* Shift (or Alpha) was held while other keys were used, and it has just
+       * been released: remove it, and notify the userland with a plain event. */
+      if (wasShiftReleased(state)) {
+        return Event(Keyboard::Key::Shift, false, false, false);
+      }
+      if (wasAlphaReleased(state)) {
+        return Event(Keyboard::Key::Alpha, false, false, false);
+      }
+
       if (keysSeenTransitionningFromUpToDown != 0) {
         sEventIsRepeating = false;
         resetLongPress();

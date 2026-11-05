@@ -10,7 +10,15 @@ MEMORY {
 SECTIONS {
   INCLUDE flash/prologue.ld
 
-  .text ORIGIN(KERNEL) + SIZEOF(.signed_payload_prefix) + SIZEOF(.kernel_header) + SIZEOF(.isr_vector_table): {
+  .salty_kernel_header ORIGIN(KERNEL) + SIZEOF(.signed_payload_prefix) + SIZEOF(.kernel_header) + SIZEOF(.isr_vector_table): {
+    FILL(0xFF);
+    . = ORIGIN(KERNEL) + SALTY_KERNEL_HEADER_OFFSET;
+    KEEP(*(.salty_kernel_header))
+  } >KERNEL
+
+  ASSERT(ADDR(.salty_kernel_header) <= ORIGIN(KERNEL) + SALTY_KERNEL_HEADER_OFFSET, "The vector table overflows the salty kernel header offset")
+
+  .text ADDR(.salty_kernel_header) + SIZEOF(.salty_kernel_header): {
     . = ALIGN(4);
     *(.text)
     *(.text.*)

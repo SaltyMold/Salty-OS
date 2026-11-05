@@ -6,7 +6,6 @@ DEVELOPMENT ?= 0
 
 # Custom kernel: the version is the ABI level implemented (SVC table of Epsilon 26.x)
 EPSILON_VERSION ?= 26.1.0
-PATCH_LEVEL ?= custom1
 EXTERNAL_APPS_API_LEVEL ?= 0
 EPSILON_APPS ?= calculation graph code statistics probability solver sequence regression settings
 ifeq ($(MODEL),n0100)

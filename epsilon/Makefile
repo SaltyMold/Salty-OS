@@ -16,7 +16,7 @@ CLANG_MINIMUM_VERSION := 17
 include $(PATH_haussmann)/Makefile
 
 
-SALTY_OS_VERSION ?= $(or $(shell git describe --tags --always --dirty 2>/dev/null),dev)
+SALTY_OS_VERSION ?= $(or $(shell git describe --tags --always --dirty 2>/dev/null | sed -E 's/^Salty-OS-v?([0-9][0-9.]*).*/\1/'),dev)
 SALTY_EPSILON_SOURCE_VERSION ?= 26.1.0
 SALTY_THEMES_DIRECTORY ?= ../themes
 

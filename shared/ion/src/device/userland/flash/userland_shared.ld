@@ -17,6 +17,11 @@ SECTIONS {
     KEEP(*(.isr_vector_table))
   } >FLASH_USERLAND
 
+  .salty_header : {
+    . = ALIGN(4);
+    KEEP(*(.salty_header))
+  } >FLASH_USERLAND
+
   .text : {
     . = ALIGN(4);
     *(.text)

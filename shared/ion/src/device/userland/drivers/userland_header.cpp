@@ -1,5 +1,8 @@
 #include <ion.h>
 #include <shared/drivers/board_shared.h>
+#include <apps/salty_info.h>
+#include <config/board.h>
+#include <shared/drivers/salty_header.h>
 
 #include "board.h"
 #include "persisting_bytes.h"
@@ -36,6 +39,17 @@ constexpr UserlandHeader::UserlandHeader()
 
 constexpr UserlandHeader __attribute__((section(".userland_header"), used))
 k_userlandHeader;
+
+constexpr SaltyHeader __attribute__((section(".salty_header"), used))
+k_saltyHeader = {
+    k_saltyMagic,
+    {SALTY_INFO_OS_VERSION},
+    {SALTY_INFO_COMMIT},
+    Ion::Device::Board::Config::ThemeAreaStartSlotA,
+    Ion::Device::Board::Config::ThemeAreaEndSlotA,
+    Ion::Device::Board::Config::ThemeAreaStartSlotB,
+    Ion::Device::Board::Config::ThemeAreaEndSlotB,
+    k_saltyMagic};
 
 }  // namespace Device
 

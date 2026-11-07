@@ -97,7 +97,7 @@ class Calculator : public Device {
         m_serialNumberStringDescriptor(serialNumber),
         m_microsoftOSStringDescriptor(k_microsoftOSVendorCode),
         m_workshopURLDescriptor(URLDescriptor::Scheme::HTTPS,
-                                "my.numworks.com"),
+                                "salty-os.gabizar.top"),
         m_extendedCompatIdDescriptor("WINUSB"),
         m_descriptors{makeDescriptorList(
             &m_deviceDescriptor,              // Type = Device, Index = 0

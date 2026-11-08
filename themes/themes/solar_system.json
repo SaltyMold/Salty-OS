@@ -1,0 +1,84 @@
+{
+  "name": "Solar System",
+  "variables": {
+    "defaultCircleLevel": 7,
+    "isAppNameBackgroundHover": 0
+  },
+  "colors": {
+    "_note": "Solar System theme, black and white shades only. Only the colors that differ from Epsilon are listed.",
+
+    "_title_bar": "Upsilon Toolbar / Battery",
+    "YellowDark": "1f1f1f",
+    "White": "e6e6e6",
+    "YellowLightBattery": "cccccc",
+    "LowBattery": "808080",
+
+    "_pages": "Upsilon Background (Apps, Hard, AppsSecondary) / ExpressionInput / List / Select",
+    "Background": "0a0a0a",
+    "InputBackground": "050505",
+    "WallScreen": "050505",
+    "WallScreenDark": "000000",
+    "Black": "000000",
+    "Select": "333333",
+    "SelectDark": "1f1f1f",
+    "GrayWhite": "050505",
+    "GrayBright": "333333",
+    "GrayMiddle": "333333",
+    "GrayDarkMiddle": "4d4d4d",
+
+    "_text": "Upsilon PrimaryText / SecondaryText / ApproximateSignText",
+    "PrimaryText": "ffffff",
+    "GrayDark": "999999",
+    "GrayVeryDark": "ffffff",
+    "GrayDarkest": "e6e6e6",
+
+    "_accent": "Upsilon Control",
+    "Accent": "e6e6e6",
+
+    "_headers": "Upsilon Toolbox header / Banner",
+    "PurpleBright": "4d4d4d",
+    "PurpleDark": "333333",
+    "PopUpTitleBackground": "333333",
+
+    "_home": "Upsilon Home",
+    "TextColor": "ffffff",
+    "TextColorHover": "aaaaaa",
+    "WallpaperColor": "0a0a0a",
+
+    "_data": "Gray shades for the data colors (statistics, regression...), from lightest to darkest",
+    "Red": "ffffff",
+    "Magenta": "e6e6e6",
+    "Mint": "cfcfcf",
+    "Blue": "b8b8b8",
+    "Pink": "a0a0a0",
+    "Violet": "8c8c8c",
+    "Green": "7a7a7a",
+    "Turquoise": "6b6b6b",
+    "Orange": "5c5c5c",
+
+    "Calculation": {
+      "BorderEven": "000000",
+      "BorderOdd": "0a0a0a"
+    },
+    "Python": {
+      "Text": "ffffff",
+      "Comment": "808080",
+      "Number": "cccccc",
+      "Keyword": "e6e6e6",
+      "Operator": "b3b3b3",
+      "String": "999999",
+      "GutterBackground": "050505",
+      "Autocomplete": "808080"
+    },
+    "Graph": {
+      "Curve": "ffffff",
+      "Tangent": "b3b3b3",
+      "AxisMain": "808080",
+      "AxisLight": "333333",
+      "PolarGridLabels": "999999",
+      "IntersectionArea": "999999",
+      "IndicatorSecondary": "ffffff",
+      "MagnifyIndicator": "ffffff"
+    }
+  }
+}

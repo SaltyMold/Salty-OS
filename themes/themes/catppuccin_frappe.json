@@ -1,0 +1,84 @@
+{
+  "name": "Catppuccin Frappé",
+  "variables": {
+    "defaultCircleLevel": 0,
+    "isAppNameBackgroundHover": 1
+  },
+  "colors": {
+    "_note": "Based on Upsilon's Catppuccin Frappé. Only the colors that differ from Epsilon are listed.",
+
+    "_title_bar": "Upsilon Toolbar / Battery",
+    "YellowDark": "414559",
+    "White": "b5bfe2",
+    "YellowLightBattery": "e5c890",
+    "LowBattery": "ea999c",
+
+    "_pages": "Upsilon Background (Apps, Hard, AppsSecondary) / ExpressionInput / List / Select",
+    "Background": "303446",
+    "InputBackground": "292c3c",
+    "WallScreen": "292c3c",
+    "WallScreenDark": "232634",
+    "Black": "232634",
+    "Select": "51576d",
+    "SelectDark": "414559",
+    "GrayWhite": "292c3c",
+    "GrayBright": "51576d",
+    "GrayMiddle": "51576d",
+    "GrayDarkMiddle": "626880",
+
+    "_text": "Upsilon PrimaryText / SecondaryText / ApproximateSignText",
+    "PrimaryText": "c6d0f5",
+    "GrayDark": "949cbb",
+    "GrayVeryDark": "c6d0f5",
+    "GrayDarkest": "b5bfe2",
+
+    "_accent": "Upsilon Control",
+    "Accent": "a6d189",
+
+    "_headers": "Upsilon Toolbox header / Banner",
+    "PurpleBright": "737994",
+    "PurpleDark": "626880",
+    "PopUpTitleBackground": "626880",
+
+    "_home": "Upsilon Home",
+    "TextColor": "c6d0f5",
+    "TextColorHover": "99d1db",
+    "WallpaperColor": "303446",
+
+    "_data": "Catppuccin accents for the data colors (statistics, regression...)",
+    "Red": "e78284",
+    "Blue": "8caaee",
+    "Green": "a6d189",
+    "Magenta": "ca9ee6",
+    "Turquoise": "81c8be",
+    "Pink": "f4b8e4",
+    "Orange": "ef9f76",
+    "Violet": "babbf1",
+    "Mint": "99d1db",
+
+    "Calculation": {
+      "BorderEven": "232634",
+      "BorderOdd": "303446"
+    },
+    "Python": {
+      "Text": "c6d0f5",
+      "Comment": "a6d189",
+      "Number": "e78284",
+      "Keyword": "ef9f76",
+      "Operator": "ca9ee6",
+      "String": "85c1dc",
+      "GutterBackground": "292c3c",
+      "Autocomplete": "838ba7"
+    },
+    "Graph": {
+      "Curve": "f4b8e4",
+      "Tangent": "8caaee",
+      "AxisMain": "838ba7",
+      "AxisLight": "51576d",
+      "PolarGridLabels": "949cbb",
+      "IntersectionArea": "949cbb",
+      "IndicatorSecondary": "c6d0f5",
+      "MagnifyIndicator": "c6d0f5"
+    }
+  }
+}

@@ -123,8 +123,6 @@ void AboutController::describe(RowPicker* p) const {
   p->row(M::SaltySettingsShortcutToggleExternalApps)
       .str(ShortKeyName(
           SALTY_STRINGIFY(SALTY_SHORTCUT_KEY_TOGGLE_EXTERNAL_APPS)));
-  p->row(M::SaltySettingsShortcutOpenSettings)
-      .str(ShortKeyName(SALTY_STRINGIFY(SALTY_SHORTCUT_KEY_OPEN_SETTINGS)));
 }
 
 }  // namespace SaltySettings

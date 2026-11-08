@@ -35,7 +35,7 @@ PRIVATE_SFLAGS_apps += -I$(PATH_apps)
 # Include the specific apps
 # FIXME Use flavors instead of EPSILON_APPS?
 EPSILON_APPS ?= calculation graph code statistics distributions inference solver sequence regression elements finance settings
-_SPECIAL_APPS = home on_boarding usb hardware_test salty_settings
+_SPECIAL_APPS = home on_boarding usb hardware_test
 
 ifeq ($(DEBUG),1)
 HARDWARE_CHECKUP ?= 1

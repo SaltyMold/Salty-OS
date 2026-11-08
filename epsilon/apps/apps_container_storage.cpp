@@ -54,7 +54,6 @@ union Apps {
   OnBoarding::App m_onBoardingApp;
   HardwareTest::App m_hardwareTestApp;
   USB::App m_usbApp;
-  SaltySettings::App m_saltySettingsApp;
 };
 
 void* AppsContainerStorage::currentAppBuffer() {

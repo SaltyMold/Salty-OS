@@ -70,10 +70,6 @@ Ion::ExternalApps::App AppsContainer::externalAppAtIndex(int index) {
   return Ion::ExternalApps::App(nullptr);
 }
 
-App::Snapshot* AppsContainer::saltySettingsAppSnapshot() {
-  return &m_saltySettingsSnapshot;
-}
-
 App::Snapshot* AppsContainer::hardwareTestAppSnapshot() {
   return &m_hardwareTestSnapshot;
 }

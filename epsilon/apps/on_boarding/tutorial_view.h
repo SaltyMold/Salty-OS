@@ -13,7 +13,7 @@ namespace OnBoarding {
  * keys shown come from shortcuts.h, so they follow any remapping. */
 class TutorialView : public Escher::View {
  public:
-  constexpr static int k_numberOfPages = 4;
+  constexpr static int k_numberOfPages = 3;
 
   int page() const { return m_page; }
   bool isFirstPage() const { return m_page == 0; }

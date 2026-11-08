@@ -19,10 +19,6 @@ void AppsContainer::handleShortcuts() {
     toggleExternalApps();
   }
 
-  if (active.isNewlyActive(Shortcuts::Action::OpenSettings, m_activeShortcuts)) {
-    toggleSettingsApp();
-  }
-
 #if !PLATFORM_DEVICE
   /* Simulator only: it dispatches many events while keys are held and redraws
    * instantly, so a held theme shortcut would run through every theme in a
@@ -83,10 +79,6 @@ void AppsContainer::applyPendingThemeArea() {
   if (!areaChanged && !selectionChanged) {
     return;
   }
-  if (areaChanged && activeApp() != nullptr &&
-      activeApp()->snapshot() == saltySettingsAppSnapshot()) {
-    switchToBuiltinApp(homeAppSnapshot());
-  }
   resetShiftAlphaStatus();
   ThemeManager::refreshTheme(&m_window);
 #endif
@@ -99,21 +91,4 @@ void AppsContainer::toggleExternalApps() {
     Home::App::app()->reloadAppCells();
     window()->redraw(true);
   }
-}
-
-/* Opens the Salty-OS settings, or goes back to the home screen if it is
- * already displayed. Not available during the onboarding, the hardware tests
- * or in exam mode. */
-void AppsContainer::toggleSettingsApp() {
-  if (activeApp() == nullptr || ExamModeManager::ExamMode().isActive()) {
-    return;
-  }
-  Escher::App::Snapshot* current = activeApp()->snapshot();
-  if (current == onBoardingAppSnapshot() ||
-      current == hardwareTestAppSnapshot()) {
-    return;
-  }
-  switchToBuiltinApp(current == saltySettingsAppSnapshot()
-                         ? homeAppSnapshot()
-                         : saltySettingsAppSnapshot());
 }

@@ -68,12 +68,6 @@ constexpr Page k_pages[TutorialView::k_numberOfPages] = {
      1,
      {{true, Shortcuts::Action::ToggleExternalApps,
        I18n::Message::OnBoardingToggleExternal}}},
-    {I18n::Message::OnBoardingSettingsTitle,
-     0,
-     {},
-     1,
-     {{true, Shortcuts::Action::OpenSettings,
-       I18n::Message::OnBoardingOpenSettings}}},
 };
 
 // Only the keys that can be assigned to a shortcut have an image

@@ -14,4 +14,4 @@ $(call i18n_with_universal,salty_settings/i18n/base)
 # the Makefile, git commit, icon names from the themes folder).
 $(OUTPUT_DIRECTORY)/$(PATH_apps)/salty_info.h: $(PATH_apps)/salty_settings/generate_info.sh $(SALTY_THEMES_DIRECTORY)/generate_themes.py FORCE | $$(@D)/.
 	$(call rule_label,SALTYINFO)
-	sh $< $@ "$(SALTY_OS_VERSION)" "$(APP_VERSION)" "$(SALTY_EPSILON_SOURCE_VERSION)" "$(COMMIT_HASH)" "$(PLATFORM)" $(SALTY_THEMES_DIRECTORY)/generate_themes.py
+	sh $< $@ "$(SALTY_OS_VERSION)" "$(SALTY_EPSILON_SOURCE_VERSION)" "$(COMMIT_HASH)" "$(PLATFORM)" $(SALTY_THEMES_DIRECTORY)/generate_themes.py

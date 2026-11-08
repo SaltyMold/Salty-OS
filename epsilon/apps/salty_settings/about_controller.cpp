@@ -45,7 +45,6 @@ void AboutController::describe(RowPicker* p) const {
   p->section(M::SaltySettingsSectionOs);
   p->row(M::SaltySettingsOsVersion).str(SALTY_INFO_OS_VERSION);
   p->row(M::SaltySettingsEpsilonSource).str(SALTY_INFO_EPSILON_SOURCE_VERSION);
-  p->row(M::SaltySettingsKernelTarget).str(SALTY_INFO_KERNEL_VERSION);
   p->row(M::SaltySettingsCommit).str(SALTY_INFO_COMMIT);
   p->row(M::SaltySettingsBuildDate).str(__DATE__);
   p->row(M::SaltySettingsPlatform).str(SALTY_INFO_PLATFORM);

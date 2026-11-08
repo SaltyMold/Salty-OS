@@ -1,0 +1,84 @@
+{
+  "name": "Catppuccin",
+  "variables": {
+    "defaultCircleLevel": 0,
+    "isAppNameBackgroundHover": 1
+  },
+  "colors": {
+    "_note": "Based on Upsilon's Catppuccin Mocha. Only the colors that differ from Epsilon are listed.",
+
+    "_title_bar": "Upsilon Toolbar / Battery",
+    "YellowDark": "313244",
+    "White": "bac2de",
+    "YellowLightBattery": "f9e2af",
+    "LowBattery": "eba0ac",
+
+    "_pages": "Upsilon Background (Apps, Hard, AppsSecondary) / ExpressionInput / List / Select",
+    "Background": "1e1e2e",
+    "InputBackground": "181825",
+    "WallScreen": "181825",
+    "WallScreenDark": "11111b",
+    "Black": "11111b",
+    "Select": "45475a",
+    "SelectDark": "313244",
+    "GrayWhite": "181825",
+    "GrayBright": "45475a",
+    "GrayMiddle": "45475a",
+    "GrayDarkMiddle": "585b70",
+
+    "_text": "Upsilon PrimaryText / SecondaryText / ApproximateSignText",
+    "PrimaryText": "cdd6f4",
+    "GrayDark": "9399b2",
+    "GrayVeryDark": "cdd6f4",
+    "GrayDarkest": "bac2de",
+
+    "_accent": "Upsilon Control",
+    "Accent": "a6e3a1",
+
+    "_headers": "Upsilon Toolbox header / Banner",
+    "PurpleBright": "6c7086",
+    "PurpleDark": "585b70",
+    "PopUpTitleBackground": "585b70",
+
+    "_home": "Upsilon Home",
+    "TextColor": "cdd6f4",
+    "TextColorHover": "89dceb",
+    "WallpaperColor": "1e1e2e",
+
+    "_data": "Catppuccin accents for the data colors (statistics, regression...)",
+    "Red": "f38ba8",
+    "Blue": "89b4fa",
+    "Green": "a6e3a1",
+    "Magenta": "cba6f7",
+    "Turquoise": "94e2d5",
+    "Pink": "f5c2e7",
+    "Orange": "fab387",
+    "Violet": "b4befe",
+    "Mint": "89dceb",
+
+    "Calculation": {
+      "BorderEven": "11111b",
+      "BorderOdd": "1e1e2e"
+    },
+    "Python": {
+      "Text": "cdd6f4",
+      "Comment": "a6e3a1",
+      "Number": "f38ba8",
+      "Keyword": "fab387",
+      "Operator": "cba6f7",
+      "String": "74c7ec",
+      "GutterBackground": "181825",
+      "Autocomplete": "7f849c"
+    },
+    "Graph": {
+      "Curve": "f5c2e7",
+      "Tangent": "8caaee",
+      "AxisMain": "7f849c",
+      "AxisLight": "45475a",
+      "PolarGridLabels": "9399b2",
+      "IntersectionArea": "9399b2",
+      "IndicatorSecondary": "cdd6f4",
+      "MagnifyIndicator": "cdd6f4"
+    }
+  }
+}

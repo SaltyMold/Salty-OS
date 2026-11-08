@@ -179,3 +179,8 @@ make -j$(nproc) PLATFORM=n0120 EMBED_EXTRA_DATA=1 userland.onboarding.allow3rdpa
 ```sh
 python3 tools/device/dfu.py -D output/release/n0120/userland.onboarding.allow3rdparty.B.dfu -s 0x90420000
 ```
+
+## Credits
+
+- [NumWorks](https://github.com/NumWorks) for the calculator and the original Epsilon OS.
+- [yannis300307](https://github.com/yannis300307/Upsilon-Catppuccin) for the Catppuccin theme.

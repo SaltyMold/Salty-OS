@@ -80,6 +80,12 @@ include $(patsubst %,$(PATH_apps)/%/Makefile,shared $(EPSILON_APPS) $(_SPECIAL_A
 
 SOURCES_apps := $(subst .png,.cpp,$(SOURCES_apps))
 
+# salty_info.h holds everything that comes from the repository (versions from
+# the Makefile, git commit, icon names from the themes folder).
+$(OUTPUT_DIRECTORY)/$(PATH_apps)/salty_info.h: $(PATH_apps)/generate_info.sh $(SALTY_THEMES_DIRECTORY)/generate_themes.py FORCE | $$(@D)/.
+	$(call rule_label,SALTYINFO)
+	sh $< $@ "$(SALTY_OS_VERSION)" "$(SALTY_EPSILON_SOURCE_VERSION)" "$(COMMIT_HASH)" "$(PLATFORM)" $(SALTY_THEMES_DIRECTORY)/generate_themes.py
+
 $(call assert_defined,PYTHON_QSTRDEFS)
 $(call assert_defined,KANDINSKY_fonts_dependencies)
 $(call all_objects_for,$(SOURCES_apps)): $(PYTHON_QSTRDEFS) $(OUTPUT_DIRECTORY)/$(PATH_apps)/i18n.h $(OUTPUT_DIRECTORY)/$(PATH_apps)/salty_info.h $(KANDINSKY_fonts_dependencies)

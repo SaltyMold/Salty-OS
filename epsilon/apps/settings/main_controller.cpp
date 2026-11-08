@@ -46,13 +46,35 @@ constexpr MessageTree s_modelTestModeMenu[2] = {
     MessageTree(I18n::Message::PressToTest)};
 constexpr MessageTree
     s_modelAboutChildren[AboutController::k_totalNumberOfCell] = {
-        MessageTree(I18n::Message::Name),
-        MessageTree(I18n::Message::SoftwareVersion),
+        MessageTree(I18n::Message::AboutSectionCalculator),
+        MessageTree(I18n::Message::AboutKernelVersion),
+        MessageTree(I18n::Message::AboutSaltyOsVersion),
+        MessageTree(I18n::Message::AboutEpsilonBase),
+        MessageTree(I18n::Message::AboutBuildDate),
+        MessageTree(I18n::Message::AboutPlatform),
         MessageTree(I18n::Message::SerialNumber),
         MessageTree(I18n::Message::FccId),
+        MessageTree(I18n::Message::AboutPcbRevision),
+        MessageTree(I18n::Message::AboutBootloader),
 #if TERMS_OF_USE
         MessageTree(I18n::Message::TermsOfUse),
 #endif
+        MessageTree(I18n::Message::AboutSectionThemes),
+        MessageTree(I18n::Message::AboutThemeStatus),
+        MessageTree(I18n::Message::AboutThemeAddress),
+        MessageTree(I18n::Message::AboutThemeCapacity),
+        MessageTree(I18n::Message::AboutThemeFormat),
+        MessageTree(I18n::Message::AboutInstalledThemes),
+        MessageTree(I18n::Message::AboutSectionExternalApps),
+        MessageTree(I18n::Message::AboutAppsCount),
+        MessageTree(I18n::Message::AboutAppsStatus),
+        MessageTree(I18n::Message::AboutAppsStorage),
+        MessageTree(I18n::Message::AboutAppsRam),
+        MessageTree(I18n::Message::AboutSectionShortcuts),
+        MessageTree(I18n::Message::AboutShortcutHold),
+        MessageTree(I18n::Message::AboutShortcutNextTheme),
+        MessageTree(I18n::Message::AboutShortcutPreviousTheme),
+        MessageTree(I18n::Message::AboutShortcutToggleApps),
 };
 
 bool hideExamModes() {

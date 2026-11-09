@@ -103,6 +103,7 @@ MainController::MainController(Responder* parentResponder)
       m_examModeController(this),
       m_pressToTestController(this),
       m_testModeController(this, this),
+      m_themesController(this),
       m_aboutController(this),
       m_resetController(Invocation::Builder<MainController>(
                             [](MainController* controller, void* sender) {
@@ -370,6 +371,8 @@ ViewController* MainController::subControllerForCell(
       return &m_pressToTestController;
     case I18n::Message::TestMode:
       return &m_testModeController;
+    case I18n::Message::ThemesTitle:
+      return &m_themesController;
     case I18n::Message::About:
       return &m_aboutController;
     default:

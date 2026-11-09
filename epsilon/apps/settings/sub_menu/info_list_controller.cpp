@@ -5,7 +5,7 @@
 
 using namespace Escher;
 
-namespace SaltySettings {
+namespace Settings {
 
 void InfoListController::initView() {
   ViewController::initView();
@@ -52,7 +52,7 @@ void InfoListController::rebuildRows() {
   for (int row = 0; row < m_numberOfRows; row++) {
     const int type = typeAtRow(row);
     if (type == k_sectionCellType) {
-      m_rows[row].height = SectionCell::k_height;
+      m_rows[row].height = AboutSectionCell::k_height;
     } else {
       m_rows[row].height = protectedNonMemoizedRowHeight(
           type == k_swatchCellType ? static_cast<HighlightCell*>(&swatchCell)
@@ -104,7 +104,8 @@ void InfoListController::fillCellForRow(HighlightCell* cell, int row) {
   assert(row >= 0 && row < m_numberOfRows);
   const InfoRow& description = m_rows[row];
   if (description.isSection) {
-    static_cast<SectionCell*>(cell)->textView()->setText(description.label);
+    static_cast<AboutSectionCell*>(cell)->textView()->setText(
+        description.label);
     return;
   }
   if (description.hasColor) {
@@ -119,4 +120,4 @@ void InfoListController::fillCellForRow(HighlightCell* cell, int row) {
   infoCell->subLabel()->setText(description.value);
 }
 
-}  // namespace SaltySettings
+}  // namespace Settings

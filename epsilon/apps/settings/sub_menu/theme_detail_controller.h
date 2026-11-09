@@ -3,7 +3,7 @@
 #include "info_list_controller.h"
 #include "theme_helpers.h"
 
-namespace SaltySettings {
+namespace Settings {
 
 /* Every piece of information about one theme: general variables, wallpaper,
  * palette (all the slots with their color) and icons. Theme 0 is the virtual
@@ -24,4 +24,4 @@ class ThemeDetailController : public InfoListController {
   char m_title[k_maxThemeNameSize];
 };
 
-}  // namespace SaltySettings
+}  // namespace Settings

@@ -19,6 +19,7 @@
 #include "sub_menu/press_to_test_controller.h"
 #include "sub_menu/screen_timeout_controller.h"
 #include "sub_menu/test_mode_controller.h"
+#include "sub_menu/themes_controller.h"
 
 namespace Settings {
 
@@ -68,7 +69,7 @@ class MainController : public Escher::SelectableListViewController<
   constexpr static int k_popUpCellType = 2;
   constexpr static int k_resetCellType = 3;
   // Model index
-  constexpr static int k_indexOfExamModeCell = 11;
+  constexpr static int k_indexOfExamModeCell = 12;
   // Max number of visible cells
   constexpr static int k_numberOfSimpleChevronCells =
       Escher::Metric::MinimalNumberOfScrollableRowsToFillDisplayHeight(
@@ -94,6 +95,7 @@ class MainController : public Escher::SelectableListViewController<
   ExamModeController m_examModeController;
   PressToTestController m_pressToTestController;
   TestModeController m_testModeController;
+  ThemesController m_themesController;
   AboutController m_aboutController;
   Shared::MessagePopUpController m_resetController;
 };

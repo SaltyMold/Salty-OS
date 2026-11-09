@@ -35,7 +35,7 @@ PRIVATE_SFLAGS_apps += -I$(PATH_apps)
 # Include the specific apps
 # FIXME Use flavors instead of EPSILON_APPS?
 EPSILON_APPS ?= calculation graph code statistics distributions inference solver sequence regression elements finance settings
-_SPECIAL_APPS = home on_boarding usb hardware_test salty_settings
+_SPECIAL_APPS = home on_boarding usb hardware_test
 
 ifeq ($(DEBUG),1)
 HARDWARE_CHECKUP ?= 1
@@ -79,6 +79,12 @@ $(call i18n_without_universal,variables)
 include $(patsubst %,$(PATH_apps)/%/Makefile,shared $(EPSILON_APPS) $(_SPECIAL_APPS))
 
 SOURCES_apps := $(subst .png,.cpp,$(SOURCES_apps))
+
+# salty_info.h holds everything that comes from the repository (versions from
+# the Makefile, git commit, icon names from the themes folder).
+$(OUTPUT_DIRECTORY)/$(PATH_apps)/salty_info.h: $(PATH_apps)/generate_info.sh $(SALTY_THEMES_DIRECTORY)/generate_themes.py FORCE | $$(@D)/.
+	$(call rule_label,SALTYINFO)
+	sh $< $@ "$(SALTY_OS_VERSION)" "$(SALTY_EPSILON_SOURCE_VERSION)" "$(COMMIT_HASH)" "$(PLATFORM)" $(SALTY_THEMES_DIRECTORY)/generate_themes.py
 
 $(call assert_defined,PYTHON_QSTRDEFS)
 $(call assert_defined,KANDINSKY_fonts_dependencies)

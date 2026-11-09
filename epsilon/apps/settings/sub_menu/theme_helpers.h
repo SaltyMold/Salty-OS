@@ -5,9 +5,9 @@
 #include <escher/theme/salty_palette.h>
 #include <string.h>
 
-#include "../theme_manager.h"
+#include <apps/theme_manager.h>
 
-namespace SaltySettings {
+namespace Settings {
 
 using Ion::Device::Board::Config::ThemeEntry;
 using Ion::Device::Board::Config::ThemeIconCount;
@@ -26,7 +26,7 @@ constexpr static int k_maxThemeNameSize = ThemeNameLength + 1;
 inline void ThemeName(int theme, char* out /* k_maxThemeNameSize */) {
   const ThemeEntry* e = theme == 0 ? nullptr : ThemeManager::entry(theme - 1);
   if (e == nullptr) {
-    strlcpy(out, I18n::translate(I18n::Message::SaltySettingsDefaultTheme),
+    strlcpy(out, I18n::translate(I18n::Message::ThemesDefault),
             k_maxThemeNameSize);
     return;
   }
@@ -91,4 +91,4 @@ inline bool HasPalette(const ThemeEntry* e) {
   return ThemeManager::paletteColorCount(e) > 0;
 }
 
-}  // namespace SaltySettings
+}  // namespace Settings

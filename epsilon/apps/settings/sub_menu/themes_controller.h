@@ -9,7 +9,7 @@
 
 #include "theme_detail_controller.h"
 
-namespace SaltySettings {
+namespace Settings {
 
 /* One folder per theme of the Theme Area (plus the default theme). Opening a
  * folder shows everything about the theme. */
@@ -17,7 +17,7 @@ class ThemesController
     : public Escher::SelectableListViewController<
           Escher::StandardMemoizedListViewDataSource> {
  public:
-  ThemesController(Escher::Responder* parentResponder, InfoRow* rows);
+  ThemesController(Escher::Responder* parentResponder);
 
   // ViewController
   const char* title() const override;
@@ -49,7 +49,9 @@ class ThemesController
   }
 
   ThemeCell m_cells[k_numberOfCells];
+  // Cache of the rows of the detail of a theme
+  InfoRow m_rows[k_maxInfoRows];
   ThemeDetailController m_detailController;
 };
 
-}  // namespace SaltySettings
+}  // namespace Settings

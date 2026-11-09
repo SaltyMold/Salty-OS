@@ -4,7 +4,7 @@
 #include <escher/view.h>
 #include <kandinsky/color.h>
 
-namespace SaltySettings {
+namespace Settings {
 
 /* A small square filled with a color, usable as the accessory of a MenuCell. */
 class SwatchView : public Escher::View, public Escher::CellWidget {
@@ -34,4 +34,4 @@ class SwatchView : public Escher::View, public Escher::CellWidget {
   KDColor m_color = KDColor::RGB24(0x000000);
 };
 
-}  // namespace SaltySettings
+}  // namespace Settings

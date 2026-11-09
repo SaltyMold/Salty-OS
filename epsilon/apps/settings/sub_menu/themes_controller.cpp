@@ -6,14 +6,14 @@
 
 using namespace Escher;
 
-namespace SaltySettings {
+namespace Settings {
 
-ThemesController::ThemesController(Responder* parentResponder, InfoRow* rows)
+ThemesController::ThemesController(Responder* parentResponder)
     : SelectableListViewController(parentResponder),
-      m_detailController(parentResponder, rows) {}
+      m_detailController(parentResponder, m_rows) {}
 
 const char* ThemesController::title() const {
-  return I18n::translate(I18n::Message::SaltySettingsThemes);
+  return I18n::translate(I18n::Message::ThemesTitle);
 }
 
 void ThemesController::initView() {
@@ -73,8 +73,8 @@ void ThemesController::fillCellForRow(HighlightCell* cell, int row) {
   themeCell->label()->setText(name);
   themeCell->subLabel()->setText(
       ThemeManager::selectedTheme() == row
-          ? I18n::translate(I18n::Message::SaltySettingsActive)
+          ? I18n::translate(I18n::Message::ThemesActive)
           : "");
 }
 
-}  // namespace SaltySettings
+}  // namespace Settings

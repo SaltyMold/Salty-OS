@@ -1,25 +1,25 @@
-#include "section_cell.h"
+#include "about_section_cell.h"
 
 #include <assert.h>
 #include <escher/theme/highlight.h>
 
 using namespace Escher;
 
-namespace SaltySettings {
+namespace Settings {
 
-SectionCell::SectionCell()
+AboutSectionCell::AboutSectionCell()
     : Bordered(),
       HighlightCell(),
       m_textView({.style = {.glyphColor = k_textColor,
                             .backgroundColor = k_backgroundColor,
                             .font = KDFont::Size::Small}}) {}
 
-void SectionCell::drawRect(KDContext* ctx, KDRect rect) const {
+void AboutSectionCell::drawRect(KDContext* ctx, KDRect rect) const {
   DrawInnerRect(ctx, bounds(), Highlight(k_backgroundColor, isHighlighted()));
   DrawBorderOfRect(ctx, bounds(), ThemeComponent::BorderGrayBright);
 }
 
-void SectionCell::layoutSubviews(bool force) {
+void AboutSectionCell::layoutSubviews(bool force) {
   KDCoordinate width = bounds().width();
   KDCoordinate height = bounds().height();
   if (width == 0 || height == 0) {
@@ -37,4 +37,4 @@ void SectionCell::layoutSubviews(bool force) {
   setChildFrame(&m_textView, KDRect(x, y, width, height), force);
 }
 
-}  // namespace SaltySettings
+}  // namespace Settings

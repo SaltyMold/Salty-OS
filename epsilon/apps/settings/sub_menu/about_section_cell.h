@@ -7,12 +7,12 @@
 #include <escher/theme/components.h>
 #include <ion/display.h>
 
-namespace SaltySettings {
+namespace Settings {
 
 /* Title of a group of rows. It cannot be selected. */
-class SectionCell : public Escher::Bordered, public Escher::HighlightCell {
+class AboutSectionCell : public Escher::Bordered, public Escher::HighlightCell {
  public:
-  SectionCell();
+  AboutSectionCell();
   void setHighlighted(bool highlight) override { assert(!highlight); }
   KDSize minimalSizeForOptimalDisplay() const override {
     return KDSize(bounds().width(), k_height);
@@ -39,4 +39,4 @@ class SectionCell : public Escher::Bordered, public Escher::HighlightCell {
   Escher::OneLineBufferTextView<> m_textView;
 };
 
-}  // namespace SaltySettings
+}  // namespace Settings

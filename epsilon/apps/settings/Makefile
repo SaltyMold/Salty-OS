@@ -5,16 +5,20 @@ SOURCES_apps += $(addprefix $(PATH_apps)/settings/,$(addsuffix :-test, \
   main_controller_prompt_none.cpp:-beta:-update \
   main_controller_prompt_update.cpp:+update \
   sub_menu/about_controller.cpp \
+  sub_menu/about_section_cell.cpp \
   sub_menu/accessibility_controller.cpp \
   sub_menu/display_mode_controller.cpp \
   sub_menu/exam_mode_controller.cpp \
   sub_menu/generic_sub_controller.cpp \
+  sub_menu/info_list_controller.cpp \
   sub_menu/localization_controller.cpp \
   sub_menu/preferences_controller.cpp \
   sub_menu/press_to_test_controller.cpp \
   sub_menu/screen_timeout_controller.cpp \
   sub_menu/selectable_view_with_messages.cpp \
   sub_menu/test_mode_controller.cpp \
+  sub_menu/theme_detail_controller.cpp \
+  sub_menu/themes_controller.cpp \
 ))
 
 $(call depends_on_transparent_themed_image,apps,$(PATH_apps)/settings/app.cpp,$(PATH_apps)/icons/light/settings_light_icon.png,$(PATH_apps)/icons/dark/settings_dark_icon.png,:-test)

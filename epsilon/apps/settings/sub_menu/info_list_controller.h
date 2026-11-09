@@ -8,11 +8,11 @@
 #include <kandinsky/coordinate.h>
 #include <string.h>
 
-#include "info_text.h"
-#include "section_cell.h"
+#include "about_section_cell.h"
+#include "about_text.h"
 #include "swatch_view.h"
 
-namespace SaltySettings {
+namespace Settings {
 
 /* A scrollable list of "label: value" rows grouped under section titles, as
  * the About page of the Settings app. Subclasses only describe their rows. */
@@ -33,8 +33,8 @@ struct InfoRow {
 };
 
 /* Describes the rows of a list into a cache: each call to section() or row()
- * adds one row. The Line returned by row() writes the value of the row (it
- * silently drops everything if the cache is full). */
+ * adds one row. The AboutText returned by row() writes the value of the row
+ * (it silently drops everything if the cache is full). */
 class RowPicker {
  public:
   RowPicker(InfoRow* rows, int capacity)
@@ -45,13 +45,13 @@ class RowPicker {
     InfoRow* r = next();
     if (r != nullptr) {
       r->isSection = true;
-      Line(r->label, k_infoLabelSize).str(title);
+      AboutText(r->label, k_infoLabelSize).str(title);
     }
   }
-  Line row(I18n::Message label) { return row(I18n::translate(label)); }
-  Line row(const char* label) { return fill(next(), label); }
+  AboutText row(I18n::Message label) { return row(I18n::translate(label)); }
+  AboutText row(const char* label) { return fill(next(), label); }
   // Same as row() with a color square next to the value
-  Line colorRow(const char* label, uint32_t rgb) {
+  AboutText colorRow(const char* label, uint32_t rgb) {
     InfoRow* r = next();
     if (r != nullptr) {
       r->hasColor = true;
@@ -70,12 +70,12 @@ class RowPicker {
     m_count++;
     return r;
   }
-  Line fill(InfoRow* r, const char* label) {
+  AboutText fill(InfoRow* r, const char* label) {
     if (r == nullptr) {
-      return Line(nullptr, 0);
+      return AboutText(nullptr, 0);
     }
-    Line(r->label, k_infoLabelSize).str(label);
-    return Line(r->value, k_infoValueSize);
+    AboutText(r->label, k_infoLabelSize).str(label);
+    return AboutText(r->value, k_infoValueSize);
   }
   InfoRow* m_rows;
   int m_capacity;
@@ -141,7 +141,7 @@ class InfoListController
   int m_numberOfRows;
   InfoCell m_infoCells[k_numberOfInfoCells];
   SwatchCell m_swatchCells[k_numberOfInfoCells];
-  SectionCell m_sectionCells[k_numberOfSectionCells];
+  AboutSectionCell m_sectionCells[k_numberOfSectionCells];
 };
 
-}  // namespace SaltySettings
+}  // namespace Settings

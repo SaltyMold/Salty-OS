@@ -19,7 +19,6 @@
 #include "shared/prompt_controller.h"
 #include "shortcuts.h"
 #include "suspend_timer.h"
-#include "salty_settings/app.h"
 #include "usb/app.h"
 
 class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
@@ -38,7 +37,6 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
 #endif
   Escher::App::Snapshot* onBoardingAppSnapshot();
   Escher::App::Snapshot* usbConnectedAppSnapshot();
-  Escher::App::Snapshot* saltySettingsAppSnapshot();
   bool externalAppsHidden() const { return m_externalAppsHidden; }
   Home::App::Snapshot* homeAppSnapshot() { return &m_homeSnapshot; }
   void setExamMode(Poincare::ExamMode targetExamMode,
@@ -116,7 +114,6 @@ class AppsContainer : public Escher::Container, Ion::Storage::StorageDelegate {
   HardwareCheckup::App::Snapshot m_hardwareCheckupSnapshot;
 #endif
   USB::App::Snapshot m_usbConnectedSnapshot;
-  SaltySettings::App::Snapshot m_saltySettingsSnapshot;
 #if EPSILON_GETOPT
   // Used to launch a given app on a simulator
   Escher::App::Snapshot* m_initialAppSnapshot;

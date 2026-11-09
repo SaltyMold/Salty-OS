@@ -3,17 +3,15 @@
 # settings app that comes from the repository (Makefile variables, git, themes
 # folder) instead of being hardcoded in the C++ sources.
 #
-# usage: generate_info.sh <output.h> <os_version> <kernel_version> \
-#          <epsilon_source_version> <commit> <platform> <generate_themes.py>
+# usage: generate_info.sh <output.h> <os_version> <epsilon_source_version> <commit> <platform> <generate_themes.py>
 set -eu
 
 out="$1"
 os_version="$2"
-kernel_version="$3"
-epsilon_source_version="$4"
-commit="$5"
-platform="$6"
-theme_generator="$7"
+epsilon_source_version="$3"
+commit="$4"
+platform="$5"
+theme_generator="$6"
 
 # Keeps a value usable inside a C string literal
 clean() {
@@ -31,7 +29,6 @@ mkdir -p "$(dirname "$out")"
   echo "#pragma once"
   echo
   echo "#define SALTY_INFO_OS_VERSION \"$(clean "$os_version")\""
-  echo "#define SALTY_INFO_KERNEL_VERSION \"$(clean "$kernel_version")\""
   echo "#define SALTY_INFO_EPSILON_SOURCE_VERSION \"$(clean "$epsilon_source_version")\""
   echo "#define SALTY_INFO_COMMIT \"$(clean "$commit")\""
   echo "#define SALTY_INFO_PLATFORM \"$(clean "$platform")\""

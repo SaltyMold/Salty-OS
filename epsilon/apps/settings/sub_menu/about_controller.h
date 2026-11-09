@@ -32,11 +32,12 @@ class AboutController : public GenericSubController,
    * labels in s_modelAboutChildren (main_controller.cpp). The rows are grouped
    * under the title of a section, that cannot be selected. */
   enum class CellType : uint8_t {
-    SectionCalculator = 0,
-    Version,  // OK shows the commit of the kernel instead
+    SectionSoftware = 0,
     SaltyOsVersion,  // OK shows the commit of Salty-OS instead
     EpsilonBaseVersion,
     BuildDate,
+    Version,  // The kernel. OK shows its commit instead
+    SectionCalculator,
     Platform,
     SerialNumber,
     FCCID,
@@ -74,7 +75,7 @@ class AboutController : public GenericSubController,
                        Escher::OneLineBufferTextView<>>;
   constexpr static int k_rowCellType = 0;
   constexpr static int k_sectionCellType = 1;
-  constexpr static int k_numberOfSectionCells = 4;
+  constexpr static int k_numberOfSectionCells = 5;
   /* A cell is not tied to a row: the table gives the cells back and forth to
    * the rows that are displayed. Everything shown in a cell must therefore be
    * computed from its row, in fillCellForRow(). */
@@ -84,7 +85,8 @@ class AboutController : public GenericSubController,
 
   int initialSelectedRow() const override;
   static bool IsSection(CellType type) {
-    return type == CellType::SectionCalculator ||
+    return type == CellType::SectionSoftware ||
+           type == CellType::SectionCalculator ||
            type == CellType::SectionThemes ||
            type == CellType::SectionExternalApps ||
            type == CellType::SectionShortcuts;

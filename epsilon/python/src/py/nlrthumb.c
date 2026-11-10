@@ -132,7 +132,9 @@ NORETURN void nlr_jump(void *val) {
         "bx     lr                  \n" // return
         :                           // output operands
         : "r" (top)                 // input operands
-        :                           // clobbered registers
+        : "memory"                  // clobbered: forces the compiler to keep the
+                                    // stores made by MP_NLR_JUMP_HEAD (ret_val
+                                    // and nlr_top), see nlr_jump above
         );
 
     MP_UNREACHABLE

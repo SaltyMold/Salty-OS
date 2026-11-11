@@ -128,6 +128,7 @@ void AppsContainer::setExamMode(Poincare::ExamMode targetExamMode,
   }
 
   refreshPreferences();
+  ThemeManager::refreshTheme(&m_window);
 }
 
 void AppsContainer::didSuspend() {

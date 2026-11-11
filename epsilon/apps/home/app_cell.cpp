@@ -1,6 +1,7 @@
 #include "app_cell.h"
 
 #include <assert.h>
+#include <apps/exam_mode_manager.h>
 #include <escher/theme/color_picker.h>
 #include <escher/theme/salty_palette.h>
 #include <escher/transparent_themed_image_view.h>
@@ -28,7 +29,7 @@ KDColor highlightBoxColor() {
 void fillWallpaperLineRange(KDRect nameRect, int globalX, int globalY,
                             int nameHeight, KDColor* buffer, int rectHeight,
                             int rectWidth) {
-  if (!ThemeManager::hasWallpaper()) {
+  if (!ThemeManager::hasWallpaper() || ExamModeManager::ExamMode().isActive()) {
     // No Theme Area flashed, or the selected theme has no wallpaper: fall
     // back to a flat background instead of reading garbage.
     for (int i = 0; i < rectHeight * rectWidth; i++) {
@@ -76,7 +77,7 @@ void fillWallpaperLineRange(KDRect nameRect, int globalX, int globalY,
 // itself as blank, or it keeps showing whatever it last displayed.
 void fillWholeCellWallpaper(KDContext* ctx, KDRect bounds, int globalX,
                             int globalY, int nameHeight) {
-  if (!ThemeManager::hasWallpaper()) {
+  if (!ThemeManager::hasWallpaper() || ExamModeManager::ExamMode().isActive()) {
     ctx->fillRect(bounds, wallpaperColor());
     return;
   }
@@ -156,7 +157,7 @@ static uint8_t circleCoverage(int x, int y, int width, int height,
 }
 
 static KDColor wallpaperPixelAt(int srcX, int srcY, int wallpaperWidth) {
-  if (ThemeManager::hasWallpaper()) {
+  if (ThemeManager::hasWallpaper() && !ExamModeManager::ExamMode().isActive()) {
     int localY = 0;
     const KDColor* chunk = ThemeManager::wallpaperChunkContaining(srcY, &localY);
     if (chunk != nullptr && srcX >= 0 && srcX < wallpaperWidth) {
@@ -215,8 +216,7 @@ bool AppCell::hasThemedIcon() const {
 }
 
 bool AppCell::shouldRoundCustomIcon() const {
-  return ThemeManager::hasWallpaper() &&
-         (ThemeManager::isValid() || m_pointerNameView.text() != nullptr);
+  return ThemeManager::hasWallpaper() && (ThemeManager::isValid() || m_pointerNameView.text() != nullptr) && !ExamModeManager::ExamMode().isActive();
 }
 
 void AppCell::drawRect(KDContext* ctx, KDRect rect) const {

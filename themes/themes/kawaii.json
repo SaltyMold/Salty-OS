@@ -6,7 +6,7 @@
   },
   "colors": {
     "YellowDark": "ffa6c8",
-    "YellowLightBattery": "ffd9a8",
+    "YellowLightBattery": "cca6c8",
     "YellowLight": "fff1d9",
     "PurpleBright": "b56b9a",
     "PurpleDark": "70405f",
@@ -46,6 +46,7 @@
     "Mint": "71cdb5",
     "MintLight": "d4f3e8",
     "TextColor": "ffa6c8",
-    "TextColorHover": "ffffff"
+    "TextColorHover": "ffffff",
+    "WallpaperColor": "@PurpleBright"
   }
 }

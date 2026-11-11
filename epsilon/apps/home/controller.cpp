@@ -32,7 +32,7 @@ using namespace Poincare;
 namespace {
 
 void fillWallpaperBackground(KDContext* ctx, KDRect rect) {
-  if (!ThemeManager::hasWallpaper()) {
+  if (!ThemeManager::hasWallpaper() || ExamModeManager::ExamMode().isActive()) {
     // No Theme Area flashed, or the selected theme has no wallpaper.
     ctx->fillRect(rect, wallpaperColor());
     return;

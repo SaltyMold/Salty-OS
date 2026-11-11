@@ -24,6 +24,7 @@
     "PopUpTitleBackground": "ffd970",
     "LowBattery": "ff8c40",
     "TextColor": "5d606c",
-    "TextColorHover": "5d606c"
+    "TextColorHover": "5d606c",
+    "WallpaperColor": "@WallScreen"
   }
 }

@@ -93,7 +93,11 @@ namespace SVCall {
 #define SVC_BOOTLOADER_CRC32 57
 #define SVC_LED_SET_LOCK 58
 #define SVC_RESET_LAST_RESET_TYPE 59
-#define SVC_NUMBER_OF_CALLS 60
+/* Salty extension: numbers >= 60 do not exist on the official kernel. A
+ * userland must only issue them after detecting the salty kernel header. */
+#define SVC_EVENTS_SET_SPINNER_COLORS 60
+
+#define SVC_NUMBER_OF_CALLS 61
 
 }
 }

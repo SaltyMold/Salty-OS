@@ -87,7 +87,8 @@ void * const k_SVCallTable[SVC_NUMBER_OF_CALLS] = {
   /* 56 */ MAKE_SVCALL_HANDLER_ENTRY(Ion::Device::compilationFlags),
   /* 57 */ MAKE_SVCALL_HANDLER_ENTRY(Ion::Device::bootloaderCRC32),
   /* 58 */ MAKE_SVCALL_HANDLER_ENTRY(Ion::Device::LED::setLock),
-  /* 59 */ MAKE_SVCALL_HANDLER_ENTRY(Ion::Device::Reset::lastResetType)
+  /* 59 */ MAKE_SVCALL_HANDLER_ENTRY(Ion::Device::Reset::lastResetType),
+  /* 60 */ MAKE_SVCALL_HANDLER_ENTRY(Ion::Device::Events::setSpinnerColors)
 };
 
 template <class T1, class T2> struct SameType { enum{value = false}; };
@@ -195,6 +196,7 @@ void * svcallHandler(int svcNumber) {
   ENSURE_SVC_TYPE(SVC_BOOTLOADER_CRC32, Ion::Device::bootloaderCRC32)
   ENSURE_SVC_TYPE(SVC_LED_SET_LOCK, Ion::Device::LED::setLock)
   ENSURE_SVC_TYPE(SVC_RESET_LAST_RESET_TYPE, Ion::Device::Reset::lastResetType)
+  ENSURE_SVC_TYPE(SVC_EVENTS_SET_SPINNER_COLORS, Ion::Device::Events::setSpinnerColors)
   return k_SVCallTable[svcNumber];
 }
 

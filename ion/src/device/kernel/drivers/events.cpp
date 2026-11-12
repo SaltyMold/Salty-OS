@@ -210,39 +210,45 @@ Ion::Events::Event getEvent(int * timeout) {
   return e;
 }
 
-static KDColor s_spinnerFullPixels[k_spinnerHalfHeight][k_spinnerHalfWidth] = {
-  { KDColor::RGB24(0xEDB558), KDColor::RGB24(0xF7CE5C), KDColor::RGB24(0xF5DE7E), KDColor::RGB24(0xFDF6C2), KDColor::RGB24(0xF6F3BE), KDColor::RGB24(0xE9D767), KDColor::RGB24(0xFBC42C), KDColor::RGB24(0xFFAA15) },
-  { KDColor::RGB24(0xE8CE45), KDColor::RGB24(0xFFE6B9), KDColor::RGB24(0xFFE8ED), KDColor::RGB24(0xFFEDDC), KDColor::RGB24(0xFCECDC), KDColor::RGB24(0xFFE4E4), KDColor::RGB24(0xFFDB98), KDColor::RGB24(0xF1BE0D) },
-  { KDColor::RGB24(0xEDE894), KDColor::RGB24(0xFFEEF1), KDColor::RGB24(0xFFDBDC), KDColor::RGB24(0xF2D380), KDColor::RGB24(0xEFD98D), KDColor::RGB24(0xFFE4F0), KDColor::RGB24(0xFFEEF2), KDColor::RGB24(0xEEDB7C) },
-  { KDColor::RGB24(0xF8F9F4), KDColor::RGB24(0xFAE4BF), KDColor::RGB24(0xE9BF53), KDColor::RGB24(0xEBBD12), KDColor::RGB24(0xEDC92A), KDColor::RGB24(0xEED885), KDColor::RGB24(0xFCF3E4), KDColor::RGB24(0xFAF7FF) }
+/* The spinner sprites are stored as 8-bit coverage masks (0 = background,
+ * 255 = foreground) instead of final colors, so that the spinner can follow the
+ * theme of the userland. They were derived once from the original sprites
+ * (white strokes antialiased on 0xFFB734): alpha is how far a pixel sits between
+ * that yellow and white, estimated on the G and B channels (R is 0xFF at both
+ * ends). */
+static const uint8_t s_spinnerFullAlpha[k_spinnerHalfHeight][k_spinnerHalfWidth] = {
+  {  32,  58, 105, 190, 184,  77,   5,   0 },
+  {  37, 167, 217, 206, 205, 205, 126,   0 },
+  { 134, 226, 189,  96, 114, 216, 227, 100 },
+  { 239, 171,  36,   0,   7, 106, 219, 248 },
 };
 
-static KDColor s_spinnerFirstStepPixels[k_spinnerHalfHeight][k_spinnerHalfWidth] = {
-  { KDColor::RGB24(0xFFB734), KDColor::RGB24(0xFFB731), KDColor::RGB24(0xFFDA95), KDColor::RGB24(0xFEE5BD), KDColor::RGB24(0xFED995), KDColor::RGB24(0xFFBF4E), KDColor::RGB24(0xFFB636), KDColor::RGB24(0xFCB934) },
-  { KDColor::RGB24(0xFCB535), KDColor::RGB24(0xFFBB34), KDColor::RGB24(0xFCFEF9), KDColor::RGB24(0xFBFFFE), KDColor::RGB24(0xFFFFFD), KDColor::RGB24(0xFFFBF2), KDColor::RGB24(0xFFC55D), KDColor::RGB24(0xFFB734) },
-  { KDColor::RGB24(0xFEB834), KDColor::RGB24(0xFFB532), KDColor::RGB24(0xFFD796), KDColor::RGB24(0xFCC65A), KDColor::RGB24(0xFED07A), KDColor::RGB24(0xFFF9EF), KDColor::RGB24(0xFFFCED), KDColor::RGB24(0xFFCE79) },
-  { KDColor::RGB24(0xFFB732), KDColor::RGB24(0xFCB936), KDColor::RGB24(0xFFB435), KDColor::RGB24(0xFFB933), KDColor::RGB24(0xFFB636), KDColor::RGB24(0xFFC45C), KDColor::RGB24(0xFFFEFF), KDColor::RGB24(0xFFFFFD) }
+static const uint8_t s_spinnerFirstStepAlpha[k_spinnerHalfHeight][k_spinnerHalfWidth] = {
+  {   0,   0, 122, 170, 121,  32,   1,   2 },
+  {   0,   4, 249, 254, 253, 239,  51,   0 },
+  {   1,   0, 121,  49,  88, 235, 236,  85 },
+  {   0,   4,   0,   1,   1,  49, 254, 253 },
 };
 
-static KDColor s_spinnerSecondStepPixels[k_spinnerHalfHeight][k_spinnerHalfWidth] = {
-  { KDColor::RGB24(0xFFB631), KDColor::RGB24(0xFEBC44), KDColor::RGB24(0xFFB633), KDColor::RGB24(0xFFB636), KDColor::RGB24(0xFFDA93), KDColor::RGB24(0xFEC14C), KDColor::RGB24(0xFFB633), KDColor::RGB24(0xFFB633) },
-  { KDColor::RGB24(0xFCBC40), KDColor::RGB24(0xFFFAEE), KDColor::RGB24(0xFEB834), KDColor::RGB24(0xFDB932), KDColor::RGB24(0xFFFFFF), KDColor::RGB24(0xFFFBF2), KDColor::RGB24(0xFFC65D), KDColor::RGB24(0xFDB735) },
-  { KDColor::RGB24(0xFFE1AD), KDColor::RGB24(0xFFFEFD), KDColor::RGB24(0xFEB832), KDColor::RGB24(0xFDB735), KDColor::RGB24(0xFED078), KDColor::RGB24(0xFFF9F4), KDColor::RGB24(0xFFFBF0), KDColor::RGB24(0xFED07B) },
-  { KDColor::RGB24(0xFFF3E3), KDColor::RGB24(0xFDE4AC), KDColor::RGB24(0xFFB635), KDColor::RGB24(0xFDB836), KDColor::RGB24(0xFFB631), KDColor::RGB24(0xFBC559), KDColor::RGB24(0xFEFEFF), KDColor::RGB24(0xFEFFFA) }
+static const uint8_t s_spinnerSecondStepAlpha[k_spinnerHalfHeight][k_spinnerHalfWidth] = {
+  {   0,  19,   0,   1, 121,  32,   0,   0 },
+  {  16, 235,   1,   0, 255, 239,  52,   1 },
+  { 151, 252,   0,   1,  86, 239, 237,  89 },
+  { 218, 153,   0,   3,   0,  47, 254, 250 },
 };
 
-static KDColor s_spinnerThirdStepPixels[k_spinnerHalfHeight][k_spinnerHalfWidth] = {
-  { KDColor::RGB24(0xFEB834), KDColor::RGB24(0xFFBB42), KDColor::RGB24(0xFFDA93), KDColor::RGB24(0xFCE5BC), KDColor::RGB24(0xFEB832), KDColor::RGB24(0xFFB538), KDColor::RGB24(0xFFB736), KDColor::RGB24(0xFFB633) },
-  { KDColor::RGB24(0xFFBC42), KDColor::RGB24(0xFEFCEF), KDColor::RGB24(0xFEFEFE), KDColor::RGB24(0xFFFFFD), KDColor::RGB24(0xFFB731), KDColor::RGB24(0xFFB734), KDColor::RGB24(0xFFC662), KDColor::RGB24(0xFDB932) },
-  { KDColor::RGB24(0xFEE2B0), KDColor::RGB24(0xFAFFFF), KDColor::RGB24(0xFFD996), KDColor::RGB24(0xFFC45F), KDColor::RGB24(0xFFB734), KDColor::RGB24(0xFEB836), KDColor::RGB24(0xFEFAEF), KDColor::RGB24(0xFFCE79) },
-  { KDColor::RGB24(0xFEF5E4), KDColor::RGB24(0xFFE2AF), KDColor::RGB24(0xFDB733), KDColor::RGB24(0xFCB535), KDColor::RGB24(0xFEB834), KDColor::RGB24(0xFFB734), KDColor::RGB24(0xFFFEFF), KDColor::RGB24(0xFFFFFD) }
+static const uint8_t s_spinnerThirdStepAlpha[k_spinnerHalfHeight][k_spinnerHalfWidth] = {
+  {   1,  17, 121, 169,   0,   2,   2,   0 },
+  {  18, 237, 253, 253,   0,   0,  57,   0 },
+  { 155, 255, 122,  52,   0,   3, 236,  85 },
+  { 221, 154,   0,   0,   1,   0, 254, 253 },
 };
 
-static KDColor s_spinnerFourthStepPixels[k_spinnerHalfHeight][k_spinnerHalfWidth] = {
-  { KDColor::RGB24(0xFFB734), KDColor::RGB24(0xFFBB42), KDColor::RGB24(0xFCD995), KDColor::RGB24(0xFFE7B9), KDColor::RGB24(0xFDDB91), KDColor::RGB24(0xFFC24F), KDColor::RGB24(0xFFB538), KDColor::RGB24(0xFEB834) },
-  { KDColor::RGB24(0xFDBC44), KDColor::RGB24(0xFFFBF0), KDColor::RGB24(0xFFFEFF), KDColor::RGB24(0xFFFEFF), KDColor::RGB24(0xFFFFFF), KDColor::RGB24(0xFFF7F2), KDColor::RGB24(0xFEB834), KDColor::RGB24(0xFEB836) },
-  { KDColor::RGB24(0xFFE2AE), KDColor::RGB24(0xFCFFFD), KDColor::RGB24(0xFFD692), KDColor::RGB24(0xFFC65B), KDColor::RGB24(0xFFCE79), KDColor::RGB24(0xFCFCF0), KDColor::RGB24(0xFDB636), KDColor::RGB24(0xFFB635) },
-  { KDColor::RGB24(0xFFF6E5), KDColor::RGB24(0xFFE1B0), KDColor::RGB24(0xFDB836), KDColor::RGB24(0xFDB735), KDColor::RGB24(0xFEB532), KDColor::RGB24(0xFFC459), KDColor::RGB24(0xFDB836), KDColor::RGB24(0xFFB933) }
+static const uint8_t s_spinnerFourthStepAlpha[k_spinnerHalfHeight][k_spinnerHalfWidth] = {
+  {   0,  17, 121, 168, 120,  35,   2,   1 },
+  {  19, 237, 254, 254, 255, 236,   1,   3 },
+  { 153, 253, 116,  50,  85, 238,   1,   0 },
+  { 223, 154,   3,   1,   0,  46,   3,   1 },
 };
 
 enum class SpinnerStatus : uint8_t {
@@ -255,9 +261,22 @@ static SpinnerStatus s_spinnerStatus = SpinnerStatus::Disabled;
 static constexpr int k_numberOfSpinnerPositions = 16;
 static int s_spinnerPosition = 0;
 static KDColor s_hiddenBuffer[2*k_spinnerHalfHeight][2*k_spinnerHalfWidth];
+/* Default colors are the ones the spinner always had (light theme): a userland
+ * that never calls setSpinnerColors gets the exact same spinner as before. */
+static KDColor s_spinnerBackground = KDColor::RGB24(0xFFB734);
+static KDColor s_spinnerForeground = KDColorWhite;
 
 void setSpinner(bool activate) {
   s_spinnerStatus = activate ? SpinnerStatus::Hidden : SpinnerStatus::Disabled;
+}
+
+void setSpinnerColors(uint32_t packedColors) {
+  /* packedColors = background << 16 | foreground, both RGB565. Packed in one
+   * register so that the SVC keeps the void(uint32_t) signature. TIM2 cannot
+   * preempt an SVCall (see initInterruptions), so spin() never sees a torn
+   * update. */
+  s_spinnerBackground = KDColor::RGB16(packedColors >> 16);
+  s_spinnerForeground = KDColor::RGB16(packedColors & 0xFFFF);
 }
 
 void spin() {
@@ -272,27 +291,27 @@ void spin() {
   static constexpr int k_numberOfQuadrants = 4;
   /* Each quadrant displays the four steps alternatively. Quadrant are indexed Left to right top to bottom*/
   KDColor buffer[k_spinnerHalfHeight][k_spinnerHalfWidth];
-  KDColor * steps[k_numberOfQuadrants] = {reinterpret_cast<KDColor *>(s_spinnerFirstStepPixels), reinterpret_cast<KDColor *>(s_spinnerSecondStepPixels), reinterpret_cast<KDColor *>(s_spinnerThirdStepPixels), reinterpret_cast<KDColor *>(s_spinnerFourthStepPixels)};
+  const uint8_t * steps[k_numberOfQuadrants] = {&s_spinnerFirstStepAlpha[0][0], &s_spinnerSecondStepAlpha[0][0], &s_spinnerThirdStepAlpha[0][0], &s_spinnerFourthStepAlpha[0][0]};
   int movingQuandrantIndex = s_spinnerPosition/4;
   for (int q = 0; q < k_numberOfQuadrants; q++) {
     KDRect rect(k_spinnerX + (q == 1 || q == 2)*k_spinnerHalfWidth,
                 k_spinnerY + (q == 1 || q == 3)*k_spinnerHalfHeight,
                 k_spinnerHalfWidth,
                 k_spinnerHalfHeight);
-    KDColor * pixels;
+    const uint8_t * alphas;
     if (q == movingQuandrantIndex) {
       // Select the right step to display (the order is reversed for odd quadrant)
       int stepIndex = s_spinnerPosition % 4;
-      pixels = steps[q % 2 ? 3 - stepIndex : stepIndex];
+      alphas = steps[q % 2 ? 3 - stepIndex : stepIndex];
     } else {
-      pixels = reinterpret_cast<KDColor *>(s_spinnerFullPixels);
+      alphas = &s_spinnerFullAlpha[0][0];
     }
     // Flip the image (axial or central symmetry depending on quadrant)
     for (int i = 0; i < k_spinnerHalfHeight; i++) {
       for (int j = 0; j < k_spinnerHalfWidth; j++) {
         int newJ = q == 0 || q == 3 ? j : k_spinnerHalfWidth - 1 - j;
         int newI = q == 0 || q == 2 ? i : k_spinnerHalfHeight - 1 - i;
-        buffer[i][j] = pixels[newI * k_spinnerHalfWidth + newJ];
+        buffer[i][j] = KDColor::blend(s_spinnerForeground, s_spinnerBackground, alphas[newI * k_spinnerHalfWidth + newJ]);
       }
     }
     Ion::Device::Display::pushRect(rect, reinterpret_cast<KDColor *>(buffer));

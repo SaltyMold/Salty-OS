@@ -34,6 +34,9 @@ constexpr int k_barHeight = 18; // Escher::Metric::TitleBarHeight
 constexpr int k_spinnerX = 320 - 5 - 15; // Ion::Display::Width - Escher::Metric::TitleBarExternHorizontalMargin - BatteryView::k_batteryWidth
 constexpr int k_spinnerY = k_barHeight/2 - k_spinnerHalfHeight;
 void setSpinner(bool spinner);
+/* Salty extension (SVC 60): colors of the spinner, RGB565 background << 16 |
+ * foreground. Not part of the official kernel. */
+void setSpinnerColors(uint32_t packedColors);
 void spin();
 void hideSpinner();
 

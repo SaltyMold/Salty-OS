@@ -22,6 +22,8 @@ uint32_t userlandEnd(Slot slot);
 uint32_t writableSRAMEndAddress();
 uint32_t writableSRAMStartAddress();
 bool isRunningSlotA();
+/* True if the running kernel is the Salty kernel (SLTY header present). */
+bool isSaltyKernel();
 uint32_t securityLevel();
 
 }  // namespace Board

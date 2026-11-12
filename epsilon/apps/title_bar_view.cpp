@@ -2,6 +2,7 @@
 
 #include <escher/theme/color_picker.h>
 #include <escher/theme/salty_palette.h>
+#include <ion/events.h>
 #include <omg/unreachable.h>
 #include <poincare/print.h>
 
@@ -46,6 +47,14 @@ void ExamIconView::drawRect(KDContext* ctx, KDRect rect) const {
 }
 
 void TitleBarView::drawRect(KDContext* ctx, KDRect rect) const {
+  /* The kernel draws its spinner over this bar while a computation runs.
+   * Redrawing the bar is what happens on boot, on a Salty theme change and on
+   * a light/dark switch, so this keeps the spinner in the colors of the active
+   * theme. Cheap: nothing is sent unless the colors changed, and it does
+   * nothing on the official kernel. */
+  Ion::Events::setSpinnerColors(
+      ColorPicker::Resolve(k_backgroundColor),
+      ColorPicker::Resolve(ThemeComponent::TextWhite));
   /* As we cheated to layout the title view, we have to fill a very thin
    * rectangle at the top with the background color. */
   ctx->fillRect(KDRect(0, 0, bounds().width(), k_verticalShift),

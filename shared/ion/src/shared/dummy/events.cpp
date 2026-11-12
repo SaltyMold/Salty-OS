@@ -32,5 +32,7 @@ bool isDefined(uint8_t eventId) { return true; }
 
 void setSpinner(bool) {}
 
+void setSpinnerColors(KDColor, KDColor) {}
+
 }  // namespace Events
 }  // namespace Ion

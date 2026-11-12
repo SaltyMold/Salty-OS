@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ion/keyboard.h>
+#include <kandinsky/color.h>
 #include <omg/directions.h>
 
 #if ION_EVENTS_JOURNAL
@@ -154,6 +155,10 @@ bool isDefined(uint8_t eventId);
 ShiftAlphaStatus shiftAlphaStatus();
 void setShiftAlphaStatus(ShiftAlphaStatus s);
 void setSpinner(bool spinner);
+/* Colors of the spinner drawn by the kernel while a computation runs. Only
+ * the Salty kernel supports it: on the official kernel and in the simulator
+ * this does nothing and the spinner keeps its own colors. */
+void setSpinnerColors(KDColor background, KDColor foreground);
 int longPressCounter();
 inline bool isRepeating() { return longPressCounter() > 0; }
 inline int longPressFactor() {

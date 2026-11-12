@@ -105,6 +105,11 @@ namespace SVCall {
 
 #define SVC_NUMBER_OF_CALLS 60
 
+/* Salty kernel only. The official kernel has no SVCall 60: never issue it
+ * without Ion::Device::Board::isSaltyKernel(). Not counted in
+ * SVC_NUMBER_OF_CALLS, which is the size of the official table. */
+#define SVC_EVENTS_SET_SPINNER_COLORS 60
+
 }  // namespace SVCall
 }  // namespace Device
 }  // namespace Ion

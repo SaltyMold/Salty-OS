@@ -249,6 +249,9 @@ constexpr Event BatteryCharging = Event::Special(5);
 /* This event is only used in the simulator, to handle text that cannot be
  * associated with a key. */
 constexpr Event ExternalText = Event::Special(6);
+/* Fired one time after getEvent did not find any event (as long as no other
+ * event happens). Same identifier as in Epsilon 26 (Special(7)). */
+constexpr Event Idle = Event::Special(7);
 
 inline bool canRepeatEvent(Event e) {
   return e == Events::Left

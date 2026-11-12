@@ -77,7 +77,7 @@ void resetKeyboardState() {
   sLastKeyboardState = -1;
 }
 
-Event sharedGetEvent(int * timeout) {
+static Event privateSharedGetEvent(int * timeout) {
   constexpr int delayBeforeRepeat = 200;
   constexpr int delayBetweenRepeat = 50;
   assert(*timeout > delayBeforeRepeat);
@@ -176,12 +176,31 @@ size_t sharedCopyText(uint8_t eventId, char * buffer, size_t bufferSize) {
   }
 }
 
+/* The Idle event is fired one time after getEvent did not find any event, until
+ * another event is returned. It lets the apps do some work when the user is not
+ * active (for instance, the graph computes its points of interest). Every None
+ * goes through this logic, like in the Epsilon 26 kernel. */
+static bool sIdleWasSent = false;
+
+Event sharedGetEvent(int * timeout) {
+  Event event = privateSharedGetEvent(timeout);
+  if (event == None) {
+    if (!sIdleWasSent) {
+      sIdleWasSent = true;
+      return Idle;
+    }
+  } else {
+    sIdleWasSent = false;
+  }
+  return event;
+}
+
 bool sharedIsDefined(uint8_t eventId) {
   Event e(eventId);
   if (e.isKeyboardEvent()) {
     return s_dataForEvent[static_cast<uint8_t>(e)].isDefined();
   } else {
-    return (e == None || e == Termination || e == USBEnumeration || e == USBPlug || e == BatteryCharging || e == ExternalText);
+    return (e == None || e == Termination || e == USBEnumeration || e == USBPlug || e == BatteryCharging || e == ExternalText || e == Idle);
   }
 }
 

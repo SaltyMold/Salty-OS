@@ -179,11 +179,15 @@ constexpr
         0x3C7,   // χ // GREEK SMALL LETTER CHI
         0x3C9,   // ω // GREEK SMALL LETTER OMEGA
         0x1d07,  // ᴇ // LATIN LETTER SMALL CAPITAL E
+        0x2115,  // ℕ // DOUBLE-STRUCK CAPITAL N
+        0x211D,  // ℝ // DOUBLE-STRUCK CAPITAL R
+        0x2124,  // ℤ // DOUBLE-STRUCK CAPITAL Z
 #endif
         0x2192,  // → // RIGHTWARDS ARROW
 #if !KANDINSKY_CODEPOINTS_SCANDIUM
         0x2197,  // ↗ // NORTH EAST ARROW
         0x2198,  // ↘ // SOUTH EAST ARROW
+        0x2208,  // ∈ // ELEMENT OF
 #endif
         0x2211,  // ∑ // N-ARY SUMMATION
         0x221a,  // √ // SQUARE ROOT

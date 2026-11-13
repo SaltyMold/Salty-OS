@@ -1160,3 +1160,89 @@ QUIZ_CASE(calculation_additional_results) {
   GlobalPreferences::SharedGlobalPreferences()->setComplexFormat(
       ComplexFormat::Real);
 }
+
+/* A layout writes ≠ as "=" followed by a combining long solidus overlay. */
+#define NOT_EQUAL "=\u0338"
+
+/* With CAS, some outputs have dependencies, for instance a^2*a^5/a^5 gives
+ * dep(a^2,{nonNull(a)}). When they can be written as conditions, they are
+ * displayed in the center layout (a≠0) and hidden from the output (a^2). */
+void assertConditionsAre(const char* input, const char* expectedConditions,
+                         const char* expectedOutput, CalculationStore* store) {
+  OutputLayouts outputLayouts = pushAndProcessCalculation(store, input);
+  OMG::ExpiringPointer<Calculation::Calculation> lastCalculation =
+      store->calculationAtIndex(0);
+  assertDisplayOutput(lastCalculation->displayOutput(),
+                      DisplayOutput::ConditionsToggle, input);
+  if (outputLayouts.exact.isUninitialized() ||
+      outputLayouts.approximate.isUninitialized()) {
+    quiz_assert_print_if_failure(false, input, expectedConditions,
+                                 "Uninitialized");
+  } else {
+    assert_layout_serializes_to(outputLayouts.exact, expectedConditions);
+    assert_layout_serializes_to(outputLayouts.approximate, expectedOutput);
+  }
+  store->deleteAll();
+}
+
+/* A dependency that cannot be written as a condition (0×ln(x), -ln(x)/2...)
+ * prevents the conditions from being displayed: the output keeps its
+ * dependencies. */
+void assertNoConditions(const char* input, CalculationStore* store) {
+  pushAndProcessCalculation(store, input);
+  OMG::ExpiringPointer<Calculation::Calculation> lastCalculation =
+      store->calculationAtIndex(0);
+  quiz_assert_print_if_failure(
+      lastCalculation->displayOutput() != DisplayOutput::ConditionsToggle,
+      input, "Not ConditionsToggle", "ConditionsToggle");
+  store->deleteAll();
+}
+
+QUIZ_CASE(calculation_conditions) {
+  CalculationStore store(calculationBuffer, calculationBufferSize);
+  GlobalPreferences* preferences = GlobalPreferences::SharedGlobalPreferences();
+  bool previousCasEnabled = preferences->casEnabled();
+  ComplexFormat previousComplexFormat = preferences->complexFormat();
+  preferences->setCasEnabled(true);
+
+  /* Cartesian format */
+  preferences->setComplexFormat(ComplexFormat::Cartesian);
+  // nonNull(x) -> x≠0
+  assertConditionsAre("a^2*a^5/a^5", "a" NOT_EQUAL "0", "a^2", &store);
+  assertConditionsAre("x^2/x", "x" NOT_EQUAL "0", "x", &store);
+  // x^0 -> x≠0
+  assertConditionsAre("(2-x)/x", "x" NOT_EQUAL "0", "-1+(2/x)", &store);
+  assertConditionsAre("x/x", "x" NOT_EQUAL "0", "1", &store);
+  assertConditionsAre("(x+1)/(x+1)", "x+1" NOT_EQUAL "0", "1", &store);
+  // Several conditions are linked with "and"
+  assertConditionsAre("a/a+b/b", "a" NOT_EQUAL "0 and b" NOT_EQUAL "0", "2",
+                      &store);
+  assertConditionsAre("tan(x)/tan(x)",
+                      "cos(x)" NOT_EQUAL "0 and sin(x)" NOT_EQUAL "0", "1",
+                      &store);
+  // realInteger(n) -> n∈ℤ
+  assertConditionsAre("product(x,k,1,n)", "n∈ℤ", "x^n", &store);
+  // real(x) -> x∈ℝ (sign(A) is only defined if A is real)
+  assertConditionsAre("sign(x^y)", "x^y∈ℝ", "sign(x^y)", &store);
+  assertConditionsAre("sign(z+i*y)", "y·i+z∈ℝ", "sign(z+y·i)", &store);
+  // Duplicates and a≠0 with a≠0 are not repeated
+  assertConditionsAre("ln(x)", "x" NOT_EQUAL "0", "ln(x)", &store);
+  // A dependency without readable condition keeps the dep(...) display
+  assertNoConditions("sqrt(x)/sqrt(x)", &store);
+
+  /* Real format */
+  preferences->setComplexFormat(ComplexFormat::Real);
+  assertConditionsAre("a^2*a^5/a^5", "a" NOT_EQUAL "0", "a^2", &store);
+  // realPos(x) alone -> x≥0, and nonNull(x) with realPos(x) -> x>0
+  assertConditionsAre("ln(x)", "x>0", "ln(x)", &store);
+  assertConditionsAre("ln(x)/ln(x)", "ln(x)" NOT_EQUAL "0 and x>0", "1",
+                      &store);
+  assertConditionsAre("ln(x/sqrt(x))",
+                      "x" NOT_EQUAL "0 and (1/(√(x)))" NOT_EQUAL
+                      "0 and (x/(√(x)))≥0",
+                      "ln(x/(√(x)))", &store);
+  assertNoConditions("0×ln(x)", &store);
+
+  preferences->setComplexFormat(previousComplexFormat);
+  preferences->setCasEnabled(previousCasEnabled);
+}

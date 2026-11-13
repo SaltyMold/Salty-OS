@@ -52,10 +52,11 @@ class Calculation {
     /* ExactHidden has the same display behavior as ApproximateOnly, except
      * Exact output may be used to compute the EqualSign */
     ExactHidden,
-    /* The output has dependencies that are all of the form nonNull(x), for
-     * instance dep(a^2,{nonNull(a)}) for a^2*a^5/a^5. The dependencies are
-     * hidden from the output (a^2) and displayed as conditions (a≠0) in the
-     * center layout, which can be toggled like ExactAndApproximateToggle. */
+    /* The output has dependencies that can all be written as conditions
+     * (a≠0, a≥0, a∈ℝ, a∈ℤ), for instance dep(a^2,{nonNull(a)}) for
+     * a^2*a^5/a^5. The dependencies are hidden from the output (a^2) and
+     * displayed as conditions (a≠0) in the center layout, which can be toggled
+     * like ExactAndApproximateToggle. */
     ConditionsToggle
   };
 
@@ -114,8 +115,9 @@ class Calculation {
 
   // Layouts
   Poincare::Layout createInputLayout();
-  /* [withoutConditions] forces to hide the nonNull dependencies of the output.
-   * They are always hidden with DisplayOutput::ConditionsToggle. */
+  /* [withoutConditions] forces to hide the dependencies of the output that can
+   * be written as conditions. They are always hidden with
+   * DisplayOutput::ConditionsToggle. */
   Poincare::Layout createExactOutputLayout(bool* couldNotCreateExactLayout,
                                            bool withoutConditions = false);
   Poincare::Layout createApproximateOutputLayout(
@@ -204,9 +206,9 @@ class Calculation {
            m_approximatedOutputTreeSize;
   }
 
-  /* Create the layout of the conditions (a≠0, b≠0...) deduced from the
-   * nonNull dependencies of the exact output. Return an uninitialized layout if
-   * the output does not only have nonNull dependencies. */
+  /* Create the layout of the conditions (a≠0 and b≥0 and c∈ℝ...) deduced from
+   * the dependencies of the exact output. Return an uninitialized layout if
+   * one of the dependencies cannot be written as a condition. */
   Poincare::Layout createConditionsLayout();
 
   /* Conditions are only displayed if the exact and approximate outputs are the

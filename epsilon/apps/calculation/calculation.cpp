@@ -3,6 +3,7 @@
 #include <poincare/cas.h>
 #include <poincare/exception_checkpoint.h>
 #include <poincare/helpers/expression_equal_sign.h>
+#include <poincare/k_layout.h>
 #include <poincare/src/expression/dependency.h>
 #include <poincare/src/expression/projection.h>
 #include <shared/global_store.h>
@@ -17,29 +18,173 @@ using namespace Shared;
 namespace Calculation {
 
 /* With CAS, some outputs have dependencies. For instance a^2*a^5/a^5 gives
- * dep(a^2,{nonNull(a)}). When all the dependencies are nonNull(x), the output
- * can be displayed as a^2 along with the condition a≠0. */
-static bool HasOnlyNonNullDependencies(const UserExpression& e) {
-  const Internal::Tree* tree = e.tree();
-  if (!tree->isDep()) {
-    return false;
-  }
-  const Internal::Tree* dependencies = Internal::Dependency::Dependencies(tree);
-  int numberOfDependencies = dependencies->numberOfChildren();
-  if (numberOfDependencies == 0) {
-    return false;
-  }
-  for (int i = 0; i < numberOfDependencies; i++) {
-    if (!dependencies->child(i)->isNonNull()) {
-      return false;
+ * dep(a^2,{nonNull(a)}). When all the dependencies can be written as a readable
+ * condition, the output can be displayed without them (a^2) along with their
+ * conditions (a≠0):
+ *   nonNull(a) or a^0  ->  a≠0
+ *   realPos(a)         ->  a≥0
+ *   real(a)            ->  a∈ℝ
+ *   realInteger(a)     ->  a∈ℤ
+ * Any other dependency (f(a), 0×f(a)...) cannot be written as a condition: the
+ * output is then displayed with its dependencies, as dep(...). */
+
+enum class ConditionType : uint8_t {
+  NonZero,      // a≠0
+  NonNegative,  // a≥0
+  Positive,     // a>0 (a≠0 and a≥0 merged)
+  Real,         // a∈ℝ
+  Integer       // a∈ℤ
+};
+
+struct Condition {
+  ConditionType type;
+  // Points inside the tree of the expression the conditions come from
+  const Internal::Tree* operand;
+};
+
+/* The conditions are stored on the stack. An output that has more
+ * dependencies is displayed with its dependencies. */
+constexpr static int k_maxNumberOfConditions = 16;
+
+static int IndexOfCondition(const Condition* conditions, int numberOfConditions,
+                            ConditionType type, const Internal::Tree* operand) {
+  for (int i = 0; i < numberOfConditions; i++) {
+    if (conditions[i].type == type &&
+        conditions[i].operand->treeIsIdenticalTo(operand)) {
+      return i;
     }
   }
-  return true;
+  return -1;
 }
 
-// Return the main expression, without its nonNull dependencies
+static void RemoveCondition(Condition* conditions, int* numberOfConditions,
+                            int index) {
+  for (int i = index; i < *numberOfConditions - 1; i++) {
+    conditions[i] = conditions[i + 1];
+  }
+  (*numberOfConditions)--;
+}
+
+/* Fill [conditions] (of size k_maxNumberOfConditions) with the conditions
+ * equivalent to the dependencies of [e] and return their number. Return 0 if
+ * [e] has no dependencies or if one of them cannot be written as a condition.
+ * The conditions are cleaned up: no duplicates, a≠0 and a≥0 are merged into
+ * a>0, and a∈ℝ is dropped when a≥0 or a>0 already implies it. */
+static int ConditionsFromDependencies(const UserExpression& e,
+                                      Condition* conditions) {
+  if (e.isUninitialized()) {
+    return 0;
+  }
+  const Internal::Tree* tree = e.tree();
+  if (!tree->isDep()) {
+    return 0;
+  }
+  const Internal::Tree* dependencies = Internal::Dependency::Dependencies(tree);
+  int numberOfConditions = 0;
+  for (const Internal::Tree* dependency : dependencies->children()) {
+    ConditionType type;
+    if (dependency->isNonNull() ||
+        (dependency->isPow() && dependency->child(1)->isZero())) {
+      // a^0 is undefined only if a is null
+      type = ConditionType::NonZero;
+    } else if (dependency->isRealPos()) {
+      type = ConditionType::NonNegative;
+    } else if (dependency->isReal()) {
+      type = ConditionType::Real;
+    } else if (dependency->isRealInteger()) {
+      type = ConditionType::Integer;
+    } else {
+      return 0;
+    }
+    const Internal::Tree* operand = dependency->child(0);
+    if (IndexOfCondition(conditions, numberOfConditions, type, operand) >= 0) {
+      continue;
+    }
+    if (numberOfConditions == k_maxNumberOfConditions) {
+      return 0;
+    }
+    conditions[numberOfConditions++] = {type, operand};
+  }
+  // a≠0 and a≥0 -> a>0
+  for (int i = 0; i < numberOfConditions; i++) {
+    if (conditions[i].type != ConditionType::NonNegative) {
+      continue;
+    }
+    int nonZeroIndex =
+        IndexOfCondition(conditions, numberOfConditions, ConditionType::NonZero,
+                         conditions[i].operand);
+    if (nonZeroIndex >= 0) {
+      conditions[i].type = ConditionType::Positive;
+      RemoveCondition(conditions, &numberOfConditions, nonZeroIndex);
+      if (nonZeroIndex < i) {
+        i--;
+      }
+    }
+  }
+  // a∈ℝ is implied by a≥0 and a>0
+  for (int i = 0; i < numberOfConditions; i++) {
+    if (conditions[i].type != ConditionType::Real) {
+      continue;
+    }
+    if (IndexOfCondition(conditions, numberOfConditions,
+                         ConditionType::NonNegative,
+                         conditions[i].operand) >= 0 ||
+        IndexOfCondition(conditions, numberOfConditions,
+                         ConditionType::Positive, conditions[i].operand) >= 0) {
+      RemoveCondition(conditions, &numberOfConditions, i);
+      i--;
+    }
+  }
+  return numberOfConditions;
+}
+
+static bool HasConditions(const UserExpression& e) {
+  Condition conditions[k_maxNumberOfConditions];
+  return ConditionsFromDependencies(e, conditions) > 0;
+}
+
+// Return the main expression, without the dependencies that are conditions
 static UserExpression WithoutConditions(const UserExpression& e) {
-  return HasOnlyNonNullDependencies(e) ? e.cloneChildAtIndex(0) : e;
+  return HasConditions(e) ? e.cloneChildAtIndex(0) : e;
+}
+
+static Layout LayoutOfExpression(UserExpression e) {
+  return e.createLayout(Preferences::PrintFloatMode::Decimal,
+                        PrintFloat::k_maxNumberOfSignificantDigits,
+                        GlobalContextAccessor::Context(), OMG::Base::Decimal,
+                        App::k_useTenPower, false, false,
+                        PrintFloat::DecimalModeThreshold::Small);
+}
+
+static Layout LayoutOfCondition(const Condition& condition) {
+  UserExpression e;
+  switch (condition.type) {
+    case ConditionType::NonZero:
+      e = UserExpression::Create(KNotEqual(KA, 0_e), {.KA = condition.operand});
+      break;
+    case ConditionType::NonNegative:
+      e = UserExpression::Create(KSuperiorEqual(KA, 0_e),
+                                 {.KA = condition.operand});
+      break;
+    case ConditionType::Positive:
+      e = UserExpression::Create(KSuperior(KA, 0_e), {.KA = condition.operand});
+      break;
+    case ConditionType::Real:
+    case ConditionType::Integer: {
+      /* There is no expression for "a belongs to a set": concatenate the
+       * layouts, with the same separators as the comparisons. */
+      Layout separator = KRackL(KOperatorSeparatorL);
+      Layout layout = Layout::Concatenate(
+          LayoutOfExpression(UserExpression::Builder(condition.operand)),
+          separator);
+      layout = Layout::Concatenate(layout, Layout::String("∈"));
+      layout = Layout::Concatenate(layout, separator);
+      return Layout::Concatenate(
+          layout,
+          Layout::String(condition.type == ConditionType::Real ? "ℝ" : "ℤ"));
+    }
+  }
+  return LayoutOfExpression(e);
 }
 
 bool Calculation::operator==(const Calculation& c) {
@@ -140,33 +285,23 @@ Layout Calculation::createConditionsLayout() {
   ExceptionCheckpoint ecp;
   if (ExceptionRun(ecp)) {
     UserExpression output = exactOutput();
-    if (!output.isUninitialized() && HasOnlyNonNullDependencies(output)) {
-      const Internal::Tree* dependencies =
-          Internal::Dependency::Dependencies(output.tree());
-      // nonNull(a), nonNull(b) -> a≠0 and b≠0
-      UserExpression conditions;
-      for (int i = 0; i < dependencies->numberOfChildren(); i++) {
-        UserExpression condition = UserExpression::Create(
-            KNotEqual(KA, 0_e), {.KA = dependencies->child(i)->child(0)});
-        conditions = conditions.isUninitialized()
-                         ? condition
-                         : UserExpression::Create(
-                               KLogicalAnd(KA, KB),
-                               {.KA = conditions.tree(), .KB = condition.tree()});
+    Condition conditions[k_maxNumberOfConditions];
+    int numberOfConditions = ConditionsFromDependencies(output, conditions);
+    if (numberOfConditions > 0) {
+      // nonNull(a), realPos(b) -> a≠0 and b≥0
+      Layout result = LayoutOfCondition(conditions[0]);
+      for (int i = 1; i < numberOfConditions; i++) {
+        result = Layout::Concatenate(result, Layout::String(" and "));
+        result = Layout::Concatenate(result, LayoutOfCondition(conditions[i]));
       }
-      return conditions.createLayout(
-          Preferences::PrintFloatMode::Decimal,
-          PrintFloat::k_maxNumberOfSignificantDigits,
-          GlobalContextAccessor::Context(), OMG::Base::Decimal,
-          App::k_useTenPower, false, false,
-          PrintFloat::DecimalModeThreshold::Small);
+      return result;
     }
   }
   return Layout();
 }
 
 bool Calculation::shouldDisplayConditions() {
-  if (!HasOnlyNonNullDependencies(exactOutput())) {
+  if (!HasConditions(exactOutput())) {
     return false;
   }
   bool couldNotCreateLayout = false;

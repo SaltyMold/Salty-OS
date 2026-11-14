@@ -10,8 +10,8 @@
 
 > [!WARNING]  
 > The Salty-OS Website is not finished yet.
-> For now, you need to use the python scripts instead for themes and flashing.
-
+> For now, you can only use it to flash the userland.
+> For themes use the python script and for the launcher install manually ABLauncher
 
 ## Table of Contents
 - [About](#about)
@@ -20,6 +20,10 @@
 - [Install themes](#install-themes)
 - [How to use](#how-to-use)
 - [How to build](#how-to-build)
+
+If you need help, you can join our Discord server here : https://discord.gg/hpeW5Jud6p
+
+<a href="https://discord.gg/hpeW5Jud6p" target="_blank"><img alt="Banner Discord" src="github_assets/discord_banner.jpg" width="400px"></a>
 
 ## About
 
@@ -71,7 +75,7 @@ Everything customizable via a website.
 
 ### Upcoming
 
-Open a pull request if you want to add a feature.
+Ask in [discussion](https://github.com/SaltyMold/Salty-OS/discussions/) the feature you want to add.
 
 ## Install Salty-OS
 
@@ -83,7 +87,8 @@ If you're unsure what to choose, choose locked calculator.
 
 - Go on the [Salty-OS Website](https://salty-os.gabizar.top/install).
 - Go to the [Install section](https://salty-os.gabizar.top/install).
-- Follow the steps to install the userland on your calculator.
+- Click and software slot B and select Salty-OS then flash.
+- For now download [ABLauncher](https://github.com/SaltyMold/ABLauncher-Numworks) and install it with [app installer](https://my.numworks.com/apps).
 
 </details>
 

@@ -39,7 +39,7 @@ static constexpr uint8_t k_examMask[ExamIconView::k_height][ExamIconView::k_widt
 };
 
 void ExamIconView::drawRect(KDContext* ctx, KDRect rect) const {
-  ctx->fillRect(bounds(), ColorPicker::Resolve(ThemeComponent::DefaultBackground));
+  ctx->fillRect(bounds(), ColorPicker::Resolve(ThemeComponent::TextWhite));
   KDColor buffer[k_width * k_height];
   ctx->blendRectWithMask(bounds(),
                          ColorPicker::Resolve(ThemeComponent::TitleBar),

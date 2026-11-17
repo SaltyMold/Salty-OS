@@ -137,9 +137,31 @@ bool useOpaqueNameBackground(bool cellIsHighlighted) {
 namespace Home {
 
 uint8_t circleLevel = 1;
+
+namespace {
+
+/* Rounded icon mask ---------------------------------------------------------
+ * The anti-aliased coverage of the circle mask only depends on the circle
+ * level, never on the icon or on the wallpaper: it is computed once per level
+ * (3x3 blur of k_circleMask) and kept, instead of being recomputed for each of
+ * the 3080 pixels of every icon at every redraw.
+ *
+ * For each row we also keep the longest run of fully opaque pixels
+ * (alpha == 255): it is copied straight from the icon with a memcpy, and only
+ * the few pixels left of / right of it (the rounded corners) need the
+ * wallpaper behind them. */
+struct IconMask {
+  bool built;  // false (zero-initialized, so no .data) until first use
+  uint8_t level;
+  bool fullyOpaque;  // every pixel is opaque (square icon): nothing to blend
+  uint8_t opaqueStart[k_circleMaskHeight];  // [opaqueStart, opaqueEnd) of
+  uint8_t opaqueEnd[k_circleMaskHeight];    // alpha == 255 in each row
+  uint8_t alpha[k_circleMaskHeight][k_circleMaskWidth];
+};
+IconMask s_iconMask;
+
 // Smooth coverage (0..255) of the circle mask at (x, y)
-static uint8_t circleCoverage(int x, int y, int width, int height,
-                              uint8_t bitMask) {
+uint8_t circleCoverage(int x, int y, int width, int height, uint8_t bitMask) {
   static constexpr uint8_t k_weights[3][3] = {{1, 2, 1}, {2, 4, 2}, {1, 2, 1}};
   int sum = 0;
   for (int dy = -1; dy <= 1; dy++) {
@@ -156,49 +178,141 @@ static uint8_t circleCoverage(int x, int y, int width, int height,
   return (sum * 255) / 16;
 }
 
-static KDColor wallpaperPixelAt(int srcX, int srcY, int wallpaperWidth) {
-  if (ThemeManager::hasWallpaper() && !ExamModeManager::ExamMode().isActive()) {
-    int localY = 0;
-    const KDColor* chunk = ThemeManager::wallpaperChunkContaining(srcY, &localY);
-    if (chunk != nullptr && srcX >= 0 && srcX < wallpaperWidth) {
-      return chunk[localY * wallpaperWidth + srcX];
-    }
+const IconMask& iconMask(uint8_t level) {
+  IconMask& m = s_iconMask;
+  if (m.built && m.level == level) {
+    return m;
   }
-  return wallpaperColor();
+  const uint8_t bitMask = 1 << level;
+  bool allOpaque = true;
+  for (int y = 0; y < k_circleMaskHeight; y++) {
+    int bestStart = 0, bestLength = 0, runStart = 0, runLength = 0;
+    for (int x = 0; x < k_circleMaskWidth; x++) {
+      // Outside the mask the alpha is 0 (plain wallpaper). Inside the mask,
+      // only the contour pixels (those with an outside neighbour) are
+      // partially transparent.
+      uint8_t a = (k_circleMask[y][x] & bitMask)
+                      ? circleCoverage(x, y, k_circleMaskWidth,
+                                       k_circleMaskHeight, bitMask)
+                      : 0;
+      m.alpha[y][x] = a;
+      if (a == 0xFF) {
+        if (runLength == 0) {
+          runStart = x;
+        }
+        runLength++;
+        if (runLength > bestLength) {
+          bestLength = runLength;
+          bestStart = runStart;
+        }
+      } else {
+        runLength = 0;
+        allOpaque = false;
+      }
+    }
+    // No opaque pixel: start == end == 0, the whole row is "edge".
+    m.opaqueStart[y] = bestLength ? bestStart : 0;
+    m.opaqueEnd[y] = bestLength ? bestStart + bestLength : 0;
+  }
+  m.fullyOpaque = allOpaque;
+  m.level = level;
+  m.built = true;
+  return m;
 }
 
-void fillRoundedIcon(KDContext* ctx, KDRect iconRect, const KDColor* pixels,
-                     int iconWidth, int iconHeight, int globalX, int globalY,
+}  // namespace
+
+/* Draws the part of a rounded icon that lies in `clip` (a sub-rect of
+ * iconRect, both in cell coordinates), over the wallpaper.
+ *
+ * `pixels` are the iconRect.width() x iconRect.height() pixels of the icon: they
+ * can be read-only and straight from flash, they are never modified. The result
+ * is assembled row by row in one buffer and pushed to the screen with a single
+ * fillRectWithPixels call. Only what is actually visible (clip) is computed, and
+ * the wallpaper is only looked up for the rows that have rounded-corner
+ * pixels, once per row (not once per pixel). */
+void fillRoundedIcon(KDContext* ctx, KDRect iconRect, KDRect clip,
+                     const KDColor* pixels, int globalX, int globalY,
                      int nameHeight) {
+  const int iconWidth = iconRect.width();
+  assert(iconWidth == k_circleMaskWidth &&
+         iconRect.height() == k_circleMaskHeight);
+  clip = clip.intersectedWith(iconRect);
+  if (clip.isEmpty()) {
+    return;
+  }
+
   uint8_t level = ThemeManager::isValid() ? (uint8_t)ThemeManager::defaultCircleLevel()
                                           : circleLevel;
-  uint8_t bitMask = 1 << level;
-  KDColor maskedPixels[55 * 56];
+  const IconMask& mask = iconMask(level);
+  if (mask.fullyOpaque && clip == iconRect) {
+    // Square icon, fully visible: the flash content goes to the screen as is.
+    ctx->fillRectWithPixels(iconRect, pixels, nullptr);
+    return;
+  }
 
-  int wallpaperWidth = ThemeManager::wallpaperWidth();
-  for (int y = 0; y < iconHeight; y++) {
-    for (int x = 0; x < iconWidth; x++) {
-      int idx = y * iconWidth + x;
-      bool insideMask = (k_circleMask[y][x] & bitMask) != 0;
-      uint8_t alpha = 0;
-      if (insideMask) {
-        alpha = circleCoverage(x, y, iconWidth, iconHeight, bitMask);
-        if (alpha == 0xFF) {
-          maskedPixels[idx] = pixels[idx];
-          continue;
-        }
+  const int x0 = clip.x() - iconRect.x();
+  const int y0 = clip.y() - iconRect.y();
+  const int w = clip.width();
+  const int h = clip.height();
+  const int x1 = x0 + w;
+
+  const bool useWallpaper =
+      ThemeManager::hasWallpaper() && !ExamModeManager::ExamMode().isActive();
+  const int wallpaperWidth = useWallpaper ? ThemeManager::wallpaperWidth() : 0;
+  const KDColor flatColor = wallpaperColor();
+
+  KDColor out[k_circleMaskWidth * k_circleMaskHeight];
+  for (int y = y0; y < y0 + h; y++) {
+    const KDColor* src = pixels + y * iconWidth;
+    KDColor* dst = out + (y - y0) * w;  // dst[x - x0] is the icon's column x
+
+    // Opaque middle of the row: plain copy.
+    int a = mask.opaqueStart[y] > x0 ? mask.opaqueStart[y] : x0;
+    int b = mask.opaqueEnd[y] < x1 ? mask.opaqueEnd[y] : x1;
+    if (a < b) {
+      memcpy(dst + (a - x0), src + a, (b - a) * sizeof(KDColor));
+    } else {
+      a = b = x1;  // nothing opaque in this range: all of it is "edge"
+    }
+    if (a == x0 && b == x1) {
+      continue;  // all opaque: no wallpaper needed for this row
+    }
+
+    // Rounded corners: [x0, a) and [b, x1). The wallpaper row behind the icon
+    // is fetched once for the row.
+    const KDColor* wallpaperRow = nullptr;
+    if (useWallpaper) {
+      int localY = 0;
+      const KDColor* chunk = ThemeManager::wallpaperChunkContaining(
+          globalY + iconRect.y() + y - nameHeight - 4, &localY);
+      if (chunk != nullptr) {
+        wallpaperRow = chunk + localY * wallpaperWidth;
       }
-      // Outside the mask: alpha stays 0, so we get the plain wallpaper
-      // (same as the original hard mask). Inside the mask, only the contour
-      // pixels of the icon (those with an outside neighbour) are blended.
-      int srcX = globalX + iconRect.origin().x() + x;
-      int srcY = globalY + iconRect.origin().y() + y - nameHeight - 4;
-      KDColor background = wallpaperPixelAt(srcX, srcY, wallpaperWidth);
-      maskedPixels[idx] = alpha == 0 ? background
-                                     : KDColor::Blend(pixels[idx], background, alpha);
+    }
+    const int rowOriginX = globalX + iconRect.x();
+    auto cornerPixel = [&](int x) {
+      const uint8_t alpha = mask.alpha[y][x];
+      if (alpha == 0xFF) {
+        dst[x - x0] = src[x];
+        return;
+      }
+      const int wx = rowOriginX + x;
+      const KDColor background =
+          (wallpaperRow != nullptr && wx >= 0 && wx < wallpaperWidth)
+              ? wallpaperRow[wx]
+              : flatColor;
+      dst[x - x0] = alpha == 0 ? background
+                               : KDColor::Blend(src[x], background, alpha);
+    };
+    for (int x = x0; x < a; x++) {
+      cornerPixel(x);
+    }
+    for (int x = b; x < x1; x++) {
+      cornerPixel(x);
     }
   }
-  ctx->fillRectWithPixels(iconRect, maskedPixels, nullptr);
+  ctx->fillRectWithPixels(clip, out, nullptr);
 }
 
 AppCell::AppCell()
@@ -219,6 +333,17 @@ bool AppCell::shouldRoundCustomIcon() const {
   return ThemeManager::hasWallpaper() && (ThemeManager::isValid() || m_pointerNameView.text() != nullptr) && !ExamModeManager::ExamMode().isActive();
 }
 
+KDRect AppCell::iconRect() const {
+  return KDRect((bounds().width() - k_iconWidth) / 2, k_iconMargin,
+                k_iconWidth, k_iconHeight);
+}
+
+KDRect AppCell::nameRect() const {
+  KDSize nameSize = textView()->minimalSizeForOptimalDisplay();
+  return KDRect(0, bounds().height() - nameSize.height() - 2 * k_nameHeightMargin,
+                bounds().width(), nameSize.height() + 2 * k_nameHeightMargin);
+}
+
 void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   if (!isVisible()) {
     // See fillWholeCellWallpaper's comment: drawRect has no automatic
@@ -236,6 +361,65 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
   KDRect nameRect = KDRect(0, bounds().height() - nameSize.height() - 2 * k_nameHeightMargin,
                            bounds().width(), nameSize.height() + 2 * k_nameHeightMargin);
 
+  // `rect` is the part of the cell that actually needs to be redrawn: do not
+  // spend time on what is outside of it (for instance the icon, when only the
+  // name changed).
+  if (rect.intersects(nameRect)) {
+    drawNameBand(ctx, nameRect, nameSize.height());
+  }
+
+  KDRect icon = iconRect();
+  if (!rect.intersects(icon)) {
+    return;
+  }
+
+  /* Themed icon: raw RGB565 pixels read straight from flash (see
+   * ThemeManager::iconPixels), nothing to decompress or copy. When present,
+   * this replaces the normal IconView draw (excluded from numberOfSubviews()
+   * below) so we don't draw both on top of each other. */
+  if (hasThemedIcon()) {
+    const KDColor* pixels =
+        ThemeManager::iconPixels(m_themeIconIndex, k_iconWidth, k_iconHeight);
+    if (pixels != nullptr) {
+      KDPoint globalOrigin = ctx->origin();
+      fillRoundedIcon(ctx, icon, rect, pixels, globalOrigin.x(),
+                      globalOrigin.y(), nameSize.height());
+    }
+  } else if (ThemeManager::hasWallpaper() && ThemeManager::isValid() &&
+             iconImage() != nullptr && iconImage()->width() > 0) {
+    drawCompressedIcon(ctx, rect, icon, iconImage()->compressedPixelData(),
+                       iconImage()->compressedPixelDataSize(),
+                       nameSize.height());
+  } else if (m_pointerNameView.text() != nullptr && m_image.width() > 0 &&
+             ThemeManager::hasWallpaper() && !ThemeManager::isValid()) {
+    drawCompressedIcon(ctx, rect, icon, m_image.compressedPixelData(),
+                       m_image.compressedPixelDataSize(), nameSize.height());
+  }
+}
+
+/* Icons that are not part of the Theme Area (the builtin Escher ones when the
+ * theme has no icon for them, and the external apps' ones) are compiled in /
+ * stored by Escher in its own compressed format: they still have to be
+ * decompressed before being rounded. */
+void AppCell::drawCompressedIcon(KDContext* ctx, KDRect rect, KDRect icon,
+                                 const uint8_t* compressed, int compressedSize,
+                                 int nameHeight) const {
+  KDColor pixels[k_iconWidth * k_iconHeight];
+  OMG::Memory::Decompress(compressed, reinterpret_cast<uint8_t*>(pixels),
+                          compressedSize,
+                          k_iconWidth * k_iconHeight * sizeof(KDColor));
+  KDPoint globalOrigin = ctx->origin();
+  fillRoundedIcon(ctx, icon, rect, pixels, globalOrigin.x(), globalOrigin.y(),
+                  nameHeight);
+}
+
+void AppCell::drawNameBand(KDContext* ctx, KDRect nameRect,
+                           int nameHeight) const {
+  int rectWidth = nameRect.width();
+  int rectHeight = nameRect.height();
+  KDColor buffer[104 * 20];
+  KDPoint globalOrigin = ctx->origin();
+
   if (useOpaqueNameBackground(isHighlighted())) {
     // Either there's no wallpaper at all, or the theme asks for an opaque
     // highlight box (isAppNameBackgroundHover) AND this cell is currently
@@ -247,94 +431,28 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
     // leftovers from a previous, wider TextView content / themed icon can
     // remain visible at the edges.
     if (ThemeManager::hasWallpaper()) {
-      // This only happens for the highlighted cell of a theme that asks
-      // for an opaque name background: clear the band with the real
-      // wallpaper pixels first (rather than a flat color), so the area
-      // around the TextView's own, narrower opaque YellowDark box still
-      // shows the photo instead of a plain rectangle.
-      int rectWidth = nameRect.width();
-      int rectHeight = nameRect.height();
-
-      KDColor buffer[104 * 20];
-
-      KDPoint globalOrigin = ctx->origin();
+      // Clear the band with the real wallpaper pixels first (rather than a
+      // flat color), so the area around the TextView's own, narrower opaque
+      // box still shows the photo instead of a plain rectangle.
       fillWallpaperLineRange(nameRect, globalOrigin.x(), globalOrigin.y(),
-                             nameSize.height(), buffer, rectHeight, rectWidth);
-
+                             nameHeight, buffer, rectHeight, rectWidth);
       ctx->fillRectWithPixels(nameRect, buffer, nullptr);
     } else {
-      // No wallpaper at all: keep the previous, simpler behavior of a flat
-      // background fill.
       ctx->fillRect(nameRect, wallpaperColor());
     }
-  } else {
-    // Not the highlighted cell (or the theme doesn't ask for an opaque
-    // highlight box at all): blend the name into the real wallpaper pixels
-    // instead of painting any flat rectangle behind it.
-    // Get the width and height of the rectangle
-    int rectWidth = nameRect.width();
-    int rectHeight = nameRect.height();
-
-    // Max temp buffer for copying
-    KDColor buffer[104 * 20];
-
-    // Get position
-    KDPoint globalOrigin = ctx->origin();
-    int globalX = globalOrigin.x();
-    int globalY = globalOrigin.y();
-
-    fillWallpaperLineRange(nameRect, globalX, globalY, nameSize.height(), buffer,
-                           rectHeight, rectWidth);
-
-    ctx->fillRectWithPixels(nameRect, buffer, nullptr);
-    // Draw the text transparently on top of the wallpaper so we don't fill an
-    // opaque background. Then avoid letting the TextView draw itself later
-    // (excluded from subviews below).
-    const_cast<TextView*>(textView())->drawTextTransparent(ctx, nameRect);
+    return;
   }
 
-  // Themed icon: decompressed manually (see ThemeManager::iconPixels), since
-  // we don't know the codec Escher::Image/IconView expect for
-  // compressedPixelData() and can't safely hand our LZ4 blob to it. When
-  // present, this replaces the normal IconView draw (excluded from
-  // numberOfSubviews() below) so we don't draw both on top of each other.
-  if (hasThemedIcon()) {
-    KDRect iconRect((bounds().width() - k_iconWidth) / 2, k_iconMargin,
-                    k_iconWidth, k_iconHeight);
-    const KDColor* pixels =
-        ThemeManager::iconPixels(m_themeIconIndex, k_iconWidth, k_iconHeight);
-    if (pixels != nullptr) {
-      KDPoint globalOrigin = ctx->origin();
-      fillRoundedIcon(ctx, iconRect, pixels, k_iconWidth, k_iconHeight,
-                      globalOrigin.x(), globalOrigin.y(), nameSize.height());
-    }
-  } else if (ThemeManager::hasWallpaper() && ThemeManager::isValid() &&
-             iconImage() != nullptr && iconImage()->width() > 0) {
-    KDRect iconRect((bounds().width() - k_iconWidth) / 2, k_iconMargin,
-                    k_iconWidth, k_iconHeight);
-    KDColor pixels[k_iconWidth * k_iconHeight];
-    OMG::Memory::Decompress(iconImage()->compressedPixelData(),
-                            reinterpret_cast<uint8_t*>(pixels),
-                            iconImage()->compressedPixelDataSize(),
-                            k_iconWidth * k_iconHeight * sizeof(KDColor));
-    KDPoint globalOrigin = ctx->origin();
-    fillRoundedIcon(ctx, iconRect, pixels, k_iconWidth, k_iconHeight,
-                    globalOrigin.x(), globalOrigin.y(), nameSize.height());
-  }
-
-  if (m_pointerNameView.text() != nullptr && m_image.width() > 0 &&
-      ThemeManager::hasWallpaper() && !ThemeManager::isValid()) {
-    KDRect iconRect((bounds().width() - k_iconWidth) / 2, k_iconMargin,
-                    k_iconWidth, k_iconHeight);
-    KDColor pixels[k_iconWidth * k_iconHeight];
-    OMG::Memory::Decompress(m_image.compressedPixelData(),
-                            reinterpret_cast<uint8_t*>(pixels),
-                            m_image.compressedPixelDataSize(),
-                            k_iconWidth * k_iconHeight * sizeof(KDColor));
-    KDPoint globalOrigin = ctx->origin();
-    fillRoundedIcon(ctx, iconRect, pixels, k_iconWidth, k_iconHeight,
-                    globalOrigin.x(), globalOrigin.y(), nameSize.height());
-  }
+  // Not the highlighted cell (or the theme doesn't ask for an opaque
+  // highlight box at all): blend the name into the real wallpaper pixels
+  // instead of painting any flat rectangle behind it.
+  fillWallpaperLineRange(nameRect, globalOrigin.x(), globalOrigin.y(),
+                         nameHeight, buffer, rectHeight, rectWidth);
+  ctx->fillRectWithPixels(nameRect, buffer, nullptr);
+  // Draw the text transparently on top of the wallpaper so we don't fill an
+  // opaque background. Then avoid letting the TextView draw itself later
+  // (excluded from subviews below).
+  const_cast<TextView*>(textView())->drawTextTransparent(ctx, nameRect);
 }
 
 int AppCell::numberOfSubviews() const {
@@ -423,6 +541,18 @@ void AppCell::setVisible(bool visible) {
     Escher::HighlightCell::setVisible(visible);
     markWholeFrameAsDirty();
   }
+}
+
+void AppCell::setHighlighted(bool highlight) {
+  if (isHighlighted() == highlight) {
+    return;
+  }
+  setHighlightedWithoutReload(highlight);
+  applyNameColors();
+  /* The highlight only changes the colors and the box of the name: the icon
+   * does not depend on it, so only the name band is redrawn. Moving the
+   * selection no longer recomposites two icons over the wallpaper. */
+  markRectAsDirty(nameRect());
 }
 
 void AppCell::reloadCell() {

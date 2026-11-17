@@ -52,7 +52,8 @@ in: shared/ion/src/device/include/n0120/config/board.h
       uint8_t  isIcons;
       uint8_t  defaultCircleLevel;
       uint8_t  isAppNameBackgroundHover;
-      uint8_t  reserved[3];
+      uint8_t  iconFormat;                          1 = raw RGB565 (ICON_FORMAT_RAW565)
+      uint8_t  reserved[2];
       uint32_t wallpaperOffset;
       uint32_t wallpaperSize;
       uint32_t paletteOffset;
@@ -66,6 +67,7 @@ Binary layout produced by this script:
     [ThemeAreaHeader]            12 bytes, at ThemeAreaStart + 0
     [ThemeEntry] * themeCount    136 bytes each, immediately after the header
     [asset data]                 wallpapers / palettes / icons, back to back
+                                 (icons are padded to a 4-byte boundary)
     [zero padding]                up to THEME_AREA_SIZE (1.5 MiB)
 
 The palette of a theme is self-describing: it carries the NAME of each color
@@ -78,6 +80,11 @@ the default value compiled in the firmware.
     uint32 magic ("PAL2"), uint32 count, then count records of
     { char name[32] (NUL-terminated), uint32 color (0x00RRGGBB) }
     little-endian, back to back, without alignment.
+
+Icons are NOT compressed: each one is width*height RGB565 pixels (little-endian),
+stored at a 4-byte aligned offset, so the firmware reads them straight from flash
+(zero copy, no decompression, no RAM buffer). Only the wallpaper stays LZ4: it is
+too big to be stored raw for several themes.
 
 All offset fields inside a ThemeEntry (wallpaperOffset, paletteOffset,
 iconOffsets[i]) are ABSOLUTE byte offsets from the start of the Theme Area
@@ -116,7 +123,10 @@ except ImportError:  # pragma: no cover - fallback for minimal environments
 # way to parse the C++ header automatically here.
 # --------------------------------------------------------------------------
 MAGIC = 0x87654321
-VERSION = 5
+VERSION = 6
+# ThemeEntry.iconFormat: icons are raw RGB565, 4-byte aligned (see board.h)
+ICON_FORMAT_RAW565 = 1
+ICON_ALIGNMENT = 4
 THEME_COUNT_MAX = 256
 THEME_ICON_COUNT = 12
 THEME_NAME_LENGTH = 16
@@ -133,7 +143,7 @@ HEADER_SIZE = struct.calcsize(HEADER_FORMAT)  # 12
 
 # struct ThemeEntry {
 #   char name[16]; uint8_t x8 (isWallpaper, isPalette, isIcons,
-#   defaultCircleLevel, isAppNameBackgroundHover, reserved[3]);
+#   defaultCircleLevel, isAppNameBackgroundHover, iconFormat, reserved[2]);
 #   uint32_t x4; uint32_t[12]; uint32_t[12];
 # }
 ENTRY_FORMAT = f"<{THEME_NAME_LENGTH}sBBBBBBBBIIII{THEME_ICON_COUNT}I{THEME_ICON_COUNT}I"
@@ -272,7 +282,7 @@ def parse_variables(raw: dict, where: str) -> dict[str, int]:
 
 
 # --------------------------------------------------------------------------
-# Images (wallpaper / icons) -> RGB565, LZ4 block-compressed
+# Images (wallpaper -> RGB565 + LZ4 chunks, icons -> raw RGB565)
 # --------------------------------------------------------------------------
 def rgba888_to_rgb565(red: int, green: int, blue: int, alpha: int) -> int:
     del alpha
@@ -348,10 +358,11 @@ def png_to_lz4_wallpaper_blob(png_path: Path, chunk_height: int = 16) -> tuple[b
     return bytes(blob), raw_size, (width, height)
 
 
-def png_to_lz4_image_blob(png_path: Path) -> tuple[bytes, int, tuple[int, int]]:
+def png_to_raw_icon_blob(png_path: Path) -> tuple[bytes, int, tuple[int, int]]:
+    """Icon as raw RGB565 (width*height*2 bytes), NOT compressed: the firmware
+    draws it directly from flash."""
     width, height, rgb565_data = png_to_rgb565(png_path)
-    compressed = lz4_compress(rgb565_data)
-    return compressed, len(rgb565_data), (width, height)
+    return rgb565_data, len(rgb565_data), (width, height)
 
 
 # --------------------------------------------------------------------------
@@ -449,8 +460,15 @@ def build_theme(theme_name: str, default: tm.Theme, asset_cursor: int,
     fixed_index_by_path = {assets_dir / n: i for i, n in enumerate(FIXED_ICON_FILES)}
     for icon_path in icon_paths:
         index = fixed_index_by_path[icon_path]
-        blob, raw_size, dims = png_to_lz4_image_blob(icon_path)
+        blob, raw_size, dims = png_to_raw_icon_blob(icon_path)
         icon_dims_seen.add(dims)
+        # Align every icon on 4 bytes (absolute offset == offset from the start
+        # of the Theme Area, which is itself aligned in flash): the firmware
+        # then reads the pixels as 16-bit / 32-bit words without any copy.
+        padding = (-asset_cursor) % ICON_ALIGNMENT
+        if padding:
+            output_bytes.extend(b"\x00" * padding)
+            asset_cursor += padding
         icon_offsets[index] = asset_cursor
         icon_sizes[index] = len(blob)
         output_bytes.extend(blob)
@@ -479,7 +497,7 @@ def build_theme(theme_name: str, default: tm.Theme, asset_cursor: int,
         name_bytes.ljust(THEME_NAME_LENGTH, b"\x00"),
         is_wallpaper, is_palette, is_icons,
         variables["defaultCircleLevel"], variables["isAppNameBackgroundHover"],
-        0, 0, 0,  # reserved[3]
+        ICON_FORMAT_RAW565, 0, 0,  # iconFormat, reserved[2]
         wallpaper_offset, wallpaper_size,
         palette_offset, palette_size,
         *icon_offsets,
@@ -636,12 +654,11 @@ def render_summary(reports: list[ThemeReport], slot_count: int,
         if report.icon_assets:
             name_width = max(len(a.label) for a in report.icon_assets)
             for a in report.icon_assets:
-                ratio = (a.raw_size / a.size) if a.size else 0
                 dims = f"{a.dims[0]}x{a.dims[1]}" if a.dims else "?"
                 lines.append(
                     f"    {a.label:<{name_width}}  offset 0x{a.offset:06X}  "
-                    f"{human_size(a.size):>18}  raw {human_size(a.raw_size):>16}  "
-                    f"({dims}, {ratio:.2f}x)"
+                    f"{human_size(a.size):>18}  raw RGB565, uncompressed "
+                    f"({dims}, 4-byte aligned)"
                 )
         if report.missing_icons:
             lines.append(f"    missing: {', '.join(report.missing_icons)}")

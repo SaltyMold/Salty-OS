@@ -62,14 +62,16 @@ class ThemeManager {
 
   // True if the current theme actually provides an icon for that slot
   // (the slot can exist in the mapping above but be missing from the
-  // flashed binary, like "stat_icon.png" in the sample report).
+  // flashed binary, like "stat_icon.png" in the sample report), stored in the
+  // raw format (ThemeEntry::iconFormat).
   static bool hasIcon(int iconIndex);
 
-  // Decompresses (and caches) the icon at `iconIndex` into a shared static
-  // buffer sized iconWidth * iconHeight and returns a pointer to it, or
-  // nullptr if unavailable or too large. Same single-shared-buffer caching
-  // contract as wallpaperChunkContaining: copy out what you need before
-  // calling again for a different icon/theme.
+  // Icons are stored raw (RGB565, not compressed) in the Theme Area: this
+  // returns a read-only pointer to the iconWidth * iconHeight pixels straight
+  // in flash (zero copy, nothing to decompress, valid as long as the Theme
+  // Area is), or nullptr if the icon is unavailable, its size does not match
+  // iconWidth * iconHeight or it is not aligned on k_iconAlignment bytes.
+  static constexpr uintptr_t k_iconAlignment = 4;
   static const KDColor* iconPixels(int iconIndex, int iconWidth, int iconHeight);
 
   // --- Debug / introspection (any flashed entry, not only the selected) --
@@ -83,9 +85,8 @@ class ThemeManager {
   static bool wallpaperInfo(const Ion::Device::Board::Config::ThemeEntry* e,
                             WallpaperInfo* info);
 
-  // The wallpaper/icon decompression buffers live in the external apps RAM
-  // range: call this once an external app has exited, as it may have
-  // overwritten them.
+  // The wallpaper decompression buffer lives in the external apps RAM range:
+  // call this once an external app has exited, as it may have overwritten it.
   static void invalidateCaches();
 
   // --- Palette of the CURRENTLY SELECTED theme ------------------------

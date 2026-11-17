@@ -8,7 +8,9 @@
 
 namespace Home {
 
-constexpr uint8_t k_circleMask[56][55] = {
+constexpr int k_circleMaskWidth = 55;
+constexpr int k_circleMaskHeight = 56;
+constexpr uint8_t k_circleMask[k_circleMaskHeight][k_circleMaskWidth] = {
     {  1,   1,   1,   1,   3,   3,   3,   3,   7,   7,   7,   7,  15,  15,  15,  15,  31,  31,  31,  31,  63,  63,  63,  63, 127, 127, 127, 127, 127, 127, 127,  63,  63,  63,  63,  31,  31,  31,  31,  15,  15,  15,  15,   7,   7,   7,   7,   3,   3,   3,   3,   1,   1,   1,   1},
     {  1,   1,   3,   3,   3,   7,   7,   7,  15,  15,  15,  31,  31,  31,  63,  63,  63, 127, 127, 127, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 127, 127, 127,  63,  63,  63,  31,  31,  31,  15,  15,  15,   7,   7,   7,   3,   3,   3,   1,   1},
     {  1,   3,   3,   7,   7,   7,  15,  15,  15,  31,  31,  31,  63,  63,  63, 127, 127, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 127, 127,  63,  63,  63,  31,  31,  31,  15,  15,  15,   7,   7,   7,   3,   3,   1},
@@ -68,7 +70,7 @@ constexpr uint8_t k_circleMask[56][55] = {
 };
 
 
-// 0 to 7// 0 to 7
+// 0 to 7
 extern uint8_t circleLevel;
 
 class AppCell : public Escher::HighlightCell {
@@ -80,6 +82,8 @@ class AppCell : public Escher::HighlightCell {
   Escher::View* subviewAtIndex(int index) override;
   void layoutSubviews(bool force = false) override;
   void setVisible(bool visible) override;
+  // Only the name band changes with the highlight: the icon is not redrawn.
+  void setHighlighted(bool highlight) override;
   void reloadCell() override;
   void setBuiltinAppDescriptor(const Escher::App::Descriptor* appDescriptor);
   void setExternalApp(Ion::ExternalApps::App app);
@@ -87,12 +91,22 @@ class AppCell : public Escher::HighlightCell {
   constexpr static KDCoordinate k_iconMargin = 22;
   constexpr static KDCoordinate k_iconWidth = 55;
   constexpr static KDCoordinate k_iconHeight = 56;
+  static_assert(k_iconWidth == k_circleMaskWidth &&
+                    k_iconHeight == k_circleMaskHeight,
+                "the rounded icon mask must match the icon size");
   constexpr static KDCoordinate k_nameWidthMargin = 4;
   constexpr static KDCoordinate k_nameHeightMargin = 0;
   constexpr static Escher::TextFormat k_glyphsFormat = {
       .style = {.font = KDFont::Size::Small},
       .horizontalAlignment = KDGlyph::k_alignCenter};
   const Escher::TextView* textView() const;
+  // Band of the cell holding the app name (cell coordinates)
+  KDRect nameRect() const;
+  KDRect iconRect() const;
+  void drawNameBand(KDContext* ctx, KDRect nameRect, int nameHeight) const;
+  void drawCompressedIcon(KDContext* ctx, KDRect rect, KDRect icon,
+                          const uint8_t* compressed, int compressedSize,
+                          int nameHeight) const;
   void applyNameColors();
   bool hasThemedIcon() const;
   bool shouldRoundCustomIcon() const;

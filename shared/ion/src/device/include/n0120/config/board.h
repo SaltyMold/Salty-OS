@@ -163,10 +163,11 @@ constexpr uint32_t ThemeAreaEndSlotA = ThemeAreaStartSlotA + ThemeAreaSize;
 constexpr uint32_t ThemeAreaEndSlotB = ThemeAreaStartSlotB + ThemeAreaSize;
 
 constexpr uint32_t ThemeAreaHeaderMagic = 0x87654321;
-constexpr uint32_t ThemeAreaHeaderVersion = 5;
+constexpr uint32_t ThemeAreaHeaderVersion = 6;
 
 constexpr uint32_t ThemeCount = 256;
 constexpr uint32_t ThemeIconCount = 12;
+constexpr uint8_t ThemeIconFormatRaw565 = 1;
 constexpr uint32_t ThemeNameLength = 16;
 
 struct ThemeEntry {
@@ -176,7 +177,12 @@ struct ThemeEntry {
   uint8_t isIcons;
   uint8_t defaultCircleLevel;
   uint8_t isAppNameBackgroundHover;
-  uint8_t reserved[3]; // padding
+  /* How the icons are stored: ThemeIconFormatRaw565 = raw RGB565, 4-byte
+   * aligned, read straight from flash (no decompression). Anything else
+   * (0 = the old LZ4 blobs) is ignored by the firmware: the builtin icons
+   * are shown instead until the Theme Area is regenerated. */
+  uint8_t iconFormat;
+  uint8_t reserved[2]; // padding
   uint32_t wallpaperOffset;
   uint32_t wallpaperSize;
   uint32_t paletteOffset;

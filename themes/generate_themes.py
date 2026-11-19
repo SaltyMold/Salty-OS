@@ -28,7 +28,8 @@ default follows the color the theme gives to Name):
 
     {
       "name": "Ocean",                              (<= 15 characters)
-      "variables": {"defaultCircleLevel": 2, "isAppNameBackgroundHover": 1},
+      "variables": {"defaultCircleLevel": 2, "isAppNameBackgroundHover": 1,
+                    "iconFormat": 1},
       "colors": {
         "YellowDark": "1f6feb",                     core color
         "Python": {"Keyword": "d6336c"},            PythonKeyword, Python app only
@@ -53,6 +54,7 @@ in: shared/ion/src/device/include/n0120/config/board.h
       uint8_t  defaultCircleLevel;
       uint8_t  isAppNameBackgroundHover;
       uint8_t  iconFormat;                          1 = raw RGB565 (ICON_FORMAT_RAW565)
+                                                    0 = LZ4 (ICON_FORMAT_LZ4)
       uint8_t  reserved[2];
       uint32_t wallpaperOffset;
       uint32_t wallpaperSize;
@@ -67,7 +69,7 @@ Binary layout produced by this script:
     [ThemeAreaHeader]            12 bytes, at ThemeAreaStart + 0
     [ThemeEntry] * themeCount    136 bytes each, immediately after the header
     [asset data]                 wallpapers / palettes / icons, back to back
-                                 (icons are padded to a 4-byte boundary)
+                                 (raw icons are padded to a 4-byte boundary)
     [zero padding]                up to THEME_AREA_SIZE (1.5 MiB)
 
 The palette of a theme is self-describing: it carries the NAME of each color
@@ -81,10 +83,19 @@ the default value compiled in the firmware.
     { char name[32] (NUL-terminated), uint32 color (0x00RRGGBB) }
     little-endian, back to back, without alignment.
 
-Icons are NOT compressed: each one is width*height RGB565 pixels (little-endian),
-stored at a 4-byte aligned offset, so the firmware reads them straight from flash
-(zero copy, no decompression, no RAM buffer). Only the wallpaper stays LZ4: it is
-too big to be stored raw for several themes.
+Icons have no header, only pixels, and are stored in one of two formats. The
+format is chosen per theme with the "iconFormat" variable of its JSON (written in
+ThemeEntry.iconFormat); the 12 icons of a theme share it, and two themes of the
+same Theme Area can use different formats:
+
+  - raw (iconFormat = 1, the default when the variable is omitted): width*height RGB565 pixels (little-endian),
+    stored at a 4-byte aligned offset, so the firmware reads them straight from
+    flash (zero copy, no decompression, no RAM buffer). Faster, but bigger.
+  - LZ4 (iconFormat = 0): one LZ4 block of those RGB565 pixels
+    per icon. Smaller in flash, but the firmware has to decompress the icon in
+    RAM each time it is drawn.
+
+The wallpaper is always LZ4: it is too big to be stored raw for several themes.
 
 All offset fields inside a ThemeEntry (wallpaperOffset, paletteOffset,
 iconOffsets[i]) are ABSOLUTE byte offsets from the start of the Theme Area
@@ -124,9 +135,10 @@ except ImportError:  # pragma: no cover - fallback for minimal environments
 # --------------------------------------------------------------------------
 MAGIC = 0x87654321
 VERSION = 6
-# ThemeEntry.iconFormat: icons are raw RGB565, 4-byte aligned (see board.h)
-ICON_FORMAT_RAW565 = 1
-ICON_ALIGNMENT = 4
+# ThemeEntry.iconFormat (see ThemeIconFormatLZ4 / ThemeIconFormatRaw565 in board.h)
+ICON_FORMAT_LZ4 = 0       # one LZ4 block of RGB565 pixels per icon
+ICON_FORMAT_RAW565 = 1    # raw RGB565 pixels, 4-byte aligned
+ICON_ALIGNMENT = 4        # alignment of raw icons (read directly from flash)
 THEME_COUNT_MAX = 256
 THEME_ICON_COUNT = 12
 THEME_NAME_LENGTH = 16
@@ -158,6 +170,10 @@ WALLPAPER_FILE = "wallpaper.png"
 VARIABLE_DEFS: dict[str, dict[str, int]] = {
     "defaultCircleLevel": {"default": 0, "min": 0, "max": 7},
     "isAppNameBackgroundHover": {"default": 0, "min": 0, "max": 1},
+    # How the icons of the theme are stored: ICON_FORMAT_RAW565 (1, default) or
+    # ICON_FORMAT_LZ4 (0). Written in ThemeEntry.iconFormat.
+    "iconFormat": {"default": ICON_FORMAT_RAW565,
+                   "min": ICON_FORMAT_LZ4, "max": ICON_FORMAT_RAW565},
 }
 FIXED_ICON_FILES = [
     "calculation_icon.png",
@@ -203,6 +219,7 @@ class ThemeReport:
         self.palette_asset: AssetInfo | None = None
         self.wallpaper_asset: AssetInfo | None = None
         self.icon_assets: list[AssetInfo] = []
+        self.icon_format = ICON_FORMAT_RAW565
         self.missing_icons: list[str] = []
         self.variables: dict[str, int] = {}
         self.warnings: list[str] = []
@@ -282,7 +299,7 @@ def parse_variables(raw: dict, where: str) -> dict[str, int]:
 
 
 # --------------------------------------------------------------------------
-# Images (wallpaper -> RGB565 + LZ4 chunks, icons -> raw RGB565)
+# Images (wallpaper -> RGB565 + LZ4 chunks, icons -> RGB565, raw or LZ4)
 # --------------------------------------------------------------------------
 def rgba888_to_rgb565(red: int, green: int, blue: int, alpha: int) -> int:
     del alpha
@@ -358,11 +375,18 @@ def png_to_lz4_wallpaper_blob(png_path: Path, chunk_height: int = 16) -> tuple[b
     return bytes(blob), raw_size, (width, height)
 
 
-def png_to_raw_icon_blob(png_path: Path) -> tuple[bytes, int, tuple[int, int]]:
-    """Icon as raw RGB565 (width*height*2 bytes), NOT compressed: the firmware
-    draws it directly from flash."""
+def png_to_icon_blob(png_path: Path, compress: bool) -> tuple[bytes, int, tuple[int, int]]:
+    """Icon blob, without any header. Returns (blob, raw_size, (width, height)).
+
+    compress=False: raw RGB565 (width*height*2 bytes), the firmware draws it
+                    directly from flash (ICON_FORMAT_RAW565).
+    compress=True:  a single LZ4 block of those same pixels, decompressed in RAM
+                    by the firmware (ICON_FORMAT_LZ4).
+    """
     width, height, rgb565_data = png_to_rgb565(png_path)
-    return rgb565_data, len(rgb565_data), (width, height)
+    raw_size = len(rgb565_data)
+    blob = lz4_compress(rgb565_data) if compress else rgb565_data
+    return blob, raw_size, (width, height)
 
 
 # --------------------------------------------------------------------------
@@ -402,7 +426,8 @@ def build_theme(theme_name: str, default: tm.Theme, asset_cursor: int,
                 output_bytes: bytearray) -> tuple[bytes, ThemeReport, int]:
     """Appends this theme's asset bytes to `output_bytes` (already positioned
     at `asset_cursor` inside the final Theme Area) and returns the packed
-    ThemeEntry bytes, a ThemeReport for the summary, and the new cursor."""
+    ThemeEntry bytes, a ThemeReport for the summary, and the new cursor.
+"""
 
     json_path = tm.theme_json_path(theme_name)
     assets_dir = tm.theme_assets_dir(theme_name)
@@ -417,6 +442,10 @@ def build_theme(theme_name: str, default: tm.Theme, asset_cursor: int,
         report.warnings.append(
             f"No folder {assets_dir.relative_to(tm.ROOT)}: no wallpaper, no icons."
         )
+
+    # --- Variables (first: "iconFormat" decides how the icons are stored) -----
+    variables = parse_variables(theme.variables, str(json_path))
+    report.variables = variables
 
     # --- Wallpaper -------------------------------------------------------
     wallpaper_path = choose_wallpaper(assets_dir)
@@ -454,21 +483,26 @@ def build_theme(theme_name: str, default: tm.Theme, asset_cursor: int,
     icon_sizes = [0] * THEME_ICON_COUNT
     icon_dims_seen: set[tuple[int, int]] = set()
     is_icons = 1 if icon_paths else 0
+    icon_format = variables["iconFormat"]
+    compress_icons = icon_format == ICON_FORMAT_LZ4
+    report.icon_format = icon_format
 
     # icon_paths follows the fixed FIXED_ICON_FILES order (choose_icons keeps it),
     # so index in FIXED_ICON_FILES == index in ThemeEntry.iconOffsets/iconSizes.
     fixed_index_by_path = {assets_dir / n: i for i, n in enumerate(FIXED_ICON_FILES)}
     for icon_path in icon_paths:
         index = fixed_index_by_path[icon_path]
-        blob, raw_size, dims = png_to_raw_icon_blob(icon_path)
+        blob, raw_size, dims = png_to_icon_blob(icon_path, compress_icons)
         icon_dims_seen.add(dims)
-        # Align every icon on 4 bytes (absolute offset == offset from the start
-        # of the Theme Area, which is itself aligned in flash): the firmware
-        # then reads the pixels as 16-bit / 32-bit words without any copy.
-        padding = (-asset_cursor) % ICON_ALIGNMENT
-        if padding:
-            output_bytes.extend(b"\x00" * padding)
-            asset_cursor += padding
+        if icon_format == ICON_FORMAT_RAW565:
+            # Align every raw icon on 4 bytes (absolute offset == offset from the
+            # start of the Theme Area, which is itself aligned in flash): the
+            # firmware then reads the pixels as 16-bit / 32-bit words without any
+            # copy. LZ4 blobs are decompressed byte by byte: no padding needed.
+            padding = (-asset_cursor) % ICON_ALIGNMENT
+            if padding:
+                output_bytes.extend(b"\x00" * padding)
+                asset_cursor += padding
         icon_offsets[index] = asset_cursor
         icon_sizes[index] = len(blob)
         output_bytes.extend(blob)
@@ -488,16 +522,12 @@ def build_theme(theme_name: str, default: tm.Theme, asset_cursor: int,
             + ", ".join(missing_icons)
         )
 
-    # --- Variables -----------------------------------------------------
-    variables = parse_variables(theme.variables, str(json_path))
-    report.variables = variables
-
     entry = struct.pack(
         ENTRY_FORMAT,
         name_bytes.ljust(THEME_NAME_LENGTH, b"\x00"),
         is_wallpaper, is_palette, is_icons,
         variables["defaultCircleLevel"], variables["isAppNameBackgroundHover"],
-        ICON_FORMAT_RAW565, 0, 0,  # iconFormat, reserved[2]
+        icon_format, 0, 0,  # iconFormat, reserved[2]
         wallpaper_offset, wallpaper_size,
         palette_offset, palette_size,
         *icon_offsets,
@@ -561,6 +591,9 @@ def generate_theme_area(theme_names: list[str], output_path: Path) -> None:
     print(f"Wrote {len(final)} bytes to {output_path}")
     print(f"Wrote report to {summary_path}")
     print(f"Themes: {', '.join(r.name for r in reports)}")
+    print("Icons: " + ", ".join(
+        f"{r.name} = {'LZ4' if r.icon_format == ICON_FORMAT_LZ4 else 'raw'}"
+        for r in reports))
     print(f"Themes: {len(theme_names)}  |  used {total_used}/{THEME_AREA_SIZE} bytes "
           f"({100 * total_used / THEME_AREA_SIZE:.1f}%)")
     warning_count = sum(len(r.warnings) for r in reports)
@@ -581,6 +614,12 @@ def human_size(n: int) -> str:
     if n < 1024:
         return f"{n} B"
     return f"{n} B ({n / 1024:.2f} KiB)"
+
+
+def icon_format_label(icon_format: int) -> str:
+    if icon_format == ICON_FORMAT_LZ4:
+        return "LZ4 compressed (iconFormat = 0)"
+    return "raw RGB565, uncompressed (iconFormat = 1)"
 
 
 def render_summary(reports: list[ThemeReport], slot_count: int,
@@ -605,6 +644,8 @@ def render_summary(reports: list[ThemeReport], slot_count: int,
     lines.append(f"asset_region_start 0x{asset_region_start:06X}  "
                  f"(offset {asset_region_start} from ThemeAreaStart)")
     lines.append(f"payload_size       {human_size(payload_size)}")
+    icon_formats = {r.icon_format for r in reports}
+    lines.append(f"icon_format        {', '.join(sorted(icon_format_label(f) for f in icon_formats))}")
     lines.append("")
 
     used_pct = total_used / THEME_AREA_SIZE
@@ -655,10 +696,15 @@ def render_summary(reports: list[ThemeReport], slot_count: int,
             name_width = max(len(a.label) for a in report.icon_assets)
             for a in report.icon_assets:
                 dims = f"{a.dims[0]}x{a.dims[1]}" if a.dims else "?"
+                if report.icon_format == ICON_FORMAT_LZ4:
+                    ratio = (a.raw_size / a.size) if a.size else 0
+                    detail = (f"LZ4, raw {human_size(a.raw_size):>16}  "
+                              f"({dims}, {ratio:.2f}x)")
+                else:
+                    detail = f"raw RGB565, uncompressed ({dims}, 4-byte aligned)"
                 lines.append(
                     f"    {a.label:<{name_width}}  offset 0x{a.offset:06X}  "
-                    f"{human_size(a.size):>18}  raw RGB565, uncompressed "
-                    f"({dims}, 4-byte aligned)"
+                    f"{human_size(a.size):>18}  {detail}"
                 )
         if report.missing_icons:
             lines.append(f"    missing: {', '.join(report.missing_icons)}")

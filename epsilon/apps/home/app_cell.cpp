@@ -373,10 +373,11 @@ void AppCell::drawRect(KDContext* ctx, KDRect rect) const {
     return;
   }
 
-  /* Themed icon: raw RGB565 pixels read straight from flash (see
-   * ThemeManager::iconPixels), nothing to decompress or copy. When present,
-   * this replaces the normal IconView draw (excluded from numberOfSubviews()
-   * below) so we don't draw both on top of each other. */
+  /* Themed icon: RGB565 pixels given by ThemeManager::iconPixels, either read
+   * straight from flash (raw icons) or decompressed into its shared buffer
+   * (LZ4 icons): fillRoundedIcon only reads them, whatever the format. When
+   * present, this replaces the normal IconView draw (excluded from
+   * numberOfSubviews() below) so we don't draw both on top of each other. */
   if (hasThemedIcon()) {
     const KDColor* pixels =
         ThemeManager::iconPixels(m_themeIconIndex, k_iconWidth, k_iconHeight);

@@ -146,14 +146,20 @@ const WallpaperBlobHeader* wallpaperBlobHeader(const ThemeEntry* e) {
                                                         e->wallpaperOffset);
 }
 
-/* The wallpaper chunk buffer is a pure decompression cache (~10 KiB). It is
- * linked at the very start of the external apps RAM range (see
- * userland_shared.ld) instead of in the protected bss, so that this RAM is
+// Icons all have the same fixed size (the one of the home screen's AppCell).
+// The buffer is only used for LZ4 icons, see ThemeIconFormatLZ4.
+constexpr int k_iconBufferPixels =
+    Home::AppCell::k_iconWidth * Home::AppCell::k_iconHeight;
+
+/* The wallpaper chunk and icon buffers are pure decompression caches (~16 KiB
+ * together). They are linked at the very start of the external apps RAM range
+ * (see userland_shared.ld) instead of in the protected bss, so that this RAM is
  * available to external apps. Anything in that range can be overwritten by an
- * external app: the cache is therefore invalidated when it exits (see
+ * external app: the caches are therefore invalidated when it exits (see
  * ThemeManager::invalidateCaches). The cache indices stay in the protected
  * area, they are only trusted while the matching buffer is known to be valid.
- * Icons have no buffer at all: they are stored raw and read from flash. */
+ * The icon buffer is only written for themes whose icons are LZ4 compressed:
+ * raw icons are read straight from flash and never go through it. */
 #if PLATFORM_DEVICE
 #define THEME_CACHE_SECTION __attribute__((section(".bss.$theme_cache")))
 #else
@@ -161,10 +167,13 @@ const WallpaperBlobHeader* wallpaperBlobHeader(const ThemeEntry* e) {
 #endif
 
 THEME_CACHE_SECTION KDColor s_chunkBuffer[k_maxChunkWidth * k_maxChunkHeight];
+THEME_CACHE_SECTION KDColor s_iconBuffer[k_iconBufferPixels];
 
 int s_cachedChunkThemeIndex = -1;
 int s_cachedChunkIndex = -1;
 int s_cachedChunkTop = 0;
+int s_cachedIconThemeIndex = -1;
+int s_cachedIconIndex = -1;
 
 }  // namespace
 
@@ -184,6 +193,8 @@ void ThemeManager::invalidateCaches() {
   s_cachedChunkThemeIndex = -1;
   s_cachedChunkIndex = -1;
   s_cachedChunkTop = 0;
+  s_cachedIconThemeIndex = -1;
+  s_cachedIconIndex = -1;
 }
 
 bool ThemeManager::hasWallpaper() {
@@ -254,14 +265,22 @@ const KDColor* ThemeManager::wallpaperChunkContaining(int globalY, int* localY) 
 }
 
 /* Icons -------------------------------------------------------------------
- * Icon blobs are NOT compressed (generate_themes.py's png_to_raw_icon_blob()):
- * just width * height RGB565 pixels with NO header, stored at a 4-byte aligned
- * offset of the Theme Area. The flash is memory mapped, so iconPixels() hands
- * out a pointer straight into it: no decompression, no copy, no RAM buffer.
+ * Icon blobs have NO header at all, only pixels. How they are stored is given
+ * by ThemeEntry::iconFormat (generate_themes.py's png_to_icon_blob()):
+ *
+ * - ThemeIconFormatRaw565: width * height RGB565 pixels, stored at a 4-byte
+ *   aligned offset of the Theme Area. The flash is memory mapped, so
+ *   iconPixels() hands out a pointer straight into it: no decompression, no
+ *   copy, no RAM buffer. The size of the blob is checked against the size
+ *   asked by the caller.
+ * - ThemeIconFormatLZ4: a single flat LZ4 block of those same pixels, made
+ *   with the same lz4_compress() as the wallpaper chunks. It is smaller in
+ *   flash, but iconPixels() has to decompress it into a RAM buffer (cached
+ *   until another icon is asked for).
+ *
  * Width/height are not stored in the blob - the firmware and the theme
  * generator both assume the fixed builtin icon size (passed in by the
- * caller, e.g. AppCell's k_iconWidth / k_iconHeight), which is checked against
- * the size of the blob. */
+ * caller, e.g. AppCell's k_iconWidth / k_iconHeight). */
 
 int ThemeManager::iconIndexForApp(I18n::Message appName) {
   // Order must match FIXED_ICON_FILES in generate_themes.py exactly.
@@ -371,12 +390,15 @@ bool ThemeManager::isAppNameBackgroundHover() {
   return e ? (bool)e->isAppNameBackgroundHover : false;
 }
 
+static bool isKnownIconFormat(uint8_t format) {
+  return format == ThemeIconFormatRaw565 || format == ThemeIconFormatLZ4;
+}
+
 bool ThemeManager::hasIcon(int iconIndex) {
   const ThemeEntry* e = currentEntry();
-  /* A Theme Area generated before the icons became raw (iconFormat == 0, LZ4
-   * blobs) is not readable as pixels: behave as if it had no icon, the
-   * builtin ones are displayed until the Theme Area is regenerated. */
-  return e != nullptr && e->isIcons && e->iconFormat == ThemeIconFormatRaw565 &&
+  /* A Theme Area with an unknown iconFormat can't be read as pixels: behave as
+   * if it had no icon, the builtin ones are displayed. */
+  return e != nullptr && e->isIcons && isKnownIconFormat(e->iconFormat) &&
          iconIndex >= 0 && iconIndex < (int)ThemeIconCount &&
          e->iconOffsets[iconIndex] != 0;
 }
@@ -389,17 +411,38 @@ const KDColor* ThemeManager::iconPixels(int iconIndex, int iconWidth,
   const ThemeEntry* e = currentEntry();
   const uint32_t offset = e->iconOffsets[iconIndex];
   const uint32_t size = e->iconSizes[iconIndex];
-  const uint32_t expectedSize =
+  if (offset > ThemeAreaSize || size > ThemeAreaSize - offset) {
+    return nullptr;
+  }
+  const uint32_t rawSize =
       static_cast<uint32_t>(iconWidth * iconHeight) * sizeof(KDColor);
-  if (size != expectedSize || offset > ThemeAreaSize ||
-      size > ThemeAreaSize - offset) {
+
+  if (e->iconFormat == ThemeIconFormatRaw565) {
+    // Zero copy: the pixels are read where they are in flash.
+    if (size != rawSize) {
+      return nullptr;
+    }
+    const uintptr_t address = areaBase() + offset;
+    if (address % k_iconAlignment != 0) {
+      return nullptr;
+    }
+    return reinterpret_cast<const KDColor*>(address);
+  }
+
+  // ThemeIconFormatLZ4: decompress into the shared icon buffer, which has
+  // exactly the size of an icon.
+  if (size == 0 || rawSize != sizeof(s_iconBuffer)) {
     return nullptr;
   }
-  const uintptr_t address = areaBase() + offset;
-  if (address % k_iconAlignment != 0) {
-    return nullptr;
+  if (s_cachedIconThemeIndex != s_selectedTheme ||
+      s_cachedIconIndex != iconIndex) {
+    OMG::Memory::Decompress(reinterpret_cast<const uint8_t*>(areaBase() + offset),
+                            reinterpret_cast<uint8_t*>(s_iconBuffer), size,
+                            rawSize);
+    s_cachedIconThemeIndex = s_selectedTheme;
+    s_cachedIconIndex = iconIndex;
   }
-  return reinterpret_cast<const KDColor*>(address);
+  return s_iconBuffer;
 }
 
 void ThemeManager::refreshTheme(AppsWindow* window) {

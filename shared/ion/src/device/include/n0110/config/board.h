@@ -172,7 +172,8 @@ constexpr uint32_t ThemeAreaHeaderVersion = 6;
 
 constexpr uint32_t ThemeCount = 256;
 constexpr uint32_t ThemeIconCount = 12;
-constexpr uint8_t ThemeIconFormatRaw565 = 1;
+constexpr uint8_t ThemeIconFormatLZ4 = 0;     // LZ4 block of RGB565 pixels
+constexpr uint8_t ThemeIconFormatRaw565 = 1;  // raw RGB565 pixels, 4-byte aligned
 constexpr uint32_t ThemeNameLength = 16;
 
 struct ThemeEntry {
@@ -182,10 +183,13 @@ struct ThemeEntry {
   uint8_t isIcons;
   uint8_t defaultCircleLevel;
   uint8_t isAppNameBackgroundHover;
-  /* How the icons are stored: ThemeIconFormatRaw565 = raw RGB565, 4-byte
-   * aligned, read straight from flash (no decompression). Anything else
-   * (0 = the old LZ4 blobs) is ignored by the firmware: the builtin icons
-   * are shown instead until the Theme Area is regenerated. */
+  /* How the icons are stored (same format for the 12 icons of the theme):
+   * - ThemeIconFormatRaw565 (1): raw RGB565, 4-byte aligned, read straight from
+   *   flash (no decompression, no RAM buffer).
+   * - ThemeIconFormatLZ4 (0): one LZ4 block of RGB565 pixels per icon, smaller
+   *   in flash but decompressed in RAM when drawn.
+   * Any other value is ignored by the firmware: the builtin icons are shown
+   * instead. */
   uint8_t iconFormat;
   uint8_t reserved[2]; // padding
   uint32_t wallpaperOffset;

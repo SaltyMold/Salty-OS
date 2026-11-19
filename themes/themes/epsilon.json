@@ -2,7 +2,8 @@
   "name": "Epsilon",
   "variables": {
     "defaultCircleLevel": 0,
-    "isAppNameBackgroundHover": 1
+    "isAppNameBackgroundHover": 1,
+    "iconFormat": 0
   },
   "colors": {
     "_core": "Core colors: every app that does not have its own color follows them.",

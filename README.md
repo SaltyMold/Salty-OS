@@ -150,7 +150,6 @@ It is always both parantheses and the keybind.
 | Shift | Previous theme    |
 | Alpha | Next theme    |
 | Xnt | Toggle external apps    |
-| Backspace | Salty-OS settings |
 
 ## How to build
 

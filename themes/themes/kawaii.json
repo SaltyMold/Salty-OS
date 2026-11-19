@@ -2,7 +2,8 @@
   "name": "Kawaii",
   "variables": {
     "defaultCircleLevel": 2,
-    "isAppNameBackgroundHover": 0
+    "isAppNameBackgroundHover": 0,
+    "iconFormat": 1
   },
   "colors": {
     "YellowDark": "ffa6c8",

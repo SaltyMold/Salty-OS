@@ -2,7 +2,8 @@
   "name": "Catppuccin Latte",
   "variables": {
     "defaultCircleLevel": 0,
-    "isAppNameBackgroundHover": 1
+    "isAppNameBackgroundHover": 1,
+    "iconFormat": 0
   },
   "colors": {
     "_note": "Based on Upsilon's Catppuccin Mocha, converted to Catppuccin Latte. Only the colors that differ from Epsilon are listed.",

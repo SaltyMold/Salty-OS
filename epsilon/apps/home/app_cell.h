@@ -87,13 +87,14 @@ class AppCell : public Escher::HighlightCell {
   void reloadCell() override;
   void setBuiltinAppDescriptor(const Escher::App::Descriptor* appDescriptor);
   void setExternalApp(Ion::ExternalApps::App app);
- private:
-  constexpr static KDCoordinate k_iconMargin = 22;
+  // Fixed size of the icons (also used by ThemeManager for its icon buffer)
   constexpr static KDCoordinate k_iconWidth = 55;
   constexpr static KDCoordinate k_iconHeight = 56;
   static_assert(k_iconWidth == k_circleMaskWidth &&
                     k_iconHeight == k_circleMaskHeight,
                 "the rounded icon mask must match the icon size");
+ private:
+  constexpr static KDCoordinate k_iconMargin = 22;
   constexpr static KDCoordinate k_nameWidthMargin = 4;
   constexpr static KDCoordinate k_nameHeightMargin = 0;
   constexpr static Escher::TextFormat k_glyphsFormat = {

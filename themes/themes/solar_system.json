@@ -3,7 +3,8 @@
   "variables": {
     "defaultCircleLevel": 7,
     "isAppNameBackgroundHover": 0,
-    "iconFormat": 1
+    "iconFormat": 1,
+    "isUpsilonBattery": 1
   },
   "colors": {
     "_note": "Solar System theme, black and white shades only. Only the colors that differ from Epsilon are listed.",

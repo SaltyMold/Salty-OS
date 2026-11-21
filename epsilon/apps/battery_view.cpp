@@ -3,6 +3,7 @@
 #include <escher/container.h>
 #include <escher/theme/color_picker.h>
 
+#include "theme_manager.h"
 #include "title_bar_view.h"
 
 using namespace Escher;
@@ -106,8 +107,96 @@ void BatteryView::drawInsideBatteryLevel(KDContext* ctx, KDCoordinate width,
                 ColorPicker::Resolve(ThemeComponent::TokenBatteryLevel));
 }
 
+/* The Upsilon battery pictogram (16x9, outlined), used when the current theme
+ * sets isUpsilonBattery. It is the drawing of Upsilon's BatteryView, with the
+ * Salty theme components in place of Upsilon's palette:
+ *   Palette::Battery         -> TextWhite
+ *   Palette::BatteryInCharge -> TokenBatteryLevel
+ *   Palette::BatteryLow      -> TokenLowBattery
+ *   Palette::Toolbar         -> TitleBarView::k_backgroundColor
+ * Upsilon only has 3 levels (low, in between, full): P40 and P60 are drawn as
+ * the half full battery, P80 as the full one. */
+void BatteryView::drawUpsilonRect(KDContext* ctx) const {
+  const KDColor battery = ColorPicker::Resolve(ThemeComponent::TextWhite);
+  const KDColor background = ColorPicker::Resolve(TitleBarView::k_backgroundColor);
+
+  // Background (this view is not transparent)
+  ctx->fillRect(bounds(), background);
+
+  // Draw the left part
+  ctx->fillRect(
+      KDRect(0, 1, k_elementWidth, k_upsilonBatteryHeight - 2), battery);
+
+  // Draw top and bottom part
+  ctx->fillRect(KDRect(1, 0, k_upsilonBatteryWidth - 3, 1), battery);
+  ctx->fillRect(
+      KDRect(1, k_upsilonBatteryHeight - 1, k_upsilonBatteryWidth - 3, 1),
+      battery);
+
+  // Draw the middle part
+  constexpr KDCoordinate insideX = k_elementWidth + k_separatorThickness;
+  constexpr KDCoordinate insideWidth = k_upsilonBatteryWidth -
+                                       3 * k_elementWidth -
+                                       2 * k_separatorThickness;
+  constexpr KDCoordinate insideHeight = k_upsilonBatteryHeight - 4;
+  if (m_isCharging) {
+    // Charging: yellow background with flash
+    ctx->fillRect(KDRect(insideX, 2, insideWidth, insideHeight),
+                  ColorPicker::Resolve(ThemeComponent::TokenBatteryLevel));
+    KDRect frame((k_upsilonBatteryWidth - k_flashWidth) / 2, 0, k_flashWidth,
+                 k_flashHeight);
+    KDColor flashWorkingBuffer[k_flashHeight * k_flashWidth];
+    ctx->blendRectWithMask(frame, battery, (const uint8_t*)flashMask,
+                           flashWorkingBuffer);
+  } else if (m_chargeState == Ion::Battery::Charge::LOW) {
+    // Low: quite empty battery
+    ctx->fillRect(KDRect(insideX, 2, 2 * k_elementWidth, insideHeight),
+                  ColorPicker::Resolve(ThemeComponent::TokenLowBattery));
+    ctx->fillRect(
+        KDRect(3 * k_elementWidth + k_separatorThickness, 2,
+               k_upsilonBatteryWidth - 5 * k_elementWidth -
+                   2 * k_separatorThickness,
+               insideHeight),
+        KDColor::Blend(background, battery, 128));
+  } else if (m_chargeState != Ion::Battery::Charge::FULL &&
+             m_chargeState != Ion::Battery::Charge::P80) {
+    // Middle (P40, P60): half full battery
+    constexpr KDCoordinate middleChargeWidth = insideWidth / 2;
+    ctx->fillRect(KDRect(insideX, 2, middleChargeWidth, insideHeight), battery);
+    ctx->fillRect(KDRect(insideX + middleChargeWidth, 2, middleChargeWidth + 1,
+                         insideHeight),
+                  KDColor::Blend(background, battery, 128));
+  } else {
+    // Full (FULL, P80): full battery
+    ctx->fillRect(KDRect(insideX, 2, insideWidth, insideHeight), battery);
+    if (m_isPlugged && m_chargeState == Ion::Battery::Charge::FULL) {
+      // Plugged and full: full battery with tick
+      KDRect frame((k_upsilonBatteryWidth - k_tickWidth) / 2,
+                   (k_upsilonBatteryHeight - k_tickHeight) / 2, k_tickWidth,
+                   k_tickHeight);
+      KDColor tickWorkingBuffer[k_tickHeight * k_tickWidth];
+      ctx->blendRectWithMask(frame, background, (const uint8_t*)tickMask,
+                             tickWorkingBuffer);
+    }
+  }
+
+  // Draw the right part
+  ctx->fillRect(KDRect(k_upsilonBatteryWidth - 2 * k_elementWidth, 1,
+                       k_elementWidth, k_upsilonBatteryHeight - 2),
+                battery);
+  ctx->fillRect(
+      KDRect(k_upsilonBatteryWidth - k_elementWidth,
+             (k_upsilonBatteryHeight - k_upsilonCapHeight) / 2, k_elementWidth,
+             k_upsilonCapHeight),
+      battery);
+}
+
 void BatteryView::drawRect(KDContext* ctx, KDRect rect) const {
   assert(m_chargeState != Ion::Battery::Charge::EMPTY);
+  if (ThemeManager::isUpsilonBattery()) {
+    drawUpsilonRect(ctx);
+    return;
+  }
   /* We draw from left to right. The middle part representing the battery
    *'content' depends on the charge */
 
@@ -176,5 +265,8 @@ void BatteryView::drawRect(KDContext* ctx, KDRect rect) const {
 }
 
 KDSize BatteryView::minimalSizeForOptimalDisplay() const {
+  if (ThemeManager::isUpsilonBattery()) {
+    return KDSize(k_upsilonBatteryWidth, k_upsilonBatteryHeight);
+  }
   return KDSize(k_batteryWidth, k_batteryHeight);
 }

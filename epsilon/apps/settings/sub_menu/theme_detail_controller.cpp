@@ -35,6 +35,8 @@ void ThemeDetailController::describe(RowPicker* p) const {
   p->row(M::ThemesNameHover)
       .message(e->isAppNameBackgroundHover ? M::ThemesYes
                                            : M::ThemesNo);
+  p->row(M::ThemesUpsilonBattery)
+      .message(e->isUpsilonBattery == 1 ? M::ThemesYes : M::ThemesNo);
   p->row(M::ThemesTotalSize).size(ThemeDataSize(e));
 
   p->section(M::ThemesSectionWallpaper);

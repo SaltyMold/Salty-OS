@@ -182,7 +182,13 @@ struct ThemeEntry {
    * Any other value is ignored by the firmware: the builtin icons are shown
    * instead. */
   uint8_t iconFormat;
-  uint8_t reserved[2]; // padding
+  /* 1: the title bar battery is drawn with the Upsilon pictogram (outlined
+   * battery, 16x9), 0: with the Salty one. Taken from the former reserved[2]
+   * padding, so the size of ThemeEntry and ThemeAreaHeaderVersion are
+   * unchanged: a Theme Area generated before this field existed has 0 here
+   * and keeps the Salty battery. */
+  uint8_t isUpsilonBattery;
+  uint8_t reserved[1]; // padding
   uint32_t wallpaperOffset;
   uint32_t wallpaperSize;
   uint32_t paletteOffset;

@@ -390,6 +390,11 @@ bool ThemeManager::isAppNameBackgroundHover() {
   return e ? (bool)e->isAppNameBackgroundHover : false;
 }
 
+bool ThemeManager::isUpsilonBattery() {
+  const ThemeEntry* e = currentEntry();
+  return e ? (e->isUpsilonBattery == 1) : false;
+}
+
 static bool isKnownIconFormat(uint8_t format) {
   return format == ThemeIconFormatRaw565 || format == ThemeIconFormatLZ4;
 }

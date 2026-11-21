@@ -3,7 +3,8 @@
   "variables": {
     "defaultCircleLevel": 0,
     "isAppNameBackgroundHover": 1,
-    "iconFormat": 0
+    "iconFormat": 0,
+    "isUpsilonBattery": 1
   },
   "colors": {
     "_note": "Based on Upsilon's Catppuccin Mocha. Only the colors that differ from Epsilon are listed.",

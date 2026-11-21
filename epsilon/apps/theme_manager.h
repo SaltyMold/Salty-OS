@@ -129,6 +129,8 @@ class ThemeManager {
   // to check isValid()/hasXxx() first.
   static int defaultCircleLevel();
   static bool isAppNameBackgroundHover();
+  // True if the title bar battery uses the Upsilon pictogram
+  static bool isUpsilonBattery();
 
   static void refreshTheme(AppsWindow* window);
 

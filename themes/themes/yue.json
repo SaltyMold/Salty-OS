@@ -3,7 +3,8 @@
   "variables": {
     "defaultCircleLevel": 3,
     "isAppNameBackgroundHover": 1,
-    "iconFormat": 1
+    "iconFormat": 1,
+    "isUpsilonBattery": 0
   },
   "colors": {
     "YellowDark": "ffec5b",

@@ -23,10 +23,15 @@ class BatteryView : public Escher::View {
   constexpr static int k_tickWidth = 8;
 
  private:
+  void drawUpsilonRect(KDContext* ctx) const;
   void drawInsideBatteryLevel(
       KDContext* ctx, KDCoordinate width,
       Escher::ThemeComponent component =
           Escher::ThemeComponent::TextWhite) const;
+  // Upsilon pictogram (theme variable isUpsilonBattery), see drawUpsilonRect
+  constexpr static KDCoordinate k_upsilonBatteryHeight = 9;
+  constexpr static KDCoordinate k_upsilonBatteryWidth = 16;
+  constexpr static KDCoordinate k_upsilonCapHeight = 3;
   constexpr static KDCoordinate k_batteryHeight = 8;
   constexpr static KDCoordinate k_batteryWidth = 15;
   constexpr static KDCoordinate k_elementWidth = 1;

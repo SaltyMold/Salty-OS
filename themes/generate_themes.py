@@ -29,7 +29,7 @@ default follows the color the theme gives to Name):
     {
       "name": "Ocean",                              (<= 15 characters)
       "variables": {"defaultCircleLevel": 2, "isAppNameBackgroundHover": 1,
-                    "iconFormat": 1},
+                    "iconFormat": 1, "isUpsilonBattery": 0},
       "colors": {
         "YellowDark": "1f6feb",                     core color
         "Python": {"Keyword": "d6336c"},            PythonKeyword, Python app only
@@ -55,7 +55,9 @@ in: shared/ion/src/device/include/n0120/config/board.h
       uint8_t  isAppNameBackgroundHover;
       uint8_t  iconFormat;                          1 = raw RGB565 (ICON_FORMAT_RAW565)
                                                     0 = LZ4 (ICON_FORMAT_LZ4)
-      uint8_t  reserved[2];
+      uint8_t  isUpsilonBattery;                    1 = title bar battery drawn like Upsilon's
+                                                    0 = Salty battery (default)
+      uint8_t  reserved[1];
       uint32_t wallpaperOffset;
       uint32_t wallpaperSize;
       uint32_t paletteOffset;
@@ -155,7 +157,8 @@ HEADER_SIZE = struct.calcsize(HEADER_FORMAT)  # 12
 
 # struct ThemeEntry {
 #   char name[16]; uint8_t x8 (isWallpaper, isPalette, isIcons,
-#   defaultCircleLevel, isAppNameBackgroundHover, iconFormat, reserved[2]);
+#   defaultCircleLevel, isAppNameBackgroundHover, iconFormat, isUpsilonBattery,
+#   reserved[1]);
 #   uint32_t x4; uint32_t[12]; uint32_t[12];
 # }
 ENTRY_FORMAT = f"<{THEME_NAME_LENGTH}sBBBBBBBBIIII{THEME_ICON_COUNT}I{THEME_ICON_COUNT}I"
@@ -174,6 +177,9 @@ VARIABLE_DEFS: dict[str, dict[str, int]] = {
     # ICON_FORMAT_LZ4 (0). Written in ThemeEntry.iconFormat.
     "iconFormat": {"default": ICON_FORMAT_RAW565,
                    "min": ICON_FORMAT_LZ4, "max": ICON_FORMAT_RAW565},
+    # Battery pictogram of the title bar: 1 = the Upsilon one (outlined 16x9
+    # battery), 0 = the Salty one (default). Written in ThemeEntry.isUpsilonBattery.
+    "isUpsilonBattery": {"default": 0, "min": 0, "max": 1},
 }
 FIXED_ICON_FILES = [
     "calculation_icon.png",
@@ -527,7 +533,7 @@ def build_theme(theme_name: str, default: tm.Theme, asset_cursor: int,
         name_bytes.ljust(THEME_NAME_LENGTH, b"\x00"),
         is_wallpaper, is_palette, is_icons,
         variables["defaultCircleLevel"], variables["isAppNameBackgroundHover"],
-        icon_format, 0, 0,  # iconFormat, reserved[2]
+        icon_format, variables["isUpsilonBattery"], 0,  # iconFormat, isUpsilonBattery, reserved[1]
         wallpaper_offset, wallpaper_size,
         palette_offset, palette_size,
         *icon_offsets,
